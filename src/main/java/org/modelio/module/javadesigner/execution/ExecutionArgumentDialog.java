@@ -15,24 +15,24 @@ import org.modelio.api.ui.ModelioDialog;
 import org.modelio.module.javadesigner.i18n.Messages;
 
 public class ExecutionArgumentDialog extends ModelioDialog {
-    Text argumentsText;
-    
-    Text vmArgumentsText;
-    
-    ExecutionArgumentModel model;
-    
-    protected ExecutionArgumentDialog(Shell parentShell, ExecutionArgumentModel model) {
+     Text argumentsText;
+
+     Text vmArgumentsText;
+
+     ExecutionArgumentModel model;
+
+    protected ExecutionArgumentDialog(final Shell parentShell, final ExecutionArgumentModel model) {
         super (parentShell);
         this.model = model;
     }
-    
+
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         super.addDefaultButtons (parent);
     }
-    
+
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         Composite container = new Composite (parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         
@@ -51,10 +51,9 @@ public class ExecutionArgumentDialog extends ModelioDialog {
         this.vmArgumentsText.setLayoutData(gd_vmArgumentsText);
         
         addListeners();
-        
         return parent;
     }
-    
+
     private void addListeners() {
         ModifyListener listener = new ModifyListener() {
             
@@ -72,7 +71,7 @@ public class ExecutionArgumentDialog extends ModelioDialog {
         this.argumentsText.addModifyListener(listener);
         this.vmArgumentsText.addModifyListener(listener);
     }
-    
+
     @Override
     public void init() {
         Shell shell = this.getShell ();
@@ -83,8 +82,8 @@ public class ExecutionArgumentDialog extends ModelioDialog {
         this.argumentsText.setText(this.model.getArguments());
         this.vmArgumentsText.setText(this.model.getVmArguments());
     }
-    
-    public static ExecutionArgumentModel getExecutionArguments(Shell parent, String initialArguments, String initialVmArguments) throws InterruptedException {
+
+    public static ExecutionArgumentModel getExecutionArguments(final Shell parent, final String initialArguments, final String initialVmArguments) throws InterruptedException {
         ExecutionArgumentModel model = new ExecutionArgumentModel(initialArguments, initialVmArguments);
         
         ExecutionArgumentDialog l_Explorer = new ExecutionArgumentDialog (parent, model);
@@ -97,11 +96,11 @@ public class ExecutionArgumentDialog extends ModelioDialog {
             throw new InterruptedException();
         }
     }
-    
+
     @Override
     protected Point getInitialSize() {
         Point initial = new Point(300, 350);
         return initial;
     }
-    
+
 }

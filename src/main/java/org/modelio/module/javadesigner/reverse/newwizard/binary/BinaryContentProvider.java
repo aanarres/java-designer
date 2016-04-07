@@ -5,10 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
-
 import com.modelio.module.xmlreverse.model.IVisitorElement;
 import com.modelio.module.xmlreverse.model.JaxbClass;
 import com.modelio.module.xmlreverse.model.JaxbEnumeration;
@@ -17,9 +13,10 @@ import com.modelio.module.xmlreverse.model.JaxbInterface;
 import com.modelio.module.xmlreverse.model.JaxbModel;
 import com.modelio.module.xmlreverse.model.JaxbPackage;
 import com.modelio.module.xmlreverse.model.defaultvisitor.DefaultReverseModelVisitor;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 
 public class BinaryContentProvider implements ITreeContentProvider {
-
     private CompositionVisitor visitor = new CompositionVisitor();
 
     private Map<Object, IVisitorElement> ownershipMap = new HashMap<>();
@@ -30,7 +27,7 @@ public class BinaryContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public Object[] getChildren(Object p_Object) {
+    public Object[] getChildren(final Object p_Object) {
         if (p_Object instanceof IVisitorElement) {
             IVisitorElement jaxb_elt = (IVisitorElement) p_Object;
         
@@ -45,46 +42,46 @@ public class BinaryContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public Object[] getElements(Object p_Object) {
+    public Object[] getElements(final Object p_Object) {
         Object[] res = this.getChildren(p_Object);
         return res;
     }
 
     @Override
-    public boolean hasChildren(Object p_Object) {
+    public boolean hasChildren(final Object p_Object) {
         boolean res = (this.getChildren(p_Object).length > 0);
         return res;
     }
 
     @Override
-    public void inputChanged(Viewer arg0, Object arg1, Object arg2) {
+    public void inputChanged(final Viewer arg0, final Object arg1, final Object arg2) {
         // reset ownership cache
         this.ownershipMap.clear();
     }
 
     @Override
-    public Object getParent(Object elt) {
+    public Object getParent(final Object elt) {
         return this.ownershipMap.get(elt);
     }
-    
+
     private static class CompositionVisitor extends DefaultReverseModelVisitor {
         public CompositionVisitor() {
             // Empty c'tor
         }
-        
-        private boolean keepElement(IVisitorElement element) {
+
+        private boolean keepElement(final IVisitorElement element) {
             return (element instanceof JaxbClass)
-            || (element instanceof JaxbEnumeration)
-            || (element instanceof JaxbGroup)
-            || (element instanceof JaxbInterface)
-            || (element instanceof JaxbModel)
-            || (element instanceof JaxbPackage);
+                                    || (element instanceof JaxbEnumeration)
+                                    || (element instanceof JaxbGroup)
+                                    || (element instanceof JaxbInterface)
+                                    || (element instanceof JaxbModel)
+                                    || (element instanceof JaxbPackage);
         }
 
         @Override
-        public Object visitClass(JaxbClass element) {
+        public Object visitClass(final JaxbClass element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getClazzOrInterfaceOrInstance()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -97,9 +94,9 @@ public class BinaryContentProvider implements ITreeContentProvider {
         }
 
         @Override
-        public Object visitEnumeration(JaxbEnumeration element) {
+        public Object visitEnumeration(final JaxbEnumeration element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getNoteOrConstraintOrStereotype()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -111,11 +108,10 @@ public class BinaryContentProvider implements ITreeContentProvider {
             return ret;
         }
 
-
         @Override
-        public Object visitInterface(JaxbInterface element) {
+        public Object visitInterface(final JaxbInterface element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getClazzOrInterfaceOrEnumeration()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -128,9 +124,9 @@ public class BinaryContentProvider implements ITreeContentProvider {
         }
 
         @Override
-        public Object visitPackage(JaxbPackage element) {
+        public Object visitPackage(final JaxbPackage element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getGroupOrPackageOrClazz()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -143,9 +139,9 @@ public class BinaryContentProvider implements ITreeContentProvider {
         }
 
         @Override
-        public Object visitModel(JaxbModel element) {
+        public Object visitModel(final JaxbModel element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getPackageOrClazzOrInterface()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -158,9 +154,9 @@ public class BinaryContentProvider implements ITreeContentProvider {
         }
 
         @Override
-        public Object visitGroup(JaxbGroup element) {
+        public Object visitGroup(final JaxbGroup element) {
             List<IVisitorElement> ret = new ArrayList<>();
-
+            
             for (Object collection : element.getPackageOrClazzOrInterface()) {
                 if (collection instanceof IVisitorElement) {
                     IVisitorElement c_element = (IVisitorElement) collection;
@@ -171,6 +167,7 @@ public class BinaryContentProvider implements ITreeContentProvider {
             }
             return ret;
         }
+
     }
 
 }

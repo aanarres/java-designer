@@ -19,11 +19,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.modelio.api.app.navigation.INavigationService;
+import org.modelio.api.modelio.navigation.INavigationService;
 import org.modelio.api.ui.ModelioDialog;
-import org.modelio.api.ui.UIColor;
 import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.report.ReportModel.ElementMessage;
+import org.modelio.ui.UIColor;
 
 class ReportDialog extends ModelioDialog {
     private ReportModel model;
@@ -32,28 +32,27 @@ class ReportDialog extends ModelioDialog {
 
     private Image errorImage;
 
-    Table table;
+     Table table;
 
     private Image infoImage;
 
-    Text descriptionText;
+     Text descriptionText;
 
-    INavigationService navigationService;
+     INavigationService navigationService;
 
-
-    public ReportDialog(Shell parentShell, INavigationService navigationService) {
+    public ReportDialog(final Shell parentShell, final INavigationService navigationService) {
         super (parentShell);
         setShellStyle (SWT.RESIZE | SWT.DIALOG_TRIM | getDefaultOrientation ());
         this.navigationService = navigationService;
     }
 
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         createButton (parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         this.warningImage = JFaceResources.getImage ("dialog_messasge_warning_image"); //$NON-NLS-1$
         this.errorImage = JFaceResources.getImage ("dialog_message_error_image"); //$NON-NLS-1$
         this.infoImage = JFaceResources.getImage ("dialog_messasge_info_image"); //$NON-NLS-1$
@@ -61,7 +60,7 @@ class ReportDialog extends ModelioDialog {
         SashForm form = new SashForm(parent, SWT.VERTICAL);
         GridData data = new GridData (SWT.FILL, SWT.FILL, true, true);
         form.setLayoutData(data);
-
+        
         this.table = new Table (form, SWT.MULTI | SWT.BORDER |
                 SWT.FULL_SELECTION);
         //this.table.setLayoutData (data);
@@ -122,7 +121,7 @@ class ReportDialog extends ModelioDialog {
         
         this.descriptionText = new Text (form, SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
         this.descriptionText.setBackground (UIColor.TEXT_READONLY_BG);
-
+        
         // Add a listener that shows/hide the vertical scroll bar as needed.
         Listener scrollBarListener = new Listener (){
             @Override
@@ -142,7 +141,7 @@ class ReportDialog extends ModelioDialog {
         };
         this.descriptionText.addListener(SWT.Resize, scrollBarListener);
         this.descriptionText.addListener(SWT.Modify, scrollBarListener);
-
+        
         form.setWeights(new int[]{70,30});
         return parent;
     }
@@ -178,7 +177,7 @@ class ReportDialog extends ModelioDialog {
         }
     }
 
-    public void setModel(ReportModel model) {
+    public void setModel(final ReportModel model) {
         this.model = model;
         updateViewFromModel ();
     }

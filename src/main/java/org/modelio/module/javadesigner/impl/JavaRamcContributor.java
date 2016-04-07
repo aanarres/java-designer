@@ -7,13 +7,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.modelio.api.mc.AbstractModelComponentContributor;
-import org.modelio.api.model.IMetamodelExtensions;
-import org.modelio.api.model.IModelingSession;
+import org.modelio.api.modelio.mc.AbstractModelComponentContributor;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.api.module.IModule;
 import org.modelio.gproject.ramc.core.model.IModelComponent;
-import org.modelio.metamodel.Metamodel;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
@@ -54,6 +51,7 @@ import org.modelio.module.javadesigner.api.JavaDesignerTagTypes;
 import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
+import org.modelio.vcore.smkernel.mapi.MMetamodel;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class JavaRamcContributor extends AbstractModelComponentContributor {
@@ -61,31 +59,34 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
 
     private IModelComponent mc;
 
-    public JavaRamcContributor(IModule module, IModelComponent mc) {
+    private MMetamodel metamodel;
+
+    public JavaRamcContributor(final IModule module, final IModelComponent mc) {
         super (module);
-        this.session =  module.getModelingSession ();
+        this.session =  module.getModuleContext().getModelingSession ();
         this.mc = mc;
+        this.metamodel = module.getModuleContext().getModelioServices().getMetamodelService().getMetamodel();
     }
 
     /**
      * Checks the value of the PACKAGESRCINRAMC module parameter.
      */
     private boolean mustIncludeSources() {
-        return getModule ().getConfiguration ().getParameterValue (JavaDesignerParameters.PACKAGESRCINRAMC).equalsIgnoreCase ("TRUE");
+        return getModule ().getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.PACKAGESRCINRAMC).equalsIgnoreCase ("TRUE");
     }
 
     /**
      * Checks the value of the PACKAGEJARINRAMC module parameter.
      */
     private boolean mustIncludeJars() {
-        return getModule ().getConfiguration ().getParameterValue (JavaDesignerParameters.PACKAGEJARINRAMC).equalsIgnoreCase ("TRUE");
+        return getModule ().getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.PACKAGEJARINRAMC).equalsIgnoreCase ("TRUE");
     }
 
-    private void computeJarFiles(Set<ExportedFileEntry> files) {
+    private void computeJarFiles(final Set<ExportedFileEntry> files) {
         String genroot = JavaDesignerUtils.getGenRoot (getModule ()).getAbsolutePath ();
         for (Artifact jarFile : getJarArtifacts (this.mc.getArtifact())) {
             String jarFileName = JavaDesignerUtils.getFilename(jarFile, getModule()).getAbsolutePath();
-
+        
             Path file = Paths.get(jarFileName);
             String exportPath;
             if (file.toString().startsWith(genroot)) {
@@ -97,8 +98,8 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 // deploy it directly under the project
                 exportPath = file.toString().replace(file.getParent().toString(), "");
             }
-
-            JavaDesignerModule.logService.info ("Adding file : " + exportPath);
+        
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Adding file : " + exportPath);
             files.add (new ExportedFileEntry(jarFileName, exportPath));
         }
     }
@@ -107,9 +108,9 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
      * Returns all Jar artifacts manifested by this artifact. Returns also Jar artifacts owned by the manifested
      * namespaces.
      */
-    private List<Artifact> getJarArtifacts(Artifact artifact) {
+    private List<Artifact> getJarArtifacts(final Artifact artifact) {
         List<Artifact> ret = new ArrayList<> ();
-
+        
         for (Manifestation manif : artifact.getUtilized ()) {
             ModelElement utilizedElement = manif.getUtilizedElement ();
             if (utilizedElement instanceof NameSpace) {
@@ -123,9 +124,9 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
      * Returns all Jar artifacts owned by this namespace. If the namespace is an artifact, all its manifestations are
      * also checked.
      */
-    private List<Artifact> getJarArtifacts(NameSpace namespace) {
+    private List<Artifact> getJarArtifacts(final NameSpace namespace) {
         List<Artifact> ret = new ArrayList<> ();
-
+        
         if (namespace instanceof Artifact) {
             if (namespace.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JARFILE)) {
                 ret.add ((Artifact) namespace);
@@ -134,7 +135,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 return getJarArtifacts ((Artifact) namespace);
             }
         }
-
+        
         for (ModelTree ownedElement : namespace.getOwnedElement ()) {
             if (ownedElement instanceof Artifact) {
                 if (ownedElement.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JARFILE)) {
@@ -150,7 +151,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
     /**
      * Computes all java files available below the selected element.
      */
-    private void computeSourceFiles(Set<ExportedFileEntry> files) {
+    private void computeSourceFiles(final Set<ExportedFileEntry> files) {
         for (Element manifestedElement : this.mc.getExportedElements()) {
             if (isJavaClass (manifestedElement)) {
                 getFilesName ((GeneralClass) manifestedElement, files);
@@ -160,9 +161,9 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
         }
     }
 
-    private void getFilesName(NameSpace utilizedElt, Set<ExportedFileEntry> files) {
+    private void getFilesName(final NameSpace utilizedElt, final Set<ExportedFileEntry> files) {
         Set<GeneralClass> classes = new HashSet<> ();
-
+        
         // Search for all elements referenced by component
         if (isJavaClass (utilizedElt)) {
             addRecursiveUsedClasses ((GeneralClass) utilizedElt, classes);
@@ -176,15 +177,15 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 }
             }
         }
-
+        
         String genroot = JavaDesignerUtils.getGenRoot (getModule ()).getAbsolutePath ().replace ("\\", "/");
-
+        
         // Compute all files
         for (GeneralClass theClass : classes) {
             ModelTree theOwner = theClass.getOwner ();
             if (!ModelUtils.isLibrary(theClass) && theOwner instanceof Package) {
                 String javaFile = JavaDesignerUtils.getFilename (theClass, getModule ()).getAbsolutePath ();
-
+        
                 Path file = Paths.get(javaFile);
                 String exportPath;
                 if (file.toString().startsWith(genroot)) {
@@ -196,19 +197,19 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                     // deploy it directly under the project
                     exportPath = file.toString().replace(file.getParent().toString(), "");
                 }
-
-                JavaDesignerModule.logService.info ("Adding file : " + exportPath);
+        
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Adding file : " + exportPath);
                 files.add (new ExportedFileEntry(javaFile, exportPath));
             }
         }
     }
 
-    private void addRecursiveUsedClasses(GeneralClass utilizedElt, Set<GeneralClass> classes) {
+    private void addRecursiveUsedClasses(final GeneralClass utilizedElt, final Set<GeneralClass> classes) {
         // Don't process nocode classes
         if (!JavaDesignerUtils.isNoCode (utilizedElt)) {
             // Add the current class
             classes.add (utilizedElt);
-
+        
             for (GeneralClass dependentClass : getDependentClasses (utilizedElt)) {
                 // Avoid infinite loop
                 if (!classes.contains (dependentClass)) {
@@ -218,9 +219,9 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
         }
     }
 
-    private Set<GeneralClass> getDependentClasses(GeneralClass utilizedElt) {
+    private Set<GeneralClass> getDependentClasses(final GeneralClass utilizedElt) {
         Set<GeneralClass> ret = new HashSet<> ();
-
+        
         // Used classes and interfaces
         for (ElementImport theImport : utilizedElt.getOwnedImport ()) {
             NameSpace importedElement = theImport.getImportedElement ();
@@ -228,7 +229,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 ret.add ((GeneralClass) importedElement);
             }
         }
-
+        
         // Package imports
         for (PackageImport theImport : utilizedElt.getOwnedPackageImport ()) {
             Package importedPackage = theImport.getImportedPackage ();
@@ -238,7 +239,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 }
             }
         }
-
+        
         // Parent classes
         for (Generalization theGeneralization : utilizedElt.getParent ()) {
             NameSpace superType = theGeneralization.getSuperType ();
@@ -246,12 +247,12 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 ret.add ((GeneralClass) superType);
             }
         }
-
+        
         // Implemented interfaces
         for (InterfaceRealization theRealization : utilizedElt.getRealized ()) {
             ret.add (theRealization.getImplemented ());
         }
-
+        
         // Navigeable Associations
         for (AssociationEnd theEnd : utilizedElt.getOwnedEnd()) {
             if (theEnd.getTarget() != null) {
@@ -262,7 +263,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 }
             }
         }
-
+        
         // Attribute types
         for (Attribute theAttribute : utilizedElt.getOwnedAttribute()) {
             GeneralClass theType = theAttribute.getType ();
@@ -270,7 +271,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                 ret.add (theType);
             }
         }
-
+        
         //  Operation parameters
         for (Operation theOperation : utilizedElt.getOwnedOperation()) {
             // Operation IN Parameters
@@ -280,7 +281,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                     ret.add (theType);
                 }
             }
-
+        
             // Operation OUT Parameters
             Parameter theReturnType = theOperation.getReturn ();
             if (theReturnType != null) {
@@ -289,7 +290,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                     ret.add (theType);
                 }
             }
-
+        
             // Class used by operations
             for (ElementImport theImport : theOperation.getOwnedImport ()) {
                 NameSpace importedElement = theImport.getImportedElement ();
@@ -297,7 +298,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
                     ret.add ((GeneralClass) importedElement);
                 }
             }
-
+        
             // Class thrown by operations
             for (RaisedException theException : theOperation.getThrown ()) {
                 Classifier theThrownType = theException.getThrownType ();
@@ -309,7 +310,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
         return ret;
     }
 
-    private boolean isJavaClass(Element utilizedElt) {
+    private boolean isJavaClass(final Element utilizedElt) {
         if (JavaDesignerUtils.isJavaElement (utilizedElt)) {
             if (utilizedElt instanceof Interface) {
                 return true;
@@ -329,21 +330,19 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
     /**
      * Get a TagType from the metamodel extensions.
      * @throws ExtensionNotFoundException
-     * @throws ElementNotUniqueException 
+     * @throws ElementNotUniqueException
      */
-    private TagType getTagType(java.lang.Class<? extends Element> metaclass, String tagTypeName) throws ExtensionNotFoundException, ElementNotUniqueException {
-        IMetamodelExtensions metamodel = this.session.getMetamodelExtensions ();
-        return metamodel.getTagType (IJavaDesignerPeerModule.MODULE_NAME, tagTypeName, Metamodel.getMClass(metaclass));
+    private TagType getTagType(final java.lang.Class<? extends Element> metaclass, final String tagTypeName) throws ElementNotUniqueException, ExtensionNotFoundException {
+        return this.session.getMetamodelExtensions().getTagType(IJavaDesignerPeerModule.MODULE_NAME, tagTypeName, this.metamodel.getMClass(metaclass));
     }
 
     /**
      * Get a NoteType from the metamodel extensions.
      * @throws ExtensionNotFoundException
-     * @throws ElementNotUniqueException 
+     * @throws ElementNotUniqueException
      */
-    private NoteType getNoteType(java.lang.Class<? extends Element> metaclass, String noteTypeName) throws ExtensionNotFoundException, ElementNotUniqueException {
-        IMetamodelExtensions metamodel = this.session.getMetamodelExtensions ();
-        return metamodel.getNoteType (IJavaDesignerPeerModule.MODULE_NAME, noteTypeName, Metamodel.getMClass(metaclass));
+    private NoteType getNoteType(final java.lang.Class<? extends Element> metaclass, final String noteTypeName) throws ElementNotUniqueException, ExtensionNotFoundException {
+        return this.session.getMetamodelExtensions().getNoteType(IJavaDesignerPeerModule.MODULE_NAME, noteTypeName, this.metamodel.getMClass(metaclass));
     }
 
     @Override
@@ -365,7 +364,7 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
         if (mustIncludeSources ()) {
             computeSourceFiles (files);
         }
-
+        
         // Add jars
         if (mustIncludeJars ()) {
             computeJarFiles (files);
@@ -400,126 +399,127 @@ public class JavaRamcContributor extends AbstractModelComponentContributor {
             noteTypes.add (getNoteType (Dependency.class, JavaDesignerNoteTypes.DEPENDENCY_SEEJAVADOC));
             // noteTypes.add(getNoteType("specific-xml");
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         } catch (ElementNotUniqueException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return noteTypes;
     }
 
     @Override
     public Set<TagType> getTagTypes() {
-     // Add java tag types
-        Set<TagType> tagTypes = new HashSet<>();
-        try {
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFULLNAME));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME));
-            tagTypes.add (getTagType (ElementImport.class, JavaDesignerTagTypes.ELEMENTIMPORT_JAVAFULLNAME));
-            tagTypes.add (getTagType (Generalization.class, JavaDesignerTagTypes.GENERALIZATION_JAVAFULLNAME));
-            tagTypes.add (getTagType (InterfaceRealization.class, JavaDesignerTagTypes.INTERFACEREALIZATION_JAVAFULLNAME));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVABIND));
-            tagTypes.add (getTagType (Generalization.class, JavaDesignerTagTypes.GENERALIZATION_JAVABIND));
-            tagTypes.add (getTagType (InterfaceRealization.class, JavaDesignerTagTypes.INTERFACEREALIZATION_JAVABIND));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVABIND));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAARRAYDIMENSION));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAARRAYDIMENSION));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAARRAYDIMENSION));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATRANSIENT));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVATYPEEXPR));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAIMPLEMENTATIONTYPE));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFINAL));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAFINAL));
-
-            tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAVOLATILE));
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE));
-
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAECLIPSENLS));
-
-            tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAWRAPPER));
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAWRAPPER));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAIMPORT));
-            tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAIMPORT));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAIMPORT));
-            tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVAIMPORT));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAIMPLEMENTS));
-            tagTypes.add (getTagType (Enumeration.class, JavaDesignerTagTypes.ENUMERATION_JAVAIMPLEMENTS));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAIMPLEMENTS));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVAINHERITEDANNOTATION));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAINHERITEDANNOTATION));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVASTATIC));
-            tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVASTATIC));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVASTATIC));
-
-            // tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAEXTERN));
-            // tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAEXTERN));
-            // tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAEXTERN));
-            // tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVAEXTERN));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAEXTENDS));
-            tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAEXTENDS));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAEXTENDS));
-            tagTypes.add (getTagType (TemplateParameter.class, JavaDesignerTagTypes.TEMPLATEPARAMETER_JAVAEXTENDS));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVATARGETANNOTATION));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVATARGETANNOTATION));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVARETENTIONANNOTATION));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVARETENTIONANNOTATION));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVADOCUMENTEDANNOTATION));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVADOCUMENTEDANNOTATION));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAFILENAME));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAFILENAME));
-
-            tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVASYNCHRONIZED));
-
-            tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVASTRICT));
-
-            tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVANATIVE));
-
-            tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVATHROWNEXCEPTION));
-
-            tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVATEMPLATEPARAMETERS));
-
-            tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAVARARGS));
-
-            tagTypes.add (getTagType (Feature.class, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE));
-
-            tagTypes.add (getTagType (Artifact.class, JavaDesignerTagTypes.JARFILE_JAVAMAINCLASS));
-
-            tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVANOPACKAGE));
-
-            tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVANAME));
-            tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVANAME));
-            tagTypes.add (getTagType (Feature.class, JavaDesignerTagTypes.FEATURE_JAVANAME));
-            tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVANAME));
-            tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVANAME));
-
-            // Tag type from core.module
-            tagTypes.add (getTagType (AssociationEnd.class, IOtherProfileElements.FEATURE_TYPE));
-            tagTypes.add (getTagType (Attribute.class, IOtherProfileElements.FEATURE_TYPE));
-            tagTypes.add (getTagType (Parameter.class, IOtherProfileElements.FEATURE_TYPE));
-        } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
-        }
+        // Add java tag types
+           Set<TagType> tagTypes = new HashSet<>();
+           try {
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFULLNAME));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME));
+               tagTypes.add (getTagType (ElementImport.class, JavaDesignerTagTypes.ELEMENTIMPORT_JAVAFULLNAME));
+               tagTypes.add (getTagType (Generalization.class, JavaDesignerTagTypes.GENERALIZATION_JAVAFULLNAME));
+               tagTypes.add (getTagType (InterfaceRealization.class, JavaDesignerTagTypes.INTERFACEREALIZATION_JAVAFULLNAME));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVABIND));
+               tagTypes.add (getTagType (Generalization.class, JavaDesignerTagTypes.GENERALIZATION_JAVABIND));
+               tagTypes.add (getTagType (InterfaceRealization.class, JavaDesignerTagTypes.INTERFACEREALIZATION_JAVABIND));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVABIND));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAARRAYDIMENSION));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAARRAYDIMENSION));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAARRAYDIMENSION));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATRANSIENT));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVATYPEEXPR));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAIMPLEMENTATIONTYPE));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFINAL));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAFINAL));
+        
+               tagTypes.add (getTagType (AssociationEnd.class, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAVOLATILE));
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE));
+        
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAECLIPSENLS));
+        
+               tagTypes.add (getTagType (Attribute.class, JavaDesignerTagTypes.ATTRIBUTE_JAVAWRAPPER));
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAWRAPPER));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAIMPORT));
+               tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAIMPORT));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAIMPORT));
+               tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVAIMPORT));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAIMPLEMENTS));
+               tagTypes.add (getTagType (Enumeration.class, JavaDesignerTagTypes.ENUMERATION_JAVAIMPLEMENTS));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAIMPLEMENTS));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVAINHERITEDANNOTATION));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAINHERITEDANNOTATION));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVASTATIC));
+               tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVASTATIC));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVASTATIC));
+        
+               // tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAEXTERN));
+               // tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAEXTERN));
+               // tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAEXTERN));
+               // tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVAEXTERN));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAEXTENDS));
+               tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVAEXTENDS));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAEXTENDS));
+               tagTypes.add (getTagType (TemplateParameter.class, JavaDesignerTagTypes.TEMPLATEPARAMETER_JAVAEXTENDS));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVATARGETANNOTATION));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVATARGETANNOTATION));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVARETENTIONANNOTATION));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVARETENTIONANNOTATION));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.JAVAANNOTATION_JAVADOCUMENTEDANNOTATION));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVADOCUMENTEDANNOTATION));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVAFILENAME));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVAFILENAME));
+        
+               tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVASYNCHRONIZED));
+        
+               tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVASTRICT));
+        
+               tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVANATIVE));
+        
+               tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVATHROWNEXCEPTION));
+        
+               tagTypes.add (getTagType (Operation.class, JavaDesignerTagTypes.OPERATION_JAVATEMPLATEPARAMETERS));
+        
+               tagTypes.add (getTagType (Parameter.class, JavaDesignerTagTypes.PARAMETER_JAVAVARARGS));
+        
+               tagTypes.add (getTagType (Feature.class, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE));
+        
+               tagTypes.add (getTagType (Artifact.class, JavaDesignerTagTypes.JARFILE_JAVAMAINCLASS));
+        
+               tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVANOPACKAGE));
+        
+               tagTypes.add (getTagType (Class.class, JavaDesignerTagTypes.CLASS_JAVANAME));
+               tagTypes.add (getTagType (DataType.class, JavaDesignerTagTypes.DATATYPE_JAVANAME));
+               tagTypes.add (getTagType (Feature.class, JavaDesignerTagTypes.FEATURE_JAVANAME));
+               tagTypes.add (getTagType (Interface.class, JavaDesignerTagTypes.INTERFACE_JAVANAME));
+               tagTypes.add (getTagType (Package.class, JavaDesignerTagTypes.PACKAGE_JAVANAME));
+        
+               // Tag type from core.module
+               tagTypes.add (getTagType (AssociationEnd.class, IOtherProfileElements.FEATURE_TYPE));
+               tagTypes.add (getTagType (Attribute.class, IOtherProfileElements.FEATURE_TYPE));
+               tagTypes.add (getTagType (Parameter.class, IOtherProfileElements.FEATURE_TYPE));
+           } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
+               JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
+           }
         return tagTypes;
     }
+
 }

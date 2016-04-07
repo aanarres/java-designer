@@ -3,11 +3,16 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import javax.xml.bind.JAXBElement;
-
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.modelio.Modelio;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.model.JaxbAssociationEnd;
+import com.modelio.module.xmlreverse.model.JaxbClassType;
+import com.modelio.module.xmlreverse.model.JaxbDestination;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.model.JxbVisibilityMode;
+import com.modelio.module.xmlreverse.strategy.AssociationEndStrategy;
+import com.modelio.module.xmlreverse.utils.TypeConverter;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
@@ -36,25 +41,15 @@ import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.model.JaxbAssociationEnd;
-import com.modelio.module.xmlreverse.model.JaxbClassType;
-import com.modelio.module.xmlreverse.model.JaxbDestination;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.model.JxbVisibilityMode;
-import com.modelio.module.xmlreverse.strategy.AssociationEndStrategy;
-import com.modelio.module.xmlreverse.utils.TypeConverter;
-
 public class JavaAssociationEndStrategy extends AssociationEndStrategy {
-
-    public JavaAssociationEndStrategy(IModelingSession session) {
+    public JavaAssociationEndStrategy(final IModelingSession session) {
         super(session);
     }
 
     @Override
-    public AssociationEnd getCorrespondingElement(JaxbAssociationEnd jaxb_element, MObject owner, IReadOnlyRepository repository) {
+    public AssociationEnd getCorrespondingElement(final JaxbAssociationEnd jaxb_element, final MObject owner, final IReadOnlyRepository repository) {
         Classifier classifierOwner = (Classifier) owner;
-
+        
         for (AssociationEnd feat : classifierOwner.getOwnedEnd()) {
             if (feat.getName().equals(jaxb_element.getName()) && feat.getTarget() != null) {
                 if (!repository.isRecordedElement(feat) && !JavaDesignerUtils.isNoCode(feat)) {
@@ -62,15 +57,15 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         AssociationEnd new_element = this.model.createAssociationEnd();
         return new_element;
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbAssociationEnd jaxb_element, AssociationEnd modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbAssociationEnd jaxb_element, final AssociationEnd modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         modelio_element.setSource((Classifier) owner);
-
+        
         List<MObject> ret = null;
         boolean willConvertToAttribute = false;
         // Is there an existing attribute with the same objid ?
@@ -86,7 +81,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
         }
         String oldName = modelio_element.getName();
         boolean hasJavaName = modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME);
-
+        
         // We must merge "type" tags into one tag with several parameters
         JaxbTaggedValue arrayTag = null;
         for (Object sub : new ArrayList<>(jaxb_element.getBaseTypeOrClassTypeOrNote())) {
@@ -102,7 +97,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         // If Array is one of the values, it must be the first one in the list
         if (arrayTag != null) {
             List<String> parameters = arrayTag.getTagParameter();
@@ -114,20 +109,20 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         // Store old visibility to avoid problems with properties.
         VisibilityMode oldVisibility = modelio_element.getVisibility();
-
+        
         String multMin = modelio_element.getMultiplicityMin();
         String multMax = modelio_element.getMultiplicityMax();
-
+        
         List<MObject> ret2 = super.updateProperties(jaxb_element, modelio_element, owner, repository);
         if (ret == null) {
             ret = ret2;
         } else if (ret2 != null) {
             ret.addAll(ret2);
         }
-
+        
         // Set multiplicity
         // undo super work except if multMin/multMax are empty.
         if (!multMin.isEmpty()) {
@@ -159,21 +154,21 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 modelio_element.setMultiplicityMax(jaxbMultiplicityMax);
             }
         }
-
+        
         // Set the old visibility again. It will be replace in the post
         // treatment
         modelio_element.setVisibility(oldVisibility);
-
+        
         handleMultipleTags(jaxb_element);
-
+        
         modelio_element.setChangeable(KindOfAccess.ACCESNONE);
-
+        
         if (hasJavaName) {
             try {
                 modelio_element.setName(oldName);
-
+        
                 org.modelio.module.javadesigner.utils.ModelUtils.setFirstTagParameter(
-                        Modelio.getInstance().getModelingSession(),
+                        this.session,
                         modelio_element,
                         IJavaDesignerPeerModule.MODULE_NAME,
                         JavaDesignerTagTypes.FEATURE_JAVANAME,
@@ -183,17 +178,17 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
                 ret.add(modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME));
             } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
-
+        
         if (owner instanceof Interface) {
             // Change jaxb visibility, postTreatment sets the visibility on the modelio element
             jaxb_element.setVisibility(VisibilityMode.PUBLIC.name());
-
+        
             modelio_element.setIsClass(true);
             try {
-                TaggedValue newTag = org.modelio.module.javadesigner.utils.ModelUtils.setTaggedValue(Modelio.getInstance().getModelingSession(),
+                TaggedValue newTag = org.modelio.module.javadesigner.utils.ModelUtils.setTaggedValue(this.session,
                         modelio_element,
                         IJavaDesignerPeerModule.MODULE_NAME,
                         JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL, true);
@@ -202,7 +197,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
                 ret.add(newTag);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
         return ret;
@@ -211,15 +206,15 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbAssociationEnd jaxb_element) {
+    private void handleMultipleTags(final JaxbAssociationEnd jaxb_element) {
         JaxbTaggedValue firstBindTag = null;
-
+        
         List<JaxbTaggedValue> toRemove = new ArrayList<>();
         List<Object> sub_elements = jaxb_element.getBaseTypeOrClassTypeOrNote();
         for (Object sub_element : sub_elements) {
             if (sub_element instanceof JaxbTaggedValue) {
                 JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
-
+        
                 if (currentTag.getTagType().equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND)) {
                     if (firstBindTag == null) {
                         firstBindTag = currentTag;
@@ -230,27 +225,27 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         sub_elements.removeAll(toRemove);
     }
 
     @Override
-    public void postTreatment(JaxbAssociationEnd jaxb_element, AssociationEnd modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbAssociationEnd jaxb_element, final AssociationEnd modelio_element, final IReadOnlyRepository repository) {
         boolean hasNoInit = true;
         MObject type = null;
         List<String> typeExpr = null;
-
+        
         if (modelio_element == null) {
             return;
         }
-
+        
         // Typage de l'attribut
         for (Object sub : jaxb_element.getBaseTypeOrClassTypeOrNote()) {
             if (sub instanceof JAXBElement) {
                 JAXBElement<?> jaxb_sub = (JAXBElement<?>) sub;
                 if ("base-type".equals(jaxb_sub.getName().getLocalPart())) {
                     type = TypeConverter.getBaseType((String) jaxb_sub.getValue(), this.model);
-
+        
                     AssociationEnd opposite = modelio_element.getOpposite();
                     if (opposite == null) {
                         opposite = this.model.createAssociationEnd();
@@ -261,14 +256,14 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 } else if ("value".equals(jaxb_sub.getName().getLocalPart())) {
                     String value = (String) jaxb_sub.getValue();
                     value = value.trim();
-
+        
                     try {
                         modelio_element.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE, value);
                     } catch (ExtensionNotFoundException e) {
-                        JavaDesignerModule.logService.error(e.getMessage());
+                        JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                     }
                     hasNoInit = false;
-
+        
                 }
             } else if (sub instanceof JaxbClassType) {
                 JaxbDestination jaxb_destination = ((JaxbClassType) sub).getDestination();
@@ -293,7 +288,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             } else if (sub instanceof JaxbTaggedValue) {
                 JaxbTaggedValue sub_element = (JaxbTaggedValue) sub;
-
+        
                 // The type expr tag cannot be created on a real association
                 // end... it will be converted into an
                 // attribute later
@@ -302,7 +297,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         Association new_assoc = modelio_element.getAssociation();
         if (new_assoc == null) {
             new_assoc = this.model.createAssociation();
@@ -311,10 +306,10 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 new_assoc.getEnd().add(modelio_element.getOpposite());
             }
         }
-
+        
         try {
             org.modelio.module.javadesigner.utils.ModelUtils.setTaggedValue(
-                    Modelio.getInstance().getModelingSession(),
+                    this.session,
                     modelio_element,
                     IJavaDesignerPeerModule.MODULE_NAME,
                     JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE, hasNoInit);
@@ -322,9 +317,9 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 modelio_element.removeNotes(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE);
             }
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
         }
-
+        
         VisibilityMode newVisibility = null;
         String visibility = jaxb_element.getVisibility();
         if (visibility != null) {
@@ -340,7 +335,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 newVisibility = VisibilityMode.VISIBILITYUNDEFINED;
             }
         }
-
+        
         // Handle Properties
         String annotations = modelio_element.getNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION);
         if (annotations != null && annotations.contains("@mdl.prop")) {
@@ -352,7 +347,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 } else {
                     modelio_element.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION,annotations);
                 }
-
+        
                 // Update visibility according to the model<==> code rules
                 if (newVisibility == JavaTypeManager.getInstance().getPropertyCodeVisibility(modelio_element.getVisibility())) {
                     // The current visibility corresponds to a correct code
@@ -363,14 +358,14 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                     // config file
                     newVisibility = JavaTypeManager.getInstance().getPropertyModelVisibility(newVisibility);
                 }
-
+        
                 // Add the stereotype
                 org.modelio.module.javadesigner.utils.ModelUtils.addStereotype(modelio_element, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e.getMessage());
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
             }
         }
-
+        
         // Set the proper visibility
         if (newVisibility != null) {
             modelio_element.setVisibility(newVisibility);
@@ -379,9 +374,9 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
         MObject existingElt = jaxb_element.getObjid() != null ? this.session.findElementById(Attribute.class, jaxb_element.getObjid()) : null;
         Attribute att = null;
         if (modelio_element.getOpposite() == null || type == null || JavaFeatureReverseUtils.getInstance().isPrimitive(type)) {
-
+        
             // primitive type : change for an attribute
-
+        
             if (existingElt != null && existingElt.isValid()) {
                 // Attribute already exists, update it with the new modelio_element
                 att = (Attribute) existingElt;
@@ -395,7 +390,7 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 // No, convert the associationEnd into an attribute
                 att = JavaFeatureReverseUtils.getInstance().convertAssociationEndToAttribute(modelio_element, type);
             }
-
+        
             modelio_element.delete();
         } else if (existingElt != null && existingElt.isValid()) {
             if (type instanceof Interface) {
@@ -409,25 +404,22 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 // Translation of an Attribute to an Association should produce
                 // an aggregation
                 modelio_element.setAggregation(AggregationKind.KINDISCOMPOSITION);
-
+        
                 existingElt.delete();
             }
         }
-
+        
         if (typeExpr != null && att != null) {
             try {
                 att.putTagValues(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR, typeExpr);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e.getMessage());
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
             }
         }
     }
 
     @Override
-    public void deleteSubElements(JaxbAssociationEnd jaxb_element,
-                                  AssociationEnd modelio_element,
-                                  Collection<MObject> element_todelete,
-                                  IReadOnlyRepository repository) {
+    public void deleteSubElements(final JaxbAssociationEnd jaxb_element, final AssociationEnd modelio_element, final Collection<MObject> element_todelete, final IReadOnlyRepository repository) {
         for (MObject elt : element_todelete) {
             if (elt instanceof Note) {
                 Note note = (Note) elt;
@@ -438,7 +430,8 @@ public class JavaAssociationEndStrategy extends AssociationEndStrategy {
                 }
             }
         }
-
+        
         super.deleteSubElements(modelio_element, element_todelete, repository);
     }
+
 }

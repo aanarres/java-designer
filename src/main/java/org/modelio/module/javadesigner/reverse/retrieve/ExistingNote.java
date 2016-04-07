@@ -1,6 +1,8 @@
 package org.modelio.module.javadesigner.reverse.retrieve;
 
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.Repository;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
@@ -13,15 +15,11 @@ import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.reverse.xmltomodel.NoteReverseUtils;
 import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.Repository;
-
 public class ExistingNote extends NoteData {
     private String noteId = null;
 
-
     @Override
-    public void inject(IModelingSession session, ModelElement elementToRetrieve) throws ExtensionNotFoundException, ElementNotUniqueException {
+    public void inject(final IModelingSession session, final ModelElement elementToRetrieve) throws ElementNotUniqueException, ExtensionNotFoundException {
         Note theNote = session.findElementById(Note.class, this.noteId);
         
         if (theNote != null) {
@@ -46,7 +44,7 @@ public class ExistingNote extends NoteData {
                 }
         
                 if (tempContent.isEmpty ()) {
-                	theNote.delete();
+                    theNote.delete();
                 } else {
                     theNote.setContent (tempContent);
                 }
@@ -62,7 +60,7 @@ public class ExistingNote extends NoteData {
         }
     }
 
-    public ExistingNote(String noteType, String noteContent, String noteId, IReportWriter report) {
+    public ExistingNote(final String noteType, final String noteContent, final String noteId, final IReportWriter report) {
         super(noteType, noteContent, report);
         this.noteId = noteId;
     }
@@ -71,7 +69,7 @@ public class ExistingNote extends NoteData {
         return this.noteId;
     }
 
-    public void setNoteId(String noteId) {
+    public void setNoteId(final String noteId) {
         this.noteId = noteId;
     }
 

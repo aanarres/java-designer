@@ -8,12 +8,11 @@ public class ElementStatus {
 
     private ElementType type;
 
-
-    public ElementStatus(String value, ElementType type) {
+    public ElementStatus(final String value, final ElementType type) {
         this (value, type, ReverseStatus.NO_REVERSE);
     }
 
-    public ElementStatus(String value, ElementType type, ReverseStatus reverseStatus) {
+    public ElementStatus(final String value, final ElementType type, final ReverseStatus reverseStatus) {
         super ();
         this.value = value;
         this.type = type;
@@ -24,7 +23,7 @@ public class ElementStatus {
         return this.reverseStatus;
     }
 
-    public void setReverseStatus(ReverseStatus reverseStatus) {
+    public void setReverseStatus(final ReverseStatus reverseStatus) {
         this.reverseStatus = reverseStatus;
     }
 
@@ -36,11 +35,11 @@ public class ElementStatus {
         return this.value;
     }
 
-    public void setType(ElementType i) {
+    public void setType(final ElementType i) {
         this.type = i;
     }
 
-    public void setValue(String string) {
+    public void setValue(final String string) {
         this.value = string;
     }
 

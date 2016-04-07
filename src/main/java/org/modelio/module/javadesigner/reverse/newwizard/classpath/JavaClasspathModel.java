@@ -3,7 +3,6 @@ package org.modelio.module.javadesigner.reverse.newwizard.classpath;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.modelio.module.javadesigner.reverse.newwizard.api.IClasspathModel;
 
 public class JavaClasspathModel implements IClasspathModel {
@@ -11,8 +10,7 @@ public class JavaClasspathModel implements IClasspathModel {
 
     private File initialDirectory;
 
-
-    public JavaClasspathModel(File initialDirectory) {
+    public JavaClasspathModel(final File initialDirectory) {
         this.classpath = new ArrayList<>();
         this.initialDirectory = initialDirectory;
     }

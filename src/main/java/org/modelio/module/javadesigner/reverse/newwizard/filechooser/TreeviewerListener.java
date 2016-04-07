@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.reverse.newwizard.filechooser;
 
 import java.io.File;
 import java.util.List;
-
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -15,14 +14,13 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
 
     private List<File> result;
 
-
-    TreeviewerListener(CheckboxTreeViewer tree, List<File> result) {
+    TreeviewerListener(final CheckboxTreeViewer tree, final List<File> result) {
         this.tree = tree;
         this.result = result;
     }
 
     @Override
-    public void checkStateChanged(CheckStateChangedEvent event) {
+    public void checkStateChanged(final CheckStateChangedEvent event) {
         Object element = event.getElement();
         final boolean isChecked = this.tree.getChecked(element);
         if (!isChecked) {
@@ -42,12 +40,12 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
     }
 
     @Override
-    public void treeCollapsed(TreeExpansionEvent event) {
+    public void treeCollapsed(final TreeExpansionEvent event) {
         // Nothing to do
     }
 
     @Override
-    public void treeExpanded(TreeExpansionEvent event) {
+    public void treeExpanded(final TreeExpansionEvent event) {
         final Object element = (event.getElement());
         final boolean checked = this.tree.getChecked(element);
         final boolean grayed = this.tree.getGrayed(element);
@@ -67,7 +65,7 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
         }
     }
 
-    protected void doCheckStateChanged(Object element) {
+    protected void doCheckStateChanged(final Object element) {
         final ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
         
         // Check children
@@ -107,7 +105,7 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
         }
     }
 
-    private void updateChildrenElements(Object element, boolean grayed, boolean checked) {
+    private void updateChildrenElements(final Object element, final boolean grayed, final boolean checked) {
         boolean expanded = this.tree.getExpandedState(element);
         
         if (expanded) {
@@ -135,7 +133,7 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
         // Add all selected files
         for (Object elt : elts) {
             if (elt instanceof File) {
-                this.result.add((File) elt);                
+                this.result.add((File) elt);
             }
         }
         

@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.swt.widgets.Display;
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.IModuleUserConfiguration;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 import org.modelio.metamodel.uml.statik.Artifact;
@@ -26,13 +25,12 @@ import org.modelio.module.javadesigner.utils.ProcessManager;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class RunApplication extends DefaultModuleCommandHandler {
-    
     /**
      * This methods authorizes a command to be displayed in a defined context. The commands are displayed, by default,
      * depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -50,12 +48,12 @@ public class RunApplication extends DefaultModuleCommandHandler {
         }
         return result;
     }
-    
+
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
         JConsoleWithDialog console = new JConsoleWithDialog(InfoDialogManager.getExecutionDialog());
         
-        IModuleUserConfiguration config = module.getConfiguration();
+        IModuleUserConfiguration config = module.getModuleContext().getConfiguration();
         
         for (MObject element : selectedElements) {
             Artifact jarFile = (Artifact) element;
@@ -98,8 +96,8 @@ public class RunApplication extends DefaultModuleCommandHandler {
             }
         }
     }
-    
-    private List<File> getUsedJar (Artifact jarFile, IModule module) {
+
+    private List<File> getUsedJar(final Artifact jarFile, final IModule module) {
         List<File> ret = new ArrayList<>();
         
         for (Dependency dep : jarFile.getDependsOnDependency()) {
@@ -111,14 +109,14 @@ public class RunApplication extends DefaultModuleCommandHandler {
         }
         return ret;
     }
-    
+
     /**
      * This method precizes if a command has to be desactivated. If the command has to be displayed (which means that
      * the accept method has returned a positive value, it is sometimes needed to desactivate the command depending on
      * specific constraints that are specific to the module.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }
@@ -135,5 +133,5 @@ public class RunApplication extends DefaultModuleCommandHandler {
         }
         return result;
     }
-    
+
 }

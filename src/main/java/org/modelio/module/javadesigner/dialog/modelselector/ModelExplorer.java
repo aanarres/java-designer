@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.dialog.modelselector;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -23,20 +22,19 @@ import org.modelio.module.javadesigner.i18n.Messages;
 public class ModelExplorer extends ModelioDialog {
     private TreeViewer treeViewer;
 
-    Artifact result;
+     Artifact result;
 
-
-    protected ModelExplorer(Shell parentShell) {
+    protected ModelExplorer(final Shell parentShell) {
         super (parentShell);
     }
 
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         super.addDefaultButtons (parent);
     }
 
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         this.treeViewer = new TreeViewer (parent, SWT.SINGLE | SWT.BORDER);
         this.treeViewer.getTree ().setLayoutData (new GridData (SWT.FILL, SWT.FILL, true, true));
         
@@ -45,9 +43,9 @@ public class ModelExplorer extends ModelioDialog {
         this.treeViewer.setSorter (new ViewerSorter () {
             @Override
             public int compare (
-                Viewer viewer,
-                Object e1,
-                Object e2)
+                                Viewer viewer,
+                                Object e1,
+                                Object e2)
             {
                 if (e1 instanceof String) {
                     return -1;
@@ -66,7 +64,7 @@ public class ModelExplorer extends ModelioDialog {
         
             @Override
             public void selectionChanged (
-                SelectionChangedEvent evt)
+                                          SelectionChangedEvent evt)
             {
                 StructuredSelection sel = ((StructuredSelection) evt.getSelection ());
                 if (!sel.isEmpty ()) {
@@ -83,7 +81,7 @@ public class ModelExplorer extends ModelioDialog {
         return parent;
     }
 
-    private void setInput(Set<Artifact> targets) {
+    private void setInput(final Set<Artifact> targets) {
         String defaultTarget = Messages.getString ("Gui.buildTargets.defaultTarget");
         Set<Object> inputs = new HashSet<> (targets);
         inputs.add (defaultTarget);
@@ -99,7 +97,7 @@ public class ModelExplorer extends ModelioDialog {
         setMessage (Messages.getString ("Gui.buildTargets.message")); //$NON-NLS-1$
     }
 
-    public static Artifact getBuildTarget(Shell parent, Set<Artifact> targets) throws InterruptedException {
+    public static Artifact getBuildTarget(final Shell parent, final Set<Artifact> targets) throws InterruptedException {
         ModelExplorer l_Explorer = new ModelExplorer (parent);
         l_Explorer.create ();
         l_Explorer.setInput (targets);

@@ -21,8 +21,7 @@ public class ClasspathEditionView extends ModelioDialog {
 
     public IExternalJarsModel classpathModel;
 
-
-    public ClasspathEditionView(Shell parentShell, IExternalJarsModel classpathModel) {
+    public ClasspathEditionView(final Shell parentShell, final IExternalJarsModel classpathModel) {
         super(parentShell);
         this.classpathModel = classpathModel;
     }
@@ -33,7 +32,7 @@ public class ClasspathEditionView extends ModelioDialog {
     }
 
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         this.okButton = createButton(parent, IDialogConstants.OK_ID, Messages
                 .getString("Gui.JavaReverseWizardView.OkButton"), true);
         
@@ -42,7 +41,7 @@ public class ClasspathEditionView extends ModelioDialog {
     }
 
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         // Avoid box closing when pressing enter
         parent.addTraverseListener(new TraverseListener() {
             @Override

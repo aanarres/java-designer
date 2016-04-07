@@ -4,17 +4,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.modelio.api.diagram.IDiagramHandle;
-import org.modelio.api.diagram.IDiagramService;
-import org.modelio.api.diagram.autodiagram.IDiagramCreator;
-import org.modelio.api.diagram.dg.IDiagramDG;
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.ITransaction;
-import org.modelio.api.model.InvalidTransactionException;
-import org.modelio.api.modelio.Modelio;
+import org.modelio.api.modelio.diagram.IDiagramHandle;
+import org.modelio.api.modelio.diagram.IDiagramService;
+import org.modelio.api.modelio.diagram.autodiagram.IDiagramCreator;
+import org.modelio.api.modelio.diagram.dg.IDiagramDG;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.ITransaction;
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.diagrams.AbstractDiagram;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
 import org.modelio.metamodel.uml.statik.NameSpace;
@@ -29,7 +26,7 @@ public class CreateAutoDiagrams extends DefaultModuleCommandHandler {
      * depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -37,8 +34,8 @@ public class CreateAutoDiagrams extends DefaultModuleCommandHandler {
     }
 
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
-        IModelingSession session = module.getModelingSession ();
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
+        IModelingSession session = module.getModuleContext().getModelingSession ();
         try (ITransaction transaction = session.createTransaction("CreateAutoDiagrams")) {
             Set<NameSpace> elementsToGenerate = new HashSet<> ();
             for (MObject element : selectedElements) {
@@ -47,41 +44,39 @@ public class CreateAutoDiagrams extends DefaultModuleCommandHandler {
                     elementsToGenerate.add (producingParent);
                 }
             }
-
-            IDiagramService diagramService = Modelio.getInstance().getDiagramService();
+        
+            IDiagramService diagramService = module.getModuleContext().getModelioServices().getDiagramService();
             Collection<NameSpace> allComponentsToTreat = JavaDesignerUtils.getAllComponentsToTreat (elementsToGenerate, module);
             for (ModelTree elt : allComponentsToTreat) {
                 generateDiagrams(elt, diagramService);
             }
-
+        
             transaction.commit();
-        } catch (InvalidTransactionException e) {
-            JavaDesignerModule.logService.error(e);
         } catch (Exception e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
     }
 
-    protected void generateDiagrams(ModelTree elt, IDiagramService diagramService) {
+    protected void generateDiagrams(final ModelTree elt, final IDiagramService diagramService) {
         if (elt instanceof Package) {
             IDiagramCreator creator = diagramService.getAutoDiagramFactory().createSubPackageStructureCreator();
             AbstractDiagram diagram = creator.createDiagram(elt);
             if (diagram != null) {
                 try (IDiagramHandle diagramHandle = diagramService.getDiagramHandle(diagram)) {
-
+        
                     // no elements means no subpackages
                     IDiagramDG diagramNode = diagramHandle.getDiagramNode();
                     boolean isEmpty = diagramNode.getNodes().isEmpty();
-
+        
                     if (isEmpty) {
                         diagram.delete();
-                        JavaDesignerModule.logService.info("no SubPackageStructure diagram for " + elt.getName());
+                        JavaDesignerModule.getInstance().getModuleContext().getLogService().info("no SubPackageStructure diagram for " + elt.getName());
                     }
-
+        
                     diagramHandle.close();
                 }
             }
-
+        
             creator = diagramService.getAutoDiagramFactory().createDependencyCreator();
             creator.createDiagram(elt);
         } else {
@@ -96,7 +91,7 @@ public class CreateAutoDiagrams extends DefaultModuleCommandHandler {
      * specific constraints that are specific to the MDAC.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }

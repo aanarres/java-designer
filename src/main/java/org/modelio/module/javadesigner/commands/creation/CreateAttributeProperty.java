@@ -1,13 +1,11 @@
 package org.modelio.module.javadesigner.commands.creation;
 
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.ITransaction;
-import org.modelio.api.model.IUmlModel;
-import org.modelio.api.model.InvalidTransactionException;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.ITransaction;
+import org.modelio.api.modelio.model.IUmlModel;
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.statik.Attribute;
 import org.modelio.metamodel.uml.statik.Component;
@@ -20,12 +18,11 @@ import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class CreateAttributeProperty extends DefaultModuleCommandHandler {
-
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
-        IModelingSession session = module.getModelingSession ();
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
+        IModelingSession session = module.getModuleContext().getModelingSession ();
         try (ITransaction transaction = session.createTransaction("CreateAttributeProperty")) {
-        	IUmlModel model = session.getModel ();
+            IUmlModel model = session.getModel ();
             
             for (MObject element : selectedElements) {
                 if (element instanceof GeneralClass) {
@@ -38,12 +35,10 @@ public class CreateAttributeProperty extends DefaultModuleCommandHandler {
             }
         
             transaction.commit();
-        } catch (InvalidTransactionException e) {
-            JavaDesignerModule.logService.error(e);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVACOMPONENT)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVACOMPONENT)); //$NON-NLS-1$
         } catch (Exception e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
     }
 
@@ -52,7 +47,7 @@ public class CreateAttributeProperty extends DefaultModuleCommandHandler {
      * The commands are displayed, by default, depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -69,7 +64,7 @@ public class CreateAttributeProperty extends DefaultModuleCommandHandler {
      * If the command has to be displayed (which means that the accept method has returned a positive value, it is sometimes needed to desactivate the command depending on specific constraints that are specific to the module.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }

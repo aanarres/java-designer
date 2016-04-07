@@ -8,9 +8,8 @@ import org.eclipse.swt.widgets.Shell;
  * Class containing services to open simple dialog box
  */
 public class DialogManager {
-
     @SuppressWarnings("unused")
-    private DialogManager(Display display, String title, String message) {
+    private DialogManager(final Display display, final String title, final String message) {
         // This constructor exists only for the sync exec.
     }
 
@@ -25,7 +24,7 @@ public class DialogManager {
     /**
      * Display a Confirm dialog
      */
-    public static boolean openConfirm(String title, String message) {
+    public static boolean openConfirm(final String title, final String message) {
         Display display = getDisplay ();
         Shell shell = display.getActiveShell ();
         
@@ -36,7 +35,7 @@ public class DialogManager {
     /**
      * Display an Error dialog
      */
-    public static boolean openError(String title, String message) {
+    public static boolean openError(final String title, final String message) {
         final String messageToDisplay = message;
         final String titleToDisplay = title;
         final Display display = getDisplay ();
@@ -55,7 +54,7 @@ public class DialogManager {
     /**
      * Display an Information dialog
      */
-    public static boolean openInformation(String title, String message) {
+    public static boolean openInformation(final String title, final String message) {
         final String messageToDisplay = message;
         final String titleToDisplay = title;
         final Display display = getDisplay ();
@@ -73,7 +72,7 @@ public class DialogManager {
     /**
      * Display a Question dialog
      */
-    public static boolean openQuestion(String title, String message) {
+    public static boolean openQuestion(final String title, final String message) {
         final String messageToDisplay = message;
         final String titleToDisplay = title;
         final Display display = getDisplay ();
@@ -86,7 +85,7 @@ public class DialogManager {
     /**
      * Display a Warning dialog
      */
-    public static boolean openWarning(String title, String message) {
+    public static boolean openWarning(final String title, final String message) {
         final String messageToDisplay = message;
         final String titleToDisplay = title;
         final Display display = getDisplay ();

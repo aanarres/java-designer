@@ -3,7 +3,7 @@ package org.modelio.module.javadesigner.commands.reverse;
 import java.util.List;
 
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 import org.modelio.metamodel.uml.statik.NameSpace;
 import org.modelio.metamodel.uml.statik.Package;
@@ -20,7 +20,7 @@ public class ReverseSources extends DefaultModuleCommandHandler {
      * The command is displayed if the selected element is the root package.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -38,7 +38,7 @@ public class ReverseSources extends DefaultModuleCommandHandler {
     }
 
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
         ReportModel report = ReportManager.getNewReport ();
         
         Reversor reversor = new Reversor (module, report);
@@ -54,7 +54,7 @@ public class ReverseSources extends DefaultModuleCommandHandler {
      * specific constraints that are specific to the MDAC.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }

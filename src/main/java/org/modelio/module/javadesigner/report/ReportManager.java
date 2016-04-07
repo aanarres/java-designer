@@ -1,15 +1,13 @@
 package org.modelio.module.javadesigner.report;
 
 import org.eclipse.swt.widgets.Display;
-import org.modelio.api.modelio.Modelio;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.report.ReportModel.ElementMessage;
 
 public class ReportManager {
     private static ReportDialog dialog;
 
-
-    public static void showGenerationReport(ReportModel report) {
+    public static void showGenerationReport(final ReportModel report) {
         if (report == null || report.isEmpty ()) {
             if (ReportManager.dialog != null &&
                     !ReportManager.dialog.isDisposed ()) {
@@ -24,7 +22,7 @@ public class ReportManager {
                     display = Display.getDefault ();
                 }
         
-                ReportManager.dialog = new ReportDialog (display.getActiveShell (), Modelio.getInstance().getNavigationService());
+                ReportManager.dialog = new ReportDialog (display.getActiveShell (), JavaDesignerModule.getInstance().getModuleContext().getModelioServices().getNavigationService());
             }
         
             ReportManager.dialog.setModel (report);
@@ -36,18 +34,18 @@ public class ReportManager {
         return new ReportModel ();
     }
 
-    public static void printGenerationReport(ReportModel report) {
+    public static void printGenerationReport(final ReportModel report) {
         if (report != null && !report.isEmpty ()) {
             for (ElementMessage errorMsg : report.getErrors ()) {
-                JavaDesignerModule.logService.error(errorMsg.message);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(errorMsg.message);
             }
         
             for (ElementMessage warningMsg : report.getWarnings ()) {
-                JavaDesignerModule.logService.info (warningMsg.message);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().info (warningMsg.message);
             }
         
             for (ElementMessage infoMsg : report.getInfos ()) {
-                JavaDesignerModule.logService.info (infoMsg.message);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().info (infoMsg.message);
             }
         }
     }

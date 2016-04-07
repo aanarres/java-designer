@@ -1,6 +1,5 @@
 package org.modelio.module.javadesigner.utils;
 
-
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 import org.modelio.metamodel.uml.infrastructure.Note;
 import org.modelio.metamodel.uml.infrastructure.TaggedValue;
@@ -23,8 +22,7 @@ class FileGeneratorGetter {
      */
     private FileGeneratorVisitor visitor;
 
-    NameSpace fileGenerator;
-
+     NameSpace fileGenerator;
 
     private FileGeneratorGetter() {
         this.visitor = new FileGeneratorVisitor ();
@@ -35,7 +33,7 @@ class FileGeneratorGetter {
      * @param theChild The element from which we will get the owner.
      * @return the nearest NameSpace of the element given as parameter.
      */
-    public NameSpace getNearestNameSpace(MObject theChild) {
+    public NameSpace getNearestNameSpace(final MObject theChild) {
         this.fileGenerator = null;
         this.visitor.launchVisit (theChild);
         return this.fileGenerator;
@@ -54,16 +52,15 @@ class FileGeneratorGetter {
      * user will not see this class.
      */
     protected class FileGeneratorVisitor extends DefaultModelVisitor {
-
         /**
          * Launches the visit.
          */
-        public Object launchVisit(MObject theChild) {
+        public Object launchVisit(final MObject theChild) {
             return theChild.accept (this);
         }
 
         @Override
-        public Object visitEnumerationLiteral(EnumerationLiteral theEnumerationLiteral) {
+        public Object visitEnumerationLiteral(final EnumerationLiteral theEnumerationLiteral) {
             return theEnumerationLiteral.getValuated ().accept (this);
         }
 
@@ -71,7 +68,7 @@ class FileGeneratorGetter {
          * For an operation, launch the visitor on the owned classifier.
          */
         @Override
-        public Object visitOperation(Operation theOperation) {
+        public Object visitOperation(final Operation theOperation) {
             NameSpace parent = theOperation.getOwner ();
             if (parent != null) {
                 return parent.accept (this);
@@ -83,7 +80,7 @@ class FileGeneratorGetter {
          * For an association end, launch the visitor on the owned classifier.
          */
         @Override
-        public Object visitAssociationEnd(AssociationEnd theAssociationEnd) {
+        public Object visitAssociationEnd(final AssociationEnd theAssociationEnd) {
             NameSpace parent = theAssociationEnd.getSource ();
             if (parent != null) {
                 return parent.accept (this);
@@ -95,12 +92,12 @@ class FileGeneratorGetter {
          * For a model element, return null.
          */
         @Override
-        public Object visitModelElement(ModelElement theModelElement) {
+        public Object visitModelElement(final ModelElement theModelElement) {
             return null;
         }
 
         @Override
-        public Object visitNameSpace(NameSpace theNameSpace) {
+        public Object visitNameSpace(final NameSpace theNameSpace) {
             // Check if this is a correct Java Element
             if (!(theNameSpace instanceof Package) &&
                     !JavaDesignerUtils.isJavaElement (theNameSpace)) {
@@ -112,7 +109,7 @@ class FileGeneratorGetter {
         }
 
         @Override
-        public Object visitNote(Note theNote) {
+        public Object visitNote(final Note theNote) {
             ModelElement parent = theNote.getSubject ();
             if (parent != null) {
                 return parent.accept (this);
@@ -121,7 +118,7 @@ class FileGeneratorGetter {
         }
 
         @Override
-        public Object visitParameter(Parameter theParameter) {
+        public Object visitParameter(final Parameter theParameter) {
             Operation parent = theParameter.getComposed ();
             if (parent == null) {
                 parent = theParameter.getReturned ();
@@ -134,7 +131,7 @@ class FileGeneratorGetter {
         }
 
         @Override
-        public Object visitTaggedValue(TaggedValue theTaggedValue) {
+        public Object visitTaggedValue(final TaggedValue theTaggedValue) {
             ModelElement parent = theTaggedValue.getAnnoted ();
             if (parent != null) {
                 return parent.accept (this);
@@ -143,7 +140,7 @@ class FileGeneratorGetter {
         }
 
         @Override
-        public Object visitAttribute(Attribute theAttribute) {
+        public Object visitAttribute(final Attribute theAttribute) {
             AssociationEnd parent = theAttribute.getQualified();
             if (parent != null) {
                 return parent.accept (this);
@@ -156,17 +153,19 @@ class FileGeneratorGetter {
         }
 
         @Override
-        public Object visitTemplateParameter(TemplateParameter theTemplateParameter) {
+        public Object visitTemplateParameter(final TemplateParameter theTemplateParameter) {
             NameSpace parentNS = theTemplateParameter.getParameterized();
             if (parentNS != null) {
                 return parentNS.accept (this);
-    }
-
+                }
+            
             Operation parentOp = theTemplateParameter.getParameterizedOperation();
             if (parentOp != null) {
                 return parentOp.accept (this);
             }
             return super.visitTemplateParameter(theTemplateParameter);
         }
+
     }
+
 }

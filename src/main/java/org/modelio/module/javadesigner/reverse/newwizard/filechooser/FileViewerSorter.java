@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.reverse.newwizard.filechooser;
 
 import java.io.File;
-
 import org.eclipse.jface.viewers.ViewerSorter;
 
 /**
@@ -9,9 +8,8 @@ import org.eclipse.jface.viewers.ViewerSorter;
  * before other files.
  */
 public class FileViewerSorter extends ViewerSorter {
-
     @Override
-    public int category(Object element) {
+    public int category(final Object element) {
         if(element instanceof File) {
             File f = (File) element;
             if (f.isDirectory()) {

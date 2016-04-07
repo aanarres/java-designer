@@ -1,8 +1,7 @@
 package org.modelio.module.javadesigner.generator;
 
-import org.modelio.api.module.IModuleUserConfiguration;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
-
 
 class JavaConfiguration {
     public boolean DESCRIPTIONASJAVADOC;
@@ -38,11 +37,11 @@ class JavaConfiguration {
 
     public boolean LOCKGENERATEDFILES;
 
-    private IModuleUserConfiguration javaConfiguration;
-
     public String COPYRIGHTFILE;
 
     public boolean JAVA8COMPATIBILITY;
+
+    private IModuleUserConfiguration javaConfiguration;
 
     public JavaConfiguration(IModuleUserConfiguration moduleConfiguration) {
         this.javaConfiguration = moduleConfiguration;
@@ -69,7 +68,6 @@ class JavaConfiguration {
             this.INVARIANTSNAME = "invariant";
         }
         
-        try {
             switch (getStringParameterValue (JavaDesignerParameters.ENCODING)) {
             case "ISO_8859_1":
             case "ISO-8859-1":
@@ -95,19 +93,15 @@ class JavaConfiguration {
             case "UTF-8":
                 default:
                     this.ENCODING = "UTF-8";
-                    break;
-            }
-        } catch (IllegalArgumentException e) {
-            this.ENCODING = "UTF-8";
         }
     }
 
-    private String getStringParameterValue(String key) {
+    private String getStringParameterValue(final String key) {
         String parameterValue = this.javaConfiguration.getParameterValue (key);
         return parameterValue != null ? parameterValue : "";
     }
 
-    private boolean getBooleanParameterValue(String key) {
+    private boolean getBooleanParameterValue(final String key) {
         String value = this.javaConfiguration.getParameterValue (key);
         return "TRUE".equalsIgnoreCase (value);
     }

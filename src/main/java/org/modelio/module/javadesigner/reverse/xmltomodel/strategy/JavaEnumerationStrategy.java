@@ -2,13 +2,19 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.model.JaxbEnumeration;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.strategy.EnumerationStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
 import org.modelio.metamodel.uml.infrastructure.Note;
 import org.modelio.metamodel.uml.statik.Enumeration;
+import org.modelio.metamodel.uml.statik.Interface;
+import org.modelio.metamodel.uml.statik.VisibilityMode;
 import org.modelio.module.javadesigner.api.IJavaDesignerPeerModule;
 import org.modelio.module.javadesigner.api.JavaDesignerNoteTypes;
 import org.modelio.module.javadesigner.api.JavaDesignerStereotypes;
@@ -22,48 +28,46 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.model.JaxbEnumeration;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.strategy.EnumerationStrategy;
-
 public class JavaEnumerationStrategy extends EnumerationStrategy {
     public ReverseStrategyConfiguration reverseConfig;
 
-
-    public JavaEnumerationStrategy(IModelingSession session, ReverseStrategyConfiguration reverseConfig) {
+    public JavaEnumerationStrategy(final IModelingSession session, final ReverseStrategyConfiguration reverseConfig) {
         super (session);
         this.reverseConfig = reverseConfig;
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbEnumeration jaxb_element, Enumeration modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbEnumeration jaxb_element, final Enumeration modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         ModelTree oldOwner = modelio_element.getOwner ();
-
+        
         String oldName = modelio_element.getName ();
         boolean hasJavaName = modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME);
-
+        
         List<MObject> ret = super.updateProperties (jaxb_element, modelio_element, owner, repository);
-
+        
         modelio_element.setIsLeaf (true);
         modelio_element.setIsElementary (true);
-
+        
         try {
             ModelUtils.addStereotype (modelio_element, JavaDesignerStereotypes.JAVAENUMERATION);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAENUMERATION)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAENUMERATION)); //$NON-NLS-1$
         }
-
+        
         if (oldOwner != null) {
             ModelTree newOwner = modelio_element.getOwner ();
             if (JavaDesignerUtils.getFullJavaName (this.session, oldOwner).equals (JavaDesignerUtils.getFullJavaName (this.session, newOwner))) {
                 modelio_element.setOwner (oldOwner);
             }
         }
-
+        
+        if (modelio_element.getOwner () instanceof Interface) {
+            // Inner elements of an Interface should always be public
+            modelio_element.setVisibility (VisibilityMode.PUBLIC);
+        }
+        
         handleMultipleTags (jaxb_element, modelio_element, repository);
-
+        
         String jaxbName = jaxb_element.getName ();
         if (jaxbName != null) {
             if (jaxbName.equalsIgnoreCase ("Boolean") ||
@@ -82,18 +86,18 @@ public class JavaEnumerationStrategy extends EnumerationStrategy {
                 modelio_element.setName (jaxbName);
             }
         }
-
+        
         if (hasJavaName) {
             try {
                 modelio_element.setName (oldName);
-
+        
                 ModelUtils.setFirstTagParameter (this.session, modelio_element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME, jaxbName);
                 if (ret == null) {
                     ret = new ArrayList<> ();
                 }
                 ret.add (modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME));
             } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
         return ret;
@@ -102,16 +106,16 @@ public class JavaEnumerationStrategy extends EnumerationStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbEnumeration jaxb_element, Enumeration modelio_element, IReadOnlyRepository repository) {
+    private void handleMultipleTags(final JaxbEnumeration jaxb_element, final Enumeration modelio_element, final IReadOnlyRepository repository) {
         JaxbTaggedValue firstImportTag = null;
         JaxbTaggedValue firstImplementTag = null;
-
+        
         List<JaxbTaggedValue> toRemove = new ArrayList<> ();
         List<Object> sub_elements = jaxb_element.getNoteOrConstraintOrStereotype ();
         for (Object sub_element : sub_elements) {
             if (sub_element instanceof JaxbTaggedValue) {
                 JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
-
+        
                 if (currentTag.getTagType ().equals (JavaDesignerTagTypes.ENUMERATION_JAVAIMPORT)) {
                     if (firstImportTag == null) {
                         firstImportTag = currentTag;
@@ -137,29 +141,29 @@ public class JavaEnumerationStrategy extends EnumerationStrategy {
                 }
             }
         }
-
+        
         sub_elements.removeAll (toRemove);
     }
 
     @Override
-    public void postTreatment(JaxbEnumeration jaxb_element, Enumeration modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbEnumeration jaxb_element, final Enumeration modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
-
+        
         try {
             computeJavaDoc (modelio_element, repository);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
         }
     }
 
-    private void computeJavaDoc(Enumeration modelio_element, IReadOnlyRepository repository) throws ExtensionNotFoundException {
+    private void computeJavaDoc(final Enumeration modelio_element, final IReadOnlyRepository repository) throws ExtensionNotFoundException {
         String noteType;
         if (!this.reverseConfig.DESCRIPTIONASJAVADOC) {
             noteType = JavaDesignerNoteTypes.CLASS_JAVADOC;
         } else {
             noteType = IOtherProfileElements.MODELELEMENT_DESCRIPTION;
         }
-
+        
         for (Note note : ModelUtils.getAllNotes (modelio_element, noteType)) {
             String tempContent = note.getContent ();
             tempContent = NoteReverseUtils.getInstance ().reverseJavadoc (this.session, tempContent, modelio_element, repository);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
@@ -13,28 +12,25 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 
-
 public class JConsoleWithDialog {
-
     /**
      * Initial queue size for keystrokes.
      */
     private static final int QUEUE_SIZE = 256;
-
-    private final Color ERROR_COLOR;
-    
-    protected InfoDialog dialog;
-
-    /**
-     * Queue of input lines.
-     */
-    protected BlockingQueue<Character> lineQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
 
     /**
      * Keystroke list - insert/delete keystroke.
      */
     protected List<Character> typingList = new ArrayList<>();
 
+    private final Color ERROR_COLOR;
+
+    protected InfoDialog dialog;
+
+    /**
+     * Queue of input lines.
+     */
+    protected BlockingQueue<Character> lineQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
 
     /**
      * Main constructor for JConsoleWithDialog.
@@ -44,7 +40,7 @@ public class JConsoleWithDialog {
         super ();
         this.dialog = dialog;    
         this.ERROR_COLOR = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-
+        
         if (dialog != null) {
             /* Anomalie #19:
              * Description: Define key listener for dialog.text widget.
@@ -53,7 +49,7 @@ public class JConsoleWithDialog {
                 @Override
                 public void keyPressed(final KeyEvent ke) {
                     super.keyPressed(ke);
-
+        
                     /*
                      * It's not possible to modify the text characters outside
                      * the writable area, which begins at:
@@ -62,7 +58,7 @@ public class JConsoleWithDialog {
                      *
                      */
                     int charPos = dialog.getText().getCaretOffset() + JConsoleWithDialog.this.typingList.size() - dialog.getTextString().length();
-
+        
                     if (ke.character > 0){
                         if( charPos < 0) {
                             /*
@@ -75,7 +71,7 @@ public class JConsoleWithDialog {
                             charPos = JConsoleWithDialog.this.typingList.size();
                         }
                     }
-
+        
                     // in case of BACKSPACE, remove previous character in the list
                     if (ke.character == SWT.BS) {
                         if (JConsoleWithDialog.this.typingList.size() > 0 && charPos > 0 ) {
@@ -100,10 +96,10 @@ public class JConsoleWithDialog {
                          * with java.util.Scanner. CR should be replaced with LF to work correctly.
                          */
                         JConsoleWithDialog.this.typingList.add(SWT.LF );                        
-
+        
                         JConsoleWithDialog.this.lineQueue.addAll(JConsoleWithDialog.this.typingList);
                         JConsoleWithDialog.this.typingList.clear();
-
+        
                         /* all new line characters, even if they are in the middle 
                          * of the writable area will be treated as the new line for 
                          * the whole input.
@@ -126,9 +122,9 @@ public class JConsoleWithDialog {
      * Write an error message in the dialog and the console.
      * @param msg the message to print.
      */
-    public void writeError(String msg) {
-        JavaDesignerModule.logService.error(msg);
-
+    public void writeError(final String msg) {
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().error(msg);
+        
         if (this.dialog != null) {
             this.dialog.addText (msg, this.ERROR_COLOR);            
         }
@@ -138,16 +134,16 @@ public class JConsoleWithDialog {
      * Write an info message in the dialog and the console.
      * @param msg the message to print.
      */
-    public void writeInfo(String msg) {
-        JavaDesignerModule.logService.info(msg);
-
+    public void writeInfo(final String msg) {
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info(msg);
+        
         if (this.dialog != null) {
             this.dialog.addText (msg, null);
         }
     }
 
     /**
-     * @return the next key typed in the console. 
+     * @return the next key typed in the console.
      */
     public int readInt() {
         Integer key = null;
@@ -160,9 +156,10 @@ public class JConsoleWithDialog {
         return key;
     }
 
-    public void addDisposeListener(DisposeListener listener) {
+    public void addDisposeListener(final DisposeListener listener) {
         if (this.dialog != null) {
             this.dialog.getText().addDisposeListener(listener);
         }
     }
+
 }

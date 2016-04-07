@@ -5,21 +5,20 @@ import org.modelio.module.javadesigner.reverse.antlr.ASTTree;
 import org.modelio.module.javadesigner.reverse.javatoxml.XMLGeneratorException;
 
 class BadNodeTypeException extends XMLGeneratorException {
-    ASTTree ast;
-
     private static final long serialVersionUID = -1484110272412522876L;
 
+     ASTTree ast;
 
-    public BadNodeTypeException(String s, ASTTree ast) {
+    public BadNodeTypeException(final String s, final ASTTree ast) {
         super (s);
         this.ast = ast;
     }
 
-    public BadNodeTypeException(String s) {
+    public BadNodeTypeException(final String s) {
         super (s);
     }
 
-    public BadNodeTypeException(ASTTree ast) {
+    public BadNodeTypeException(final ASTTree ast) {
         super ();
         this.ast = ast;
     }
@@ -47,13 +46,13 @@ class BadNodeTypeException extends XMLGeneratorException {
             sBuffer.append (Messages.getString ("reverse.Column")); //$NON-NLS-1$
             sBuffer.append (" = "); //$NON-NLS-1$
             sBuffer.append (this.ast.getCharPositionInLine ());
-// TODO fja replace the code to catch the file
-//			if (this.ast.getFile() != null) {
-//				sBuffer.append(" "); //$NON-NLS-1$
-//				sBuffer.append(Messages.getString("reverse.File")); //$NON-NLS-1$
-//				sBuffer.append(" = "); //$NON-NLS-1$
-//				sBuffer.append(this.ast.getFile().getAbsoluteFile());
-//			}
+        // TODO fja replace the code to catch the file
+        //            if (this.ast.getFile() != null) {
+        //                sBuffer.append(" "); //$NON-NLS-1$
+        //                sBuffer.append(Messages.getString("reverse.File")); //$NON-NLS-1$
+        //                sBuffer.append(" = "); //$NON-NLS-1$
+        //                sBuffer.append(this.ast.getFile().getAbsoluteFile());
+        //            }
         }
         String suite = super.getMessage ();
         if (suite != null) {

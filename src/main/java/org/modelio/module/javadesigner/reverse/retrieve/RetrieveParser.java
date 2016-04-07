@@ -9,10 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.modelio.module.javadesigner.impl.JavaDesignerModule;
-
 import com.modelio.module.xmlreverse.IReportWriter;
+import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 
 public class RetrieveParser {
     private Pattern endPattern;
@@ -21,8 +19,7 @@ public class RetrieveParser {
 
     private IReportWriter report;
 
-
-    public RetrieveParser(IReportWriter report) {
+    public RetrieveParser(final IReportWriter report) {
         this.report = report;
         
         // Compile the two patterns
@@ -30,7 +27,7 @@ public class RetrieveParser {
         this.endPattern = Pattern.compile("\\s*//end of modifiable zone(\\(.*\\))?\\.*E/(.+)");
     }
 
-    public List<IRetrieveData> retrieve(File fileToRetrieve, String charsetName) {
+    public List<IRetrieveData> retrieve(final File fileToRetrieve, final String charsetName) {
         List<IRetrieveData> zones = new ArrayList<>();
         NoteData zone = null;
         
@@ -63,12 +60,12 @@ public class RetrieveParser {
         
             inputStream.close ();
         } catch (IOException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
         return zones;
     }
 
-    private NoteData findStartMarkerZone(String line) {
+    private NoteData findStartMarkerZone(final String line) {
         NoteData ret = null;
         
         Matcher startMatcher = this.startPattern.matcher(line);
@@ -100,7 +97,7 @@ public class RetrieveParser {
         return ret;
     }
 
-    private boolean isEndZone(String line) {
+    private boolean isEndZone(final String line) {
         Matcher endMatcher = this.endPattern.matcher(line);
         boolean matchFound = endMatcher.find();
         if (matchFound) { // Get all groups for this match

@@ -10,15 +10,13 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReportWriter;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.behavior.commonBehaviors.Signal;
 import org.modelio.metamodel.uml.infrastructure.Constraint;
@@ -65,8 +63,6 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-
 class ClassTemplate {
     private static final String MarkerNew = "C";
 
@@ -74,7 +70,7 @@ class ClassTemplate {
 
     private static final String MarkerBegin = "T";
 
-    private static final String NL = System.getProperty ("line.separator");//$NON-NLS-1$
+    private static final String NL = System.getProperty ("line.separator"); // $NON-NLS-1$
 
     /**
      * Indentation level used during the generation
@@ -85,18 +81,18 @@ class ClassTemplate {
      * Indent constants, to avoid building multiple Strings.
      */
     private final String[] INDENT_VALUES = {
-            "",
-            "    ",
-            "        ",
-            "            ",
-            "                ",
-            "                    ",
-            "                        ",
-            "                            ",
-            "                                ",
-            "                                    ",
-            "                                        "
-    };
+			"",
+			"    ",
+			"        ",
+			"            ",
+			"                ",
+			"                    ",
+			"                        ",
+			"                            ",
+			"                                ",
+			"                                    ",
+			"                                        "
+	};
 
     private JavaConfiguration javaConfig;
 
@@ -104,30 +100,29 @@ class ClassTemplate {
 
     private IReportWriter report;
 
-    private Map<String , StringBuilder> copyrightCache = new HashMap<>();
+    private Map<String, StringBuilder> copyrightCache = new HashMap<>();
 
     private IModelingSession session;
 
     private StereotypedAnnotationsManager annotationManager;
 
-
-    public ClassTemplate(IReportWriter report, IModelingSession session) {
+    public ClassTemplate(final IReportWriter report, final IModelingSession session) {
         this.report = report;
         this.session = session;
         this.typeManager = JavaTypeManager.getInstance ();
         this.annotationManager = new StereotypedAnnotationsManager();
     }
 
-    private CharSequence computeAnnotationDefaultValue(AssociationEnd theAssociationEnd) {
+    private CharSequence computeAnnotationDefaultValue(final AssociationEnd theAssociationEnd) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (Note note : ModelUtils.getAllNotes (theAssociationEnd, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE)) {
             ret.append (" default ");
             ret.append (updateNewlines (note.getContent ()));
-
+        
             // Remove ending newline
             ret.delete (ret.length () - NL.length(), ret.length ());
-
+        
             // Remove ending ";" if present
             int length = ret.length ();
             while (length > 0 && ret.charAt (length - 1) == ';') {
@@ -138,44 +133,44 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeAnnotationDefaultValue(Attribute theAttribute) {
+    private CharSequence computeAnnotationDefaultValue(final Attribute theAttribute) {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (!theAttribute.isIsDerived ()) {
             if (theAttribute.getValue ().length () != 0) {
                 ret.append (" default ");
                 ret.append (theAttribute.getValue ());
-
+        
                 int length = ret.length ();
                 while (length > 0 && ret.charAt (length - 1) == ';') {
                     ret.delete (length - 1, length);
                     length = ret.length ();
                 }
-
+        
             }
         }
         return ret;
     }
 
-    private CharSequence computeAnnotationName(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeAnnotationName(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         String javaName = JavaDesignerUtils.getJavaName (theGeneralClass);
-
+        
         ret.append ("@interface ");
-
+        
         if (javaName.startsWith ("$") &&
                 !JavaDesignerUtils.isInner (theGeneralClass)) {
             throw new TemplateException (Messages.getString ("Error.illegalChar", "$", javaName, "class"));
         }
-
+        
         ret.append (javaName);
         ret.append (" ");
         return ret;
     }
 
-    private CharSequence computeAssociationEndInitialValueComment(AssociationEnd theAssociationEnd) {
+    private CharSequence computeAssociationEndInitialValueComment(final AssociationEnd theAssociationEnd) {
         String comment = theAssociationEnd.getNoteContent (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ATTRIBUTE_JAVAINITVALUECOMMENT);
-
+        
         if (comment != null && comment.length () > 0) {
             comment = updateNewlinesExceptLast(comment).toString();
             if (comment.contains (NL)) {
@@ -189,9 +184,9 @@ class ClassTemplate {
         return "";
     }
 
-    private CharSequence computeAttributeInitialValueComment(Attribute theAttribute) {
+    private CharSequence computeAttributeInitialValueComment(final Attribute theAttribute) {
         String comment = theAttribute.getNoteContent (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ATTRIBUTE_JAVAINITVALUECOMMENT);
-
+        
         if (comment != null && comment.length () > 0) {
             comment = updateNewlinesExceptLast(comment).toString();
             if (comment.contains (NL)) {
@@ -205,9 +200,9 @@ class ClassTemplate {
         return "";
     }
 
-    private CharSequence computeLiteralValueComment(EnumerationLiteral theLiteral) {
+    private CharSequence computeLiteralValueComment(final EnumerationLiteral theLiteral) {
         String comment = theLiteral.getNoteContent (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ENUMERATIONLITERAL_JAVAINITVALUECOMMENT);
-
+        
         if (comment != null && comment.length () > 0) {
             comment = updateNewlinesExceptLast(comment).toString();
             if (comment.contains (NL)) {
@@ -221,11 +216,11 @@ class ClassTemplate {
         return "";
     }
 
-    private CharSequence computeBodyBottom(Operation theOperation) throws CustomException {
+    private CharSequence computeBodyBottom(final Operation theOperation) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getTransformedOneNoteOfType (theOperation, "JavaReturned", this.javaConfig.GENERATIONMODE_MODELDRIVEN));
-
+        
         Parameter returnParam = theOperation.getReturn ();
         if (ret.length () == 0 && returnParam!= null) {
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
@@ -233,13 +228,13 @@ class ClassTemplate {
             } else if (theOperation.getNote(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE) == null && this.javaConfig.GENERATEDEFAULTRETURN) {
                 GeneralClass returnType = returnParam.getType();
                 String returnName = JavaDesignerUtils.getJavaName(returnType);
-
+        
                 if (!this.typeManager.isArray(returnParam)) {
                     ret.append (getCurrentIndent ());
                     ret.append("// TODO Auto-generated return");
                     ret.append(NL);
                     ret.append (getCurrentIndent ());
-
+        
                     switch (returnName) {
                     case JavaDesignerUtils.BOOLEAN:
                         ret.append("return false;");
@@ -260,9 +255,9 @@ class ClassTemplate {
                     default:
                         ret.append("return null;");
                     }
-
+        
                     ret.append(NL);
-
+        
                     this.report.addWarning (Messages.getString ("Warning.ReturnCodeMissing", JavaDesignerUtils.getJavaName (theOperation)), theOperation, Messages.getString ("Warning.ReturnCodeMissingDescription"));
                 }
             }
@@ -270,10 +265,10 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeBodyHeader(Operation theOperation) {
+    private CharSequence computeBodyHeader(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
         boolean found = false;
-
+        
         for (Note note : ModelUtils.getAllNotes (theOperation, JavaDesignerNoteTypes.OPERATION_JAVASUPER)) {
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
                 ret.append (getIdBegin (note));
@@ -286,7 +281,7 @@ class ClassTemplate {
             }
             found = true;
         }
-
+        
         if (isCreateMethod (theOperation)) {
             if (!found) {
                 if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
@@ -298,9 +293,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computePostCondition(Operation theOperation) {
+    private CharSequence computePostCondition(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (this.javaConfig.GENERATEPREPOSTCONDITIONS) {
             List<Constraint> postConditions = new ArrayList<>();
             for (Constraint postCondition : theOperation.getConstraintDefinition ()) {
@@ -308,14 +303,14 @@ class ClassTemplate {
                     postConditions.add(postCondition);
                 }
             }
-
+        
             if (postConditions.size () == 0) {
                 // Nothing to add
                 return ret;
             } else if (postConditions.size () > 1) {
                 this.report.addWarning (Messages.getString ("Warning.warnMultiplePostConditions", JavaDesignerUtils.getFullJavaName (this.session, theOperation)), theOperation, "");
             }
-
+        
             // Generate the first post condition
             Constraint firstPostCondition = postConditions.get (0);
             ret.append (getCurrentIndent ());
@@ -329,9 +324,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computePreCondition(Operation theOperation) {
+    private CharSequence computePreCondition(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         List<Constraint> preConditions = new ArrayList<>();
         if (this.javaConfig.GENERATEPREPOSTCONDITIONS) {
             for (Constraint preCondition : theOperation.getConstraintDefinition ()) {
@@ -339,14 +334,14 @@ class ClassTemplate {
                     preConditions.add(preCondition);
                 }
             }
-
+        
             if (preConditions.size () == 0) {
                 // Nothing to add
                 return ret;
             } else if (preConditions.size () > 1) {
                 this.report.addWarning (Messages.getString ("Warning.warnMultiplePreConditions", JavaDesignerUtils.getFullJavaName (this.session, theOperation)), theOperation, "");
             }
-
+        
             // Generate the first pre condition
             Constraint firstPreCondition = preConditions.get (0);
             ret.append (getCurrentIndent ());
@@ -360,9 +355,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeBottomText(GeneralClass theGeneralClass) {
+    private CharSequence computeBottomText(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (Note note : ModelUtils.getAllNotes (theGeneralClass, JavaDesignerNoteTypes.CLASS_JAVABOTTOM)) {
             CharSequence content = updateNewlines (note.getContent ());
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
@@ -376,9 +371,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeCallInvariant(Operation theOperation) throws CustomException, TemplateException {
+    private CharSequence computeCallInvariant(final Operation theOperation) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (!theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT) &&
                 isClassWithInvariant (theOperation)) {
             if (isCreateMethod (theOperation) || isDeleteMethod (theOperation)) {
@@ -396,26 +391,26 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeClassDeclaration(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeClassDeclaration(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         String javaName = JavaDesignerUtils.getJavaName (theGeneralClass);
-
+        
         if (isInterface (theGeneralClass)) {
             ret.append ("interface ");
         } else {
             ret.append ("class ");
         }
-
+        
         if (javaName.startsWith ("$") &&
                 !JavaDesignerUtils.isInner (theGeneralClass)) {
             throw new TemplateException (Messages.getString ("Error.illegalChar", "$", javaName, "class"));
         }
-
+        
         ret.append (javaName);
         return ret;
     }
 
-    private boolean isClassWithInvariant(Operation theOperation) throws CustomException, TemplateException {
+    private boolean isClassWithInvariant(final Operation theOperation) throws CustomException, TemplateException {
         if (theOperation.getOwner () instanceof GeneralClass) {
             GeneralClass ownerGeneralClass = (GeneralClass) theOperation.getOwner ();
             if (hasInvariant (ownerGeneralClass)) {
@@ -427,11 +422,11 @@ class ClassTemplate {
         return false;
     }
 
-    private CharSequence computeDataTypeInheritance(DataType theDataType) throws TemplateException {
+    private CharSequence computeDataTypeInheritance(final DataType theDataType) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         List<Generalization> parents = theDataType.getParent ();
-
+        
         if (parents.size () > 1) {
             if (this.javaConfig.ERRORONFIRSTWARNING) {
                 throw new TemplateException (Messages.getString ("Error.DataTypeMultipleInheritance", JavaDesignerUtils.getJavaName (theDataType)));
@@ -439,17 +434,17 @@ class ClassTemplate {
                 this.report.addWarning (Messages.getString ("Warning.DataTypeMultipleInheritance", JavaDesignerUtils.getJavaName (theDataType)), theDataType, "");
             }
         }
-
+        
         for (Generalization theGeneralization : parents) {
             if (!JavaDesignerUtils.isNoCode (theGeneralization)) {
                 NameSpace superType = theGeneralization.getSuperType ();
                 if (superType instanceof DataType && !JavaDesignerUtils.isNoCode (superType)) {
                     String UMLType = JavaDesignerUtils.getJavaName (superType);
-
+        
                     ret.append ("\t");
                     ret.append ("extends ");
                     ret.append (JavaDesignerUtils.getFullJavaName (this.session, superType));
-
+        
                     if (JavaDesignerUtils.isPredefinedType (UMLType)) {
                         throw new TemplateException (Messages.getString ("Error.ExtendTypeNotAllowed", JavaDesignerUtils.getJavaName (theDataType), UMLType));
                     }
@@ -463,9 +458,9 @@ class ClassTemplate {
         this.Val_indent--;
     }
 
-    private CharSequence computeDocumentedAnnotation(GeneralClass theGeneralClass) {
+    private CharSequence computeDocumentedAnnotation(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (theGeneralClass.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAANNOTATION_JAVADOCUMENTEDANNOTATION)) {
             ret.append (getCurrentIndent ());
             ret.append ("@java.lang.annotation.Documented");
@@ -474,72 +469,66 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeExceptions(Operation theOperation) {
-        Set<CharSequence> thrownTypes = new HashSet<>();
-
+    private String computeExceptions(final Operation theOperation) {
+        Set<String> thrownTypes = new TreeSet<>();
+        
         getThrownExceptions(theOperation, thrownTypes);
-
+        
         StringBuilder ret = new StringBuilder ();
         if (!thrownTypes.isEmpty()) {
             ret.append (" throws ");
-
-            for (Iterator<CharSequence> iterator = thrownTypes.iterator(); iterator.hasNext();) {
+        
+            for (Iterator<String> iterator = thrownTypes.iterator(); iterator.hasNext();) {
                 ret.append (iterator.next());
-
+        
                 if (iterator.hasNext()) {
                     ret.append (", ");
                 }
             }
-
-            if ((isAbstractMethod (theOperation) && !isJDK8Compatible()) ||
-                    (theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVANATIVE))) {
-                ret.append (";");
-                ret.append (NL);
-            }
         }
-        return ret;
+        return ret.toString();
     }
 
-    private void getThrownExceptions(Operation theOperation, Set<CharSequence> thrownTypes) {
+    private void getThrownExceptions(final Operation theOperation, final Set<String> thrownTypes) {
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theOperation, JavaDesignerTagTypes.OPERATION_JAVATHROWNEXCEPTION)) {
             for (TagParameter parameter : tag.getActual ()) {
                 thrownTypes.add (parameter.getValue ());
             }
         }
-
+        
         for (ElementImport theElementImport : theOperation.getOwnedImport ()) {
             if (theElementImport.isStereotyped(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.ELEMENTIMPORT_THROW)) {
                 NameSpace importedElement = theElementImport.getImportedElement ();
                 if (importedElement instanceof Class) {
                     thrownTypes.add (computeName (importedElement, isFullNameGeneration (theElementImport)));
                 }
-
+        
                 if (importedElement instanceof Signal && importedElement.isStereotyped (IOtherProfileElements.MODULE_NAME, IOtherProfileElements.ELEMENTIMPORT_EXCEPTION)) {
                     thrownTypes.add (JavaDesignerUtils.getJavaName (importedElement));
                 }
             }
         }
-
+        
         for (RaisedException theException : theOperation.getThrown ()) {
             Classifier thrownType = theException.getThrownType ();
-
+        
             StringBuilder tt = new StringBuilder();
             if (isJDK8Compatible()) {
                 tt.append(this.typeManager.computeAnnotations(theException, false, true));
             }
             tt.append(computeName (thrownType, isFullNameGeneration (theException)));
-            thrownTypes.add (tt);
+            thrownTypes.add (tt.toString());
         }
     }
 
-    private CharSequence computeExtends(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeExtends(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         int lCount;
         List<Generalization> lParentLinks;
-
+        
         lParentLinks = getParentInheritances (theGeneralClass);
         lCount = lParentLinks.size ();
-
+        
         if (lCount > 1) {
             if (this.javaConfig.ERRORONFIRSTWARNING) {
                 throw new TemplateException (Messages.getString ("Error.ClassMultipleInheritance", JavaDesignerUtils.getJavaName (theGeneralClass)));
@@ -547,15 +536,15 @@ class ClassTemplate {
                 this.report.addWarning (Messages.getString ("Warning.ClassMultipleInheritance", JavaDesignerUtils.getJavaName (theGeneralClass)), theGeneralClass, "");
             }
         }
-
+        
         if (lCount >= 1) {
             // if multiple inheritance, take only the first into account
-
+        
             Generalization firstParent = lParentLinks.get (0);
             if (firstParent.getSuperType () instanceof Class) {
                 Class superTypeClass = (Class) firstParent.getSuperType ();
                 boolean generateFullName = false;
-
+        
                 /* Java rules are more complex than that.
                  *  example :
                  *  -----------------------------------------
@@ -580,7 +569,7 @@ class ClassTemplate {
                     } else {
                         this.report.addWarning (Messages.getString ("Warning.ExternClassInheritance", JavaDesignerUtils.getJavaName (theGeneralClass), JavaDesignerUtils.getJavaName (superTypeClass)), theGeneralClass, "");
                     }
-
+        
                 } else */
                 if (superTypeClass.isIsLeaf ()) {
                     if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -589,16 +578,16 @@ class ClassTemplate {
                         this.report.addWarning (Messages.getString ("Warning.NonFinalClassInheritance", JavaDesignerUtils.getJavaName (theGeneralClass), JavaDesignerUtils.getJavaName (superTypeClass)), theGeneralClass, "");
                     }
                 }
-
+        
                 // generate annotations
                 if (isJDK8Compatible()) {
                     ret.append(this.typeManager.computeAnnotations(firstParent, true, false));
                 }
-
+        
                 if (isFullNameGeneration (firstParent)) {
                     generateFullName = true;
                 }
-
+        
                 ret.append (" ");
                 ret.append (computeName (superTypeClass, generateFullName));
                 ret.append (getBindingParameters (firstParent));
@@ -607,11 +596,11 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeExtendsWithTaggedValue(DataType theDataType) throws TemplateException {
+    private CharSequence computeExtendsWithTaggedValue(final DataType theDataType) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         CharSequence lParentLinks = computeDataTypeInheritance (theDataType);
         int lCount = lParentLinks.length ();
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theDataType, JavaDesignerTagTypes.DATATYPE_JAVAEXTENDS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
                 String value = tagParameter.getValue ();
@@ -633,14 +622,14 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeExtendsWithTaggedValue(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeExtendsWithTaggedValue(final GeneralClass theGeneralClass) throws TemplateException {
         if (theGeneralClass instanceof DataType) {
             return computeExtendsWithTaggedValue ((DataType) theGeneralClass);
         }
-
+        
         StringBuilder ret = new StringBuilder ();
         int parentCount = getParentInheritances (theGeneralClass).size ();
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.CLASS_JAVAEXTENDS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
                 String value = tagParameter.getValue ();
@@ -662,35 +651,33 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeFieldModifiers(Feature theFeature) {
+    private CharSequence computeFieldModifiers(final Feature theFeature) {
         StringBuilder ret = new StringBuilder ();
-
+        
         Classifier lComposedClass = (Classifier) theFeature.getCompositionOwner ();
-
+        
         if (isInterface (lComposedClass)) {
             // must be public, static and final
             ret.append ("public static final ");
-
+        
             VisibilityMode visibility = theFeature.getVisibility ();
-
+        
             // Do not check property's visibilities, they are always public in interfaces
             if (!theFeature.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY) && !theFeature.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY)){
                 switch (visibility) {
                 case PUBLIC:
-                    // Nothing to do
-                    break;
                 case VISIBILITYUNDEFINED:
                     // Nothing to do
-                    break;
+                        break;
                 default:
                     this.report.addWarning (Messages.getString ("Warning.InterfaceNonPublicAttribute", JavaDesignerUtils.getJavaName (lComposedClass), JavaDesignerUtils.getJavaName (theFeature)), theFeature, "");
                 }
             }
-
+        
             if (!(theFeature.isIsClass ())) {
                 this.report.addWarning (Messages.getString ("Warning.InterfaceNonStaticAttribute", JavaDesignerUtils.getJavaName (lComposedClass), JavaDesignerUtils.getJavaName (theFeature)), theFeature, "");
             }
-
+        
             if (!(theFeature.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL))) {
                 this.report.addWarning (Messages.getString ("Warning.InterfaceNonFinalAttribute", JavaDesignerUtils.getJavaName (lComposedClass), JavaDesignerUtils.getJavaName (theFeature)), theFeature, "");
             }
@@ -699,7 +686,7 @@ class ClassTemplate {
             if ((theFeature.isIsClass ())) {
                 ret.append ("static ");
             }
-
+        
             if (theFeature.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL)) {
                 ret.append ("final ");
                 if (theFeature.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE)) {
@@ -708,7 +695,7 @@ class ClassTemplate {
             } else if (theFeature.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE)) {
                 ret.append ("volatile ");
             }
-
+        
             if (theFeature.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT)) {
                 ret.append ("transient ");
             }
@@ -716,10 +703,10 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence updateNewlines(String text) {
+    private CharSequence updateNewlines(final String text) {
         StringBuilder ret = new StringBuilder ();
         String simpleNL = "\n";
-
+        
         for (String line : text.split (simpleNL)) {
             // remove indentation from previous generation
             ret.append (line);
@@ -736,13 +723,13 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeFormattedCode(String text) {
+    private CharSequence computeFormattedCode(final String text) {
         StringBuilder ret = new StringBuilder ();
         String lIndent = getCurrentIndent ().toString ();
         String indentPattern = "^" + lIndent;
-
+        
         String simpleNL = "\n";
-
+        
         boolean removeIndent = true;
         for (String line : text.split (simpleNL)) {
             // remove indentation from previous generation
@@ -755,10 +742,10 @@ class ClassTemplate {
             } else {
                 formatedLine = line;
             }
-
+        
             ret.append (lIndent);
             ret.append (formatedLine);
-
+        
             if (formatedLine.length () > 0) {
                 if (formatedLine.charAt (formatedLine.length () - 1) != '\r') {
                     ret.append (NL);
@@ -772,22 +759,22 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeFormattedJavaDoc(String text) {
+    private CharSequence computeFormattedJavaDoc(final String text) {
         CharSequence lIndent = getCurrentIndent ();
         StringBuilder ret = new StringBuilder ();
-
+        
         if (text.length () != 0) {
             ret.append (lIndent);
             ret.append ("/**");
             ret.append (NL);
-
+        
             String simpleNL = "\n";
-
+        
             for (String line : text.split (simpleNL)) {
                 ret.append (lIndent);
                 ret.append (" * ");
                 ret.append (line);
-
+        
                 if (line.length () > 0) {
                     if (line.charAt (line.length () - 1) != '\r') {
                         ret.append (NL);
@@ -798,7 +785,7 @@ class ClassTemplate {
                     ret.append (NL);
                 }
             }
-
+        
             ret.append (lIndent);
             ret.append (" */");
             ret.append (NL);
@@ -812,14 +799,14 @@ class ClassTemplate {
      * @param element The model element to generate the code from.
      * @param out The output to generate into.
      * @param config Cache for all parameters used for the generation.
-     * @throws CustomException Thrown if an error occurred during type computing.
-     * @throws TemplateException Thrown if an error occurred during the generation.
+     * @throws org.modelio.module.javadesigner.api.CustomException Thrown if an error occurred during type computing.
+     * @throws org.modelio.module.javadesigner.generator.TemplateException Thrown if an error occurred during the generation.
      */
-    public void generate(MObject element, PrintStream out, JavaConfiguration config) throws CustomException, TemplateException {
+    public void generate(final MObject element, final PrintStream out, final JavaConfiguration config) throws CustomException, TemplateException {
         this.javaConfig = config;
-
+        
         generateCopyright(element, out);
-
+        
         if (element instanceof Class) {
             generate ((Class) element, out);
         } else if (element instanceof Interface) {
@@ -835,23 +822,23 @@ class ClassTemplate {
         }
     }
 
-    private void generate(GeneralClass classToGenerate, PrintStream out) throws CustomException, TemplateException {
+    private void generate(final GeneralClass classToGenerate, final PrintStream out) throws CustomException, TemplateException {
         out.append (computeTopText (classToGenerate));
-
+        
         Package ownerPackage = getOwnerPackage (classToGenerate);
         if (ownerPackage != null) {
             out.append (computePackageDeclaration (ownerPackage));
         }
-
+        
         /* Add all the imports */
         out.append (computeImports (classToGenerate));
-
+        
         /* Add the class header */
         generateClassHeader (classToGenerate, out);
-
+        
         /* Add the class body */
         generateClassBody (classToGenerate, out);
-
+        
         /* Get all the other classes in the same file */
         for (GeneralClass theClass : getInternalClasses (classToGenerate)) {
             out.append (NL);
@@ -859,23 +846,23 @@ class ClassTemplate {
             generateClassBody (theClass, out);
             out.append (computeBottomText (theClass));
         }
-
+        
         out.append (computeBottomText (classToGenerate));
     }
 
-    private void generate(Package thePackage, PrintStream out) {
+    private void generate(final Package thePackage, final PrintStream out) {
         out.println (getTextualsAnnotations (thePackage));
         out.println (computePackageDeclaration (thePackage));
     }
 
-    private void generateClassBody(GeneralClass classToGenerate, PrintStream out) throws CustomException, TemplateException {
+    private void generateClassBody(final GeneralClass classToGenerate, final PrintStream out) throws CustomException, TemplateException {
         out.append (computeOpenBlock ());
-
+        
         /* Add enum literals */
         if (classToGenerate instanceof Enumeration) {
             out.append (computeEnumerationLitterals15 ((Enumeration) classToGenerate));
         }
-
+        
         /* Add all Attributes */
         for (Attribute feature : classToGenerate.getOwnedAttribute ()) {
             if (!isExtern (feature)) {
@@ -883,7 +870,7 @@ class ClassTemplate {
                 generateFields (out, feature);
             }
         }
-
+        
         /* Add all AssociationEnds*/
         for (AssociationEnd feature : classToGenerate.getOwnedEnd ()) {
             if (!isExtern (feature)) {
@@ -891,7 +878,7 @@ class ClassTemplate {
                 generateFields (out, feature);
             }
         }
-
+        
         /* Add all operations */
         for (Operation theOperation : classToGenerate.getOwnedOperation()) {
             // First, check if the element is "nocode"
@@ -899,14 +886,14 @@ class ClassTemplate {
                 generateOperation(classToGenerate, out, theOperation);
             }
         }
-
+        
         if (hasInvariant (classToGenerate)) {
             out.append (getInvariant (classToGenerate));
         }
-
+        
         out.append (computeMembersText (classToGenerate));
-
-
+        
+        
         /* Add all inner Classes */
         for (GeneralClass innerClass : getInnerClasses (classToGenerate)) {
             generateClassHeader (innerClass, out);
@@ -914,7 +901,7 @@ class ClassTemplate {
             out.append (computeBottomText (innerClass));
             out.append (NL);
         }
-
+        
         /* Add all inner Enumerations */
         for (Enumeration enumeration : getEnumerations (classToGenerate)) {
             generateClassHeader (enumeration, out);
@@ -922,7 +909,7 @@ class ClassTemplate {
             out.append (computeBottomText (enumeration));
             out.append (NL);
         }
-
+        
         /* Add all inner DataTypes */
         for (DataType dataType : getDataTypes (classToGenerate)) {
             if (!isExtern (dataType)) {
@@ -935,11 +922,11 @@ class ClassTemplate {
                 for (Attribute feature : dataType.getOwnedAttribute()) {
                     generateFields (out, feature);
                 }
-
+        
                 for (AssociationEnd feature : dataType.getOwnedEnd()) {
                     generateFields (out, feature);
                 }
-
+        
                 for (Operation theOperation : dataType.getOwnedOperation()) {
                     if (isCreateMethod (theOperation)) {
                         generateConstructor (out, theOperation);
@@ -949,16 +936,16 @@ class ClassTemplate {
                         out.append(computeMethod (theOperation));
                     }
                 }
-
+        
                 out.append (computeCloseBlock ());
                 out.append (NL);
             }
         }
-
+        
         out.append (computeCloseBlock ());
     }
 
-    protected void generateOperation(GeneralClass classToGenerate, PrintStream out, Operation theOperation) throws TemplateException, CustomException {
+    protected void generateOperation(final GeneralClass classToGenerate, final PrintStream out, final Operation theOperation) throws CustomException, TemplateException {
         if (!isInterface (classToGenerate) &&
                 isCreateMethod (theOperation) &&
                 isNotUndefinedTypeParameter (theOperation)) {
@@ -970,14 +957,14 @@ class ClassTemplate {
         }
     }
 
-    private void generateClassHeader(GeneralClass classToGenerate, PrintStream out) throws CustomException, TemplateException {
+    private void generateClassHeader(final GeneralClass classToGenerate, final PrintStream out) throws CustomException, TemplateException {
         /* Add the doc and annotations */
         out.append (computeJavaComment (classToGenerate));
         out.append (computeHeaderText (classToGenerate));
         out.append (computeJavaDoc (classToGenerate));
-
+        
         out.append (getTextualsAnnotations (classToGenerate));
-
+        
         if (isJavaAnnotation (classToGenerate)) {
             out.append (computeDocumentedAnnotation (classToGenerate));
             out.append (computeInheritedAnnotation (classToGenerate));
@@ -991,9 +978,9 @@ class ClassTemplate {
             out.append (computeModifiers (classToGenerate));
             out.append (computeClassDeclaration (classToGenerate));
         }
-
+        
         out.append (getClassGenericParameters (classToGenerate));
-
+        
         /* Add the extends */
         if (hasExtends (classToGenerate)) {
             out.append (" extends");
@@ -1005,7 +992,7 @@ class ClassTemplate {
                 out.append (computeExtendsWithTaggedValue (classToGenerate));
             }
         }
-
+        
         /* Add the implements */
         if (hasImplements (classToGenerate) && !isInterface (classToGenerate)) {
             out.append (" implements");
@@ -1013,7 +1000,7 @@ class ClassTemplate {
         }
     }
 
-    private void generateConstructor(PrintStream out, Operation theOperation) throws CustomException, TemplateException {
+    private void generateConstructor(final PrintStream out, final Operation theOperation) throws CustomException, TemplateException {
         out.append (computeJavaComment (theOperation));
         out.append (computeJavaDoc (theOperation));
         out.append (getTextualsAnnotations (theOperation));
@@ -1029,7 +1016,7 @@ class ClassTemplate {
         out.append (NL);
     }
 
-    private void generateDestructor(PrintStream out, Operation theOperation) throws CustomException, TemplateException {
+    private void generateDestructor(final PrintStream out, final Operation theOperation) throws CustomException, TemplateException {
         out.append (computeJavaComment (theOperation));
         out.append (computeJavaDoc (theOperation));
         out.append (getTextualsAnnotations (theOperation));
@@ -1043,7 +1030,7 @@ class ClassTemplate {
         out.append (NL);
     }
 
-    private void generateFields(PrintStream out, Feature feature) throws CustomException, TemplateException {
+    private void generateFields(final PrintStream out, final Feature feature) throws CustomException, TemplateException {
         if (feature instanceof Attribute) {
             Attribute theAttribute = (Attribute) feature;
             if (isNotUndefinedType (theAttribute)) {
@@ -1074,7 +1061,7 @@ class ClassTemplate {
                 if (JavaDesignerUtils.getJavaName (theAssociationEnd).equals ("class")) {
                     throw new TemplateException (Messages.getString ("Error.AssociationEndBadName", JavaDesignerUtils.getJavaName ((ModelElement) feature.getCompositionOwner ()), JavaDesignerUtils.getJavaName (feature)));
                 }
-
+        
                 if (isNotUndefinedType (theAssociationEnd)) {
                     if (!theAssociationEnd.isIsAbstract () && !theAssociationEnd.isIsDerived ()) {
                         out.append (computeJavaComment (theAssociationEnd));
@@ -1098,10 +1085,10 @@ class ClassTemplate {
         }
     }
 
-    private Set<String> getImportsFromTypesPackages(GeneralClass element) throws CustomException, TemplateException {
-        Set<String> ret = new HashSet<> ();
+    private Set<String> getImportsFromTypesPackages(final GeneralClass element) throws CustomException, TemplateException {
+        Set<String> ret = new TreeSet<> ();
         Set<String> imports = getNeededJavaUtilImports (element);
-
+        
         for (String theImport : imports) {
             switch (theImport) {
             case "ArrayBlockingQueue":
@@ -1164,11 +1151,11 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeJavaCode(EnumerationLiteral literal) {
+    private CharSequence computeJavaCode(final EnumerationLiteral literal) {
         StringBuilder ret = new StringBuilder ();
-
+        
         String javaCode = literal.getNoteContent (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ENUMERATIONLITERAL_JAVACODE);
-
+        
         if (javaCode != null && javaCode.length () != 0) {
             ret.append (computeOpenBlock ());
             ret.append (getCurrentIndent ());
@@ -1177,23 +1164,23 @@ class ClassTemplate {
             decreaseIndentLevel ();
             ret.append (getCurrentIndent ());
             ret.append ("}");
-        }
+            }
         return ret;
     }
 
-    private CharSequence computeMethod(Operation theOperation) throws CustomException, TemplateException {
+    private CharSequence computeMethod(final Operation theOperation) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder();
-
+        
         if (isNotRedefinedFinalMethod (theOperation) &&
                 isNotUndefinedTypeParameter (theOperation)) {
             ret.append (computeJavaComment (theOperation));
             ret.append (computeJavaDoc (theOperation));
             ret.append (getTextualsAnnotations (theOperation));
-
+        
             ret.append (getCurrentIndent ());
             ret.append (computeMethodModifiers (theOperation));
             ret.append (getJavaTemplateParameters (theOperation));
-
+        
             Parameter returnParameter = theOperation.getReturn ();
             if (returnParameter == null) {
                 ret.append ("void ");
@@ -1201,7 +1188,7 @@ class ClassTemplate {
                 ret.append (getDeclaration (returnParameter));
             }
             ret.append (JavaDesignerUtils.getJavaName (theOperation));
-
+        
             ret.append (computeMethodParameters (theOperation));
             ret.append (computeExceptions (theOperation));
             ret.append (computeMethodContent (theOperation));
@@ -1210,9 +1197,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeMethodContent(Operation theOperation) throws CustomException, TemplateException {
+    private CharSequence computeMethodContent(final Operation theOperation) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder();
-
+        
         GeneralClass operationOwner = (GeneralClass) theOperation.getOwner ();
         if (isAbstract (theOperation) || isNative (theOperation) || (isInterface (operationOwner) && !theOperation.isIsClass () && !isImplemented(theOperation))) {
             ret.append(";");
@@ -1235,9 +1222,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeMethodParameters(Operation theOperation) throws CustomException {
+    private CharSequence computeMethodParameters(final Operation theOperation) throws CustomException {
         StringBuilder ret = new StringBuilder();
-
+        
         List<Parameter> operationParameters = theOperation.getIO ();
         final int lastparpos = operationParameters.size();
         int curparpos = 1;
@@ -1252,15 +1239,15 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isFullNameGeneration(ModelElement theModelElement) {
+    private boolean isFullNameGeneration(final ModelElement theModelElement) {
         boolean value = this.javaConfig.FULLNAMEGENERATION;
         return value ||
-                theModelElement.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME);
+                                        theModelElement.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME);
     }
 
-    private CharSequence computeAnnotationDeclaration(AssociationEnd theAssociationEnd) throws CustomException {
+    private CharSequence computeAnnotationDeclaration(final AssociationEnd theAssociationEnd) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getCurrentIndent ());
         ret.append (this.typeManager.getTypeDeclaration(this.session, theAssociationEnd, isFullNameGeneration (theAssociationEnd)));
         ret.append (JavaDesignerUtils.getJavaName (theAssociationEnd));
@@ -1273,9 +1260,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeAnnotationDeclaration(Attribute theAttribute) throws CustomException {
+    private CharSequence computeAnnotationDeclaration(final Attribute theAttribute) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getCurrentIndent ());
         ret.append (this.typeManager.getTypeDeclaration (this.session, theAttribute, isFullNameGeneration (theAttribute)));
         ret.append (JavaDesignerUtils.getJavaName (theAttribute));
@@ -1288,19 +1275,19 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getBindingParameters(Generalization theGeneralization) {
+    private CharSequence getBindingParameters(final Generalization theGeneralization) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theGeneralization, JavaDesignerTagTypes.GENERALIZATION_JAVABIND)) {
             for (Iterator<TagParameter> iterator = tag.getActual ().iterator () ; iterator.hasNext () ;) {
                 TagParameter theTagParameter = iterator.next ();
                 ret.append (theTagParameter.getValue ());
-
+        
                 if (iterator.hasNext ()) {
                     ret.append (",");
                 }
             }
-
+        
             if (ret.length () > 0) {
                 ret.insert (0, "<");
                 ret.append (">");
@@ -1309,19 +1296,19 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getBindingParameters(InterfaceRealization theRealization) {
+    private CharSequence getBindingParameters(final InterfaceRealization theRealization) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theRealization, JavaDesignerTagTypes.INTERFACEREALIZATION_JAVABIND)) {
             for (Iterator<TagParameter> iterator = tag.getActual ().iterator () ; iterator.hasNext () ;) {
                 TagParameter theTagParameter = iterator.next ();
                 ret.append (theTagParameter.getValue ());
-
+        
                 if (iterator.hasNext ()) {
                     ret.append (",");
                 }
             }
-
+        
             if (ret.length () > 0) {
                 ret.insert (0, "<");
                 ret.append (">");
@@ -1330,19 +1317,19 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getClassGenericParameters(GeneralClass theGeneralClass) throws TemplateException, CustomException {
+    private CharSequence getClassGenericParameters(final GeneralClass theGeneralClass) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ("<");
         CharSequence typeName;
-
+        
         for (Iterator<TemplateParameter> iterator = theGeneralClass.getTemplate ().iterator () ; iterator.hasNext () ;) {
             TemplateParameter theTemplateParameter = iterator.next ();
-
+        
             if (isJDK8Compatible()) {
                 ret.append(this.typeManager.computeAnnotations(theTemplateParameter, false, true));
             }
-
+        
             ret.append (JavaDesignerUtils.getJavaName (theTemplateParameter));
-
+        
             /* gestion extends */
             // TODO template 'type'/'default type' management is messy, we need to homogenize it
             ModelElement theType = theTemplateParameter.getType ();
@@ -1353,7 +1340,7 @@ class ClassTemplate {
                 } else {
                     typeName = computeName(theType, isFullNameGeneration(theTemplateParameter));
                 }
-
+        
                 ret.append (" extends ");
                 ret.append (typeName);
             } else {
@@ -1363,12 +1350,12 @@ class ClassTemplate {
                     ret.append (typeName);
                 }
             }
-
+        
             if (iterator.hasNext ()) {
                 ret.append (", ");
             }
         }
-
+        
         if (ret.length () > 1) {
             ret.append (">");
         } else {
@@ -1377,21 +1364,21 @@ class ClassTemplate {
         return ret;
     }
 
-    private Set<String> getClassImport(final GeneralClass theGeneralClass, Set<NameSpace> notImportedElements) {
-        Set<String> imports = new HashSet<> ();
-        Set<NameSpace> importedElements = new HashSet<> ();
-
-
+    private Set<String> getClassImport(final GeneralClass theGeneralClass, final Set<NameSpace> notImportedElements) {
+        Set<String> imports = new TreeSet<> ();
+        Set<NameSpace> importedElements = new TreeSet<> ();
+        
+        
         // import DataType annotation if required (only in roundTrip mode)
         if (this.javaConfig.GENERATIONMODE_ROUNDTRIP) {
             if (theGeneralClass instanceof DataType && !JavaDesignerUtils.getJavaName (theGeneralClass).equals ("DataType")) {
                 imports.add ("import com.modeliosoft.modelio.javadesigner.annotations.DataType;");
             }
         }
-
+        
         // Collect implicitly imported classes & interfaces for template parameters, generalization and interface realization part
         collectImplicitlyImported(theGeneralClass, notImportedElements);
-
+        
         // Template Parameter
         for (TemplateParameter templateParameter : theGeneralClass.getTemplate ()) {
             // TODO template 'type'/'default type' management is messy, we need to homogenize it
@@ -1402,7 +1389,7 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Inheritance
         for (Generalization theGeneralization : theGeneralClass.getParent ()) {
             if (!JavaDesignerUtils.isNoCode(theGeneralization) && !isFullNameGeneration(theGeneralization)) {
@@ -1412,14 +1399,14 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Implementations
         for (InterfaceRealization theRealization : theGeneralClass.getRealized ()) {
             if (!JavaDesignerUtils.isNoCode(theRealization) && !isFullNameGeneration(theRealization)) {
                 imports.add(getImportLine(theRealization.getImplemented(), notImportedElements));
             }
         }
-
+        
         // Imported elements
         for (ElementImport theImport : theGeneralClass.getOwnedImport ()) {
             NameSpace importedNameSpace = theImport.getImportedElement ();
@@ -1436,16 +1423,16 @@ class ClassTemplate {
                 imports.add(getImportLine(importedNameSpace, Collections.<NameSpace>emptySet()));
             }
         }
-
+        
         // Package Imports
         for (PackageImport theImport : theGeneralClass.getOwnedPackageImport ()) {
             // (explicit import in the model shouldn't be 'censored' by Java implicit import rules)
             imports.add(getImportLine(theImport.getImportedPackage(), Collections.<NameSpace>emptySet()));
         }
-
+        
         // Collect implicitly imported element for class member
         collectImplicitlyImportedInner(theGeneralClass, notImportedElements);
-
+        
         // Operations
         for (Operation theOperation : theGeneralClass.getOwnedOperation()) {
             if (!JavaDesignerUtils.isNoCode (theOperation)) { // Ignore no code
@@ -1457,7 +1444,7 @@ class ClassTemplate {
                     GeneralClass returnedType = returnedParameter.getType ();
                     importedElements.add (returnedType);
                 }
-
+        
                 // IO parameter
                 for (Parameter theParameter : theOperation.getIO ()) {
                     if (!isFullNameGeneration (theParameter) &&
@@ -1466,7 +1453,7 @@ class ClassTemplate {
                         importedElements.add (parameterType);
                     }
                 }
-
+        
                 // Template parameters
                 for (TemplateParameter templateParameter : theOperation.getTemplate ()) {
                     // TODO template 'type'/'default type' management is messy, we need to homogenize it
@@ -1477,7 +1464,7 @@ class ClassTemplate {
                         }
                     }
                 }
-
+        
                 // Raised exception
                 for (RaisedException theException : theOperation.getThrown ()) {
                     if (!isFullNameGeneration (theException)) {
@@ -1485,7 +1472,7 @@ class ClassTemplate {
                         importedElements.add (thrownType);
                     }
                 }
-
+        
                 // Element Imports
                 for (ElementImport theImport : theOperation.getOwnedImport ()) {
                     NameSpace importedNameSpace = theImport.getImportedElement ();
@@ -1503,32 +1490,36 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Attributes
         for (Attribute theAttribute : theGeneralClass.getOwnedAttribute ()) {
             if (!JavaDesignerUtils.isNoCode (theAttribute)) { // Ignore no code
-                getAttributeImport(theAttribute, importedElements, imports);
+                if (theAttribute.isIsClass() || !isInterface(theAttribute.getOwner())) {
+                    getAttributeImport(theAttribute, importedElements, imports);
+                }
             }
         }
-
+        
         // AssociationEnds
         for (AssociationEnd theAssociationEnd : theGeneralClass.getOwnedEnd ()) {
             if (!JavaDesignerUtils.isNoCode (theAssociationEnd)) { // Ignore no code
                 if (!isFullNameGeneration (theAssociationEnd) && !theAssociationEnd.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR)) {
                     if (theAssociationEnd.isNavigable ()) {
-                        Classifier destination = theAssociationEnd.getTarget();
-                        if (destination != null) {
-                            importedElements.add (destination);
-                        }
-                        // qualifiers
-                        for (Attribute qual : theAssociationEnd.getQualifier()) {
-                            if (!JavaDesignerUtils.isNoCode (qual)) {
-                                getAttributeImport(qual, importedElements, imports);
+                        if (theAssociationEnd.isIsClass() || !isInterface(theAssociationEnd.getSource())) {
+                            Classifier destination = theAssociationEnd.getTarget();
+                            if (destination != null) {
+                                importedElements.add (destination);
+                            }
+                            // qualifiers
+                            for (Attribute qual : theAssociationEnd.getQualifier()) {
+                                if (!JavaDesignerUtils.isNoCode (qual)) {
+                                    getAttributeImport(qual, importedElements, imports);
+                                }
                             }
                         }
                     }
                 }
-
+        
                 if (this.javaConfig.GENERATIONMODE_ROUNDTRIP) {
                     if (theAssociationEnd.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY)) {
                         imports.add ("import com.modeliosoft.modelio.javadesigner.annotations.mdl;");
@@ -1536,19 +1527,19 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // import generation from elements
         for (NameSpace importedNameSpace : importedElements) {
             imports.add(getImportLine(importedNameSpace, notImportedElements));
         }
-
+        
         // Inner classes
         for (ModelTree ownedElements : theGeneralClass.getOwnedElement ()) {
             if (ownedElements instanceof GeneralClass) {
-                imports.addAll (getClassImport ((GeneralClass) ownedElements, new HashSet<>(notImportedElements)));
+                imports.addAll (getClassImport ((GeneralClass) ownedElements, new TreeSet<>(notImportedElements)));
             }
         }
-
+        
         // Add all other imports from tags
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.CLASS_JAVAIMPORT)) {
             for (TagParameter tagParameter : tag.getActual ()) {
@@ -1570,7 +1561,7 @@ class ClassTemplate {
                 if (!notImportedElements.contains(importedClass)) {
                     String importName = JavaDesignerUtils.getFullJavaName (this.session, importedClass);
                     if (importedClass instanceof DataType) {
-
+        
                         if (!JavaDesignerUtils.isPredefinedType (importedClass.getName ())) {
                             // Not predefined Datatype
                             importLine = "import " + importName + ";";
@@ -1592,18 +1583,16 @@ class ClassTemplate {
                         JavaDesignerUtils.getFullJavaName(this.session, importedPackage) + ".*;";
             }
         }
-
         return importLine;
-
     }
 
-    private void getAttributeImport(final Attribute anAttribute, Set<NameSpace> importedElements, Set<String> imports) {
+    private void getAttributeImport(final Attribute anAttribute, final Set<NameSpace> importedElements, final Set<String> imports) {
         if (!isFullNameGeneration (anAttribute) &&
                 !anAttribute.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR)) {
             GeneralClass theType = anAttribute.getType ();
             importedElements.add (theType);
         }
-
+        
         if (this.javaConfig.GENERATIONMODE_ROUNDTRIP) {
             if (anAttribute.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY)) {
                 imports.add ("import com.modeliosoft.modelio.javadesigner.annotations.mdl;");
@@ -1616,8 +1605,7 @@ class ClassTemplate {
      * @param aGeneralClass : the classifier for which the collect is made
      * @param aImplicitImportSet : inout : the set that receive the collected classifier.
      */
-    private void collectImplicitlyImported(final GeneralClass aGeneralClass, Set<NameSpace> aImplicitImportSet) {
-
+    private void collectImplicitlyImported(final GeneralClass aGeneralClass, final Set<NameSpace> aImplicitImportSet) {
         ModelTree outer = aGeneralClass.getOwner();
         if (outer instanceof Package) {
             // Top level classifier : add all classifiers that belong to the same package (including current class)
@@ -1634,7 +1622,7 @@ class ClassTemplate {
      * @param aGeneralClass
      * @param aImplicitImportSet
      */
-    private void collectImplicitlyImportedInner(final GeneralClass aGeneralClass, Set<NameSpace> aImplicitImportSet) {
+    private void collectImplicitlyImportedInner(final GeneralClass aGeneralClass, final Set<NameSpace> aImplicitImportSet) {
         // Inheritance
         for (Generalization gene : aGeneralClass.getParent()) {
             if (!JavaDesignerUtils.isNoCode(gene)) {
@@ -1642,10 +1630,9 @@ class ClassTemplate {
                 if (superType instanceof GeneralClass) {
                     collectImplicitlyImportedInner((GeneralClass) superType, aImplicitImportSet);
                 }
-
             }
         }
-
+        
         // Implementations
         for (InterfaceRealization real : aGeneralClass.getRealized()) {
             if (!JavaDesignerUtils.isNoCode(real)) {
@@ -1655,33 +1642,33 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // 1st level inner classes are implicitly imported
         for (ModelTree mt : aGeneralClass.getOwnedElement(GeneralClass.class)) {
             aImplicitImportSet.add((GeneralClass) mt);
         }
     }
 
-    private CharSequence getDataTypeDeclaration(DataType dataType) {
+    private CharSequence getDataTypeDeclaration(final DataType dataType) {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append ("class ");
         ret.append (JavaDesignerUtils.getJavaName (dataType));
         return ret;
     }
 
-    private List<DataType> getDataTypes(GeneralClass currentClass) {
+    private List<DataType> getDataTypes(final GeneralClass currentClass) {
         List<DataType> ret = new ArrayList<> ();
-
-        for (ModelTree child : currentClass.getOwnedElement (DataType.class)) {
-            ret.add ((DataType) child);
+        
+        for (DataType child : currentClass.getOwnedElement (DataType.class)) {
+            ret.add (child);
         }
         return ret;
     }
 
-    private CharSequence getDeclaration(AssociationEnd theAssociationEnd) throws CustomException {
+    private CharSequence getDeclaration(final AssociationEnd theAssociationEnd) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getCurrentIndent ());
         ret.append (computeFieldModifiers (theAssociationEnd));
         ret.append (this.typeManager.getTypeDeclaration (this.session, theAssociationEnd, isFullNameGeneration (theAssociationEnd)));
@@ -1690,14 +1677,14 @@ class ClassTemplate {
         ret.append (";");
         ret.append (computeAssociationEndInitialValueComment (theAssociationEnd));
         ret.append (NL);
-
+        
         ret.append (NL);
         return ret;
     }
 
-    private CharSequence getDeclaration(Attribute theAttribute) throws CustomException {
+    private CharSequence getDeclaration(final Attribute theAttribute) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getCurrentIndent ());
         ret.append (computeFieldModifiers (theAttribute));
         ret.append (this.typeManager.getTypeDeclaration (this.session, theAttribute, isFullNameGeneration (theAttribute)));
@@ -1710,9 +1697,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getDeclaration(Parameter theParameter) throws CustomException {
+    private CharSequence getDeclaration(final Parameter theParameter) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         /* Insert the parameter itself */
         if (theParameter.getReturned () == null) {
             ret.append(this.typeManager.computeAnnotations(theParameter, false, true));
@@ -1728,7 +1715,7 @@ class ClassTemplate {
         return ret;
     }
 
-    private GeneralClass getEnclosingClass(GeneralClass theGeneralClass) {
+    private GeneralClass getEnclosingClass(final GeneralClass theGeneralClass) {
         ModelTree parent = theGeneralClass.getOwner ();
         if (parent instanceof Interface) {
             return getEnclosingClass ((Interface) parent);
@@ -1739,93 +1726,104 @@ class ClassTemplate {
         return theGeneralClass;
     }
 
-    private CharSequence computeEnumerationDeclaration(Enumeration element) throws TemplateException {
+    private CharSequence computeEnumerationDeclaration(final Enumeration element) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         ret.append (getCurrentIndent ());
-
+        
         String visibility = ""; //$NON-NLS-1$
-        switch (element.getVisibility ()) {
-        case PUBLIC: {
-            visibility = "public "; //$NON-NLS-1$
-            break;
-        }
-        case PROTECTED: {
-            if (element.getOwner () instanceof Package) {
-                // enumeration in a package, visibility protected and private
-                // are not allowed
+        if (element.getOwner () instanceof Interface) {
+            switch (element.getVisibility ()) {
+            case PUBLIC:
+            case VISIBILITYUNDEFINED:
+                // Nothing to do
+                    break;
+            default:
+                this.report.addWarning (Messages.getString ("Warning.InterfaceNonPublicEnum", JavaDesignerUtils.getJavaName (element.getOwner ()), JavaDesignerUtils.getJavaName (element)), element, "");
+            }
+        } else {
+            switch (element.getVisibility ()) {
+            case PUBLIC: {
+                visibility = "public "; //$NON-NLS-1$
+                break;
+            }
+            case PROTECTED: {
+                if (element.getOwner () instanceof Package) {
+                    // enumeration in a package, visibility protected and private
+                    // are not allowed
+                    visibility = ""; //$NON-NLS-1$
+                    if (this.javaConfig.ERRORONFIRSTWARNING) {
+                        throw new TemplateException (Messages.getString ("Error.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element)));
+                    } else {
+                        String msg = Messages.getString ("Warning.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element));
+                        this.report.addWarning (msg, element, "");
+                    }
+                } else {
+                    visibility = "protected "; //$NON-NLS-1$
+                }
+                break;
+            }
+            case PRIVATE: {
+                if (element.getOwner () instanceof Package) {
+                    // enumeration in a package, visibility protected and private
+                    // are not allowed
+                    visibility = ""; //$NON-NLS-1$
+                    if (this.javaConfig.ERRORONFIRSTWARNING) {
+                        throw new TemplateException (Messages.getString ("Error.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element)));
+                    } else {
+                        String msg = Messages.getString ("Warning.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element));
+                        this.report.addWarning (msg, element, "");
+                    }
+                } else {
+                    visibility = "private "; //$NON-NLS-1$
+                }
+                break;
+            }
+            case VISIBILITYUNDEFINED: {
                 visibility = ""; //$NON-NLS-1$
+        
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
                     throw new TemplateException (Messages.getString ("Error.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element)));
                 } else {
                     String msg = Messages.getString ("Warning.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element));
                     this.report.addWarning (msg, element, "");
                 }
-            } else {
-                visibility = "protected "; //$NON-NLS-1$
+                break;
             }
-            break;
-        }
-        case PRIVATE: {
-            if (element.getOwner () instanceof Package) {
-                // enumeration in a package, visibility protected and private
-                // are not allowed
+            case PACKAGEVISIBILITY: {
                 visibility = ""; //$NON-NLS-1$
-                if (this.javaConfig.ERRORONFIRSTWARNING) {
-                    throw new TemplateException (Messages.getString ("Error.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element)));
-                } else {
-                    String msg = Messages.getString ("Warning.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element));
-                    this.report.addWarning (msg, element, "");
-                }
-            } else {
-                visibility = "private "; //$NON-NLS-1$
+                break;
             }
-            break;
-        }
-        case VISIBILITYUNDEFINED: {
-            visibility = ""; //$NON-NLS-1$
-
-            if (this.javaConfig.ERRORONFIRSTWARNING) {
-                throw new TemplateException (Messages.getString ("Error.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element)));
-            } else {
-                String msg = Messages.getString ("Warning.InvalidEnumerationVisibility", JavaDesignerUtils.getJavaName (element));
-                this.report.addWarning (msg, element, "");
+            default:
+                visibility = "";
             }
-            break;
         }
-        case PACKAGEVISIBILITY: {
-            visibility = ""; //$NON-NLS-1$
-            break;
-        }
-        default:
-            visibility = "";
-        }
-
+        
         ret.append (visibility);
-
+        
         if (element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ENUMERATION_JAVASTATIC)) {
             ret.append ("static ");
         }
-
+        
         ret.append ("enum "); //$NON-NLS-1$
         ret.append (JavaDesignerUtils.getJavaName (element));
         return ret;
     }
 
-    private CharSequence computeEnumerationLitterals15(Enumeration element) throws CustomException {
+    private CharSequence computeEnumerationLitterals15(final Enumeration element) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         List<EnumerationLiteral> value = element.getValue ();
         for (int i = 0; i < value.size(); i++) {
             EnumerationLiteral literal = value.get(i);
-
+        
             StringBuilder arguments = new StringBuilder ();
-
+        
             // Inserting javadoc
             ret.append (computeJavaComment (literal));
             ret.append (computeJavaDoc (literal));
-
+        
             ret.append (getTextualsAnnotations (literal));
-
+        
             // Add arguments
             for (TaggedValue tag : ModelUtils.getAllTaggedValues (literal, JavaDesignerTagTypes.ENUMERATIONLITERAL_JAVAARGUMENTS)) {
                 for (TagParameter param : tag.getActual ()) {
@@ -1833,34 +1831,34 @@ class ClassTemplate {
                     arguments.append (", "); //$NON-NLS-1$
                 }
             }
-
+        
             if (arguments.length () > 2) {
                 arguments.delete (arguments.length () - 2, arguments.length ());
             }
-
+        
             if (arguments.length () > 0) {
                 arguments.insert (0, " ("); //$NON-NLS-1$
                 arguments.append (")"); //$NON-NLS-1$
             }
-
+        
             // Generate EnumerationLiteral value
             ret.append (getCurrentIndent ());
             ret.append (JavaDesignerUtils.getJavaName (literal));
             ret.append (arguments);
             ret.append (computeJavaCode (literal));
-
+        
             if (i < value.size() - 1) {
                 ret.append (",");
             } else {
                 ret.append (";");
             }
-
+        
             // Generate comment on this value
             ret.append (computeLiteralValueComment (literal));
-
+        
             ret.append (NL);
         }
-
+        
         if (value.size() == 0) {
             // if no enumeration literal but part or inner stuff, the ";" is mandatory
             // no ";" if JAVAMEMBERS because for upward compatibility it is assumed that the required ";" is in JAVAMEMBERS notes
@@ -1870,20 +1868,19 @@ class ClassTemplate {
                 ret.append (NL);
             }
         }
-
+        
         if (element.getOwnedAttribute().size() > 0 || element.getOwnedEnd().size() > 0 || element.getOwnedOperation().size() > 0) {
             ret.append (NL);
         }
-
         return ret;
     }
 
-    private List<Enumeration> getEnumerations(GeneralClass currentClass) {
+    private List<Enumeration> getEnumerations(final GeneralClass currentClass) {
         List<Enumeration> ret = new ArrayList<> ();
-
-        for (ModelTree child : currentClass.getOwnedElement (Enumeration.class)) {
+        
+        for (Enumeration child : currentClass.getOwnedElement (Enumeration.class)) {
             if (!JavaDesignerUtils.isNoCode (child)) {
-                ret.add ((Enumeration) child);
+                ret.add (child);
             }
         }
         return ret;
@@ -1897,9 +1894,9 @@ class ClassTemplate {
         return "//end of modifiable zone";
     }
 
-    private List<GeneralClass> getInnerClasses(GeneralClass currentClass) {
+    private List<GeneralClass> getInnerClasses(final GeneralClass currentClass) {
         List<GeneralClass> ret = new ArrayList<> ();
-
+        
         for (ModelTree child : currentClass.getOwnedElement ()) {
             if (child instanceof Class || child instanceof Interface) {
                 if (!JavaDesignerUtils.isNoCode (child)) {
@@ -1910,9 +1907,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private List<GeneralClass> getInternalClasses(GeneralClass generalClass) {
+    private List<GeneralClass> getInternalClasses(final GeneralClass generalClass) {
         List<GeneralClass> ret = new ArrayList<> ();
-
+        
         /* UML2, un elementImport peut relier vers un enum?r? */
         for (ElementImport elementImport : generalClass.getOwnedImport ()) {
             if (elementImport.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAFILEGROUP)) {
@@ -1925,9 +1922,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getInvariant(GeneralClass theGeneralClass) throws CustomException, TemplateException {
+    private CharSequence getInvariant(final GeneralClass theGeneralClass) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getClassInvariantJavadoc (theGeneralClass));
         ret.append (getCurrentIndent ());
         ret.append ("protected void ");
@@ -1940,9 +1937,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getInvariantBody(GeneralClass theGeneralClass) throws CustomException, TemplateException {
+    private CharSequence getInvariantBody(final GeneralClass theGeneralClass) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         // Generate invariant from parent class
         if (isParentWithInvariant (theGeneralClass)) {
             ret.append (getCurrentIndent ());
@@ -1951,7 +1948,7 @@ class ClassTemplate {
             ret.append ("();");
             ret.append (NL);
         }
-
+        
         int invariantCount = 0;
         for (Constraint theConstraint : theGeneralClass.getConstraintDefinition ()) {
             if (theConstraint.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINVARIANT)) {
@@ -1962,16 +1959,16 @@ class ClassTemplate {
                 invariantCount++;
             }
         }
-
+        
         if (invariantCount > 1) {
             this.report.addWarning (Messages.getString ("Warning.warnMultipleInvariants", JavaDesignerUtils.getFullJavaName (this.session, theGeneralClass)), theGeneralClass, "");
         }
         return ret;
     }
 
-    private CharSequence getClassInvariantJavadoc(GeneralClass theGeneralClass) {
+    private CharSequence getClassInvariantJavadoc(final GeneralClass theGeneralClass) {
         StringBuilder res = new StringBuilder ();
-
+        
         // Add all <<JavaDocInvariant>> constraints
         for (Constraint theConstraint : theGeneralClass.getConstraintDefinition ()) {
             if (theConstraint.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVADOCINVARIANT)
@@ -1988,9 +1985,9 @@ class ClassTemplate {
         return res;
     }
 
-    private CharSequence computeJavaComment(ModelElement theModelElement) {
+    private CharSequence computeJavaComment(final ModelElement theModelElement) {
         String comment = theModelElement.getNoteContent (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.CLASS_JAVACOMMENT);
-
+        
         if (comment != null && comment.length () > 0) {
             comment = updateNewlinesExceptLast(comment).toString();
             //            if (comment.contains (NL)) {
@@ -2006,32 +2003,32 @@ class ClassTemplate {
         return "";
     }
 
-    private CharSequence computeJavaDoc(ModelElement theModelElement) throws CustomException {
+    private CharSequence computeJavaDoc(final ModelElement theModelElement) throws CustomException {
         if (theModelElement instanceof Operation) {
             return computeJavaDoc ((Operation) theModelElement);
         }
-
+        
         StringBuilder ret = new StringBuilder ();
-
+        
         if (this.javaConfig.GENERATEJAVADOC) {
             String seeText = "";
-
+        
             if ((theModelElement instanceof Class && !(theModelElement instanceof Component)) ||
                     theModelElement instanceof Attribute ||
                     theModelElement instanceof AssociationEnd) {
                 seeText += getSeeJavadocContents (theModelElement);
             }
-
+        
             List<Note> docNotes = ModelUtils.getAllNotes (theModelElement, JavaDesignerNoteTypes.CLASS_JAVADOC);
-
+        
             if (this.javaConfig.DESCRIPTIONASJAVADOC) {
                 docNotes.addAll (ModelUtils.getAllNotes (theModelElement, "description"));
             }
-
+        
             if (docNotes.isEmpty ()) {
                 // text.strip(NL);
                 // text.substitute(NL + NL + NL, NL + NL);
-
+        
                 // TAS: generates JavaDoc with NO markers in MODEL_DRIVEN.
                 if (this.javaConfig.GENERATIONMODE_MODELDRIVEN && this.javaConfig.GENERATEJAVADOC_MARKERS) {
                     ret.append (computeMarkersWithText (theModelElement, "Javadoc", computeFormattedJavaDoc (seeText).toString ()));
@@ -2042,11 +2039,11 @@ class ClassTemplate {
                 if (docNotes.size () > 1) {
                     this.report.addWarning (Messages.getString ("Warning.warnMultipleDocumentationNotes", JavaDesignerUtils.getFullJavaName (this.session, theModelElement), "Operation"), theModelElement, "");
                 }
-
+        
                 Note docNote = docNotes.get (0);
                 String text = docNote.getContent ();
                 text += seeText;
-
+        
                 if (this.javaConfig.GENERATIONMODE_MODELDRIVEN && this.javaConfig.GENERATEJAVADOC_MARKERS) {
                     ret.append (getIdBegin (docNote));
                     ret.append (computeFormattedJavaDoc (text));
@@ -2059,27 +2056,27 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeJavaDoc(Operation theOperation) throws CustomException {
+    private CharSequence computeJavaDoc(final Operation theOperation) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (this.javaConfig.GENERATEJAVADOC) {
             String text = "";
-
+        
             List<Note> docNotes = ModelUtils.getAllNotes (theOperation, JavaDesignerNoteTypes.CLASS_JAVADOC);
             if (this.javaConfig.DESCRIPTIONASJAVADOC) {
                 docNotes.addAll (ModelUtils.getAllNotes (theOperation, "description"));
             }
-
+        
             if (docNotes.isEmpty ()) {
                 // no notes
-
+        
                 // see http://java.sun.com/j2se/javadoc/writingdoccomments/#tag
-
+        
                 text += getParamJavadocContents (theOperation);
                 text += getReturnJavadocContents (theOperation);
                 text += getThrowsJavadocContents (theOperation);
                 text += getSeeJavadocContents (theOperation);
-
+        
                 // TAS: generates JavaDoc with NO markers in MODEL_DRIVEN.
                 if (this.javaConfig.GENERATIONMODE_MODELDRIVEN && this.javaConfig.GENERATEJAVADOC_MARKERS) {
                     ret.append (computeMarkersWithText (theOperation, "Javadoc", computeFormattedJavaDoc (text).toString ()));
@@ -2090,9 +2087,9 @@ class ClassTemplate {
                 if (docNotes.size () > 1) {
                     this.report.addWarning (Messages.getString ("Warning.warnMultipleDocumentationNotes", JavaDesignerUtils.getFullJavaName (this.session, theOperation), "Operation"), theOperation, "");
                 }
-
+        
                 // see http://java.sun.com/j2se/javadoc/writingdoccomments/#tag
-
+        
                 Note docNote = docNotes.get (0);
                 text = docNote.getContent ();
                 text += (NL);
@@ -2100,10 +2097,10 @@ class ClassTemplate {
                 text += getReturnJavadocContents (theOperation);
                 text += getThrowsJavadocContents (theOperation);
                 text += getSeeJavadocContents (theOperation);
-
+        
                 // text.strip(NL);
                 // text.substitute(NL + NL + NL, NL + NL);
-
+        
                 // TAS: generates JavaDoc with NO markers in MODEL_DRIVEN.
                 if (this.javaConfig.GENERATIONMODE_MODELDRIVEN && this.javaConfig.GENERATEJAVADOC_MARKERS) {
                     ret.append (getIdBegin (docNote));
@@ -2117,9 +2114,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getJavaTemplateParameters(Operation theOperation) throws TemplateException, CustomException {
+    private CharSequence getJavaTemplateParameters(final Operation theOperation) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         /* compat */
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theOperation, JavaDesignerTagTypes.OPERATION_JAVATEMPLATEPARAMETERS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
@@ -2127,14 +2124,14 @@ class ClassTemplate {
                 ret.append (",");
             }
         }
-
+        
         /* MM UML2 */
         for (TemplateParameter templateParameter : theOperation.getTemplate ()) {
             if (isJDK8Compatible()) {
                 ret.append(this.typeManager.computeAnnotations(templateParameter, false, true));
             }
             ret.append (JavaDesignerUtils.getJavaName (templateParameter));
-
+        
             // TODO template 'type'/'default type' management is messy, we need to homogenize it
             ModelElement defaultType = templateParameter.getDefaultType ();
             if (defaultType != null && defaultType instanceof GeneralClass) {
@@ -2144,7 +2141,7 @@ class ClassTemplate {
                 } else {
                     typeName = computeName(defaultType, isFullNameGeneration(templateParameter));
                 }
-
+        
                 ret.append (" extends ");
                 ret.append (typeName);
             } else {
@@ -2156,13 +2153,13 @@ class ClassTemplate {
             }
             ret.append (",");
         }
-
+        
         int length = ret.length ();
         if (length > 0) {
             ret.delete (length - 1, length);
             length--;
         }
-
+        
         if (length != 0) {
             ret.insert (0, "<");
             ret.append ("> ");
@@ -2170,17 +2167,17 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getJavaVisibility(Feature theFeature) {
+    private CharSequence getJavaVisibility(final Feature theFeature) {
         VisibilityMode visibility = theFeature.getVisibility ();
-
+        
         // Set property's encapsulating visibility as defined in the custom file
         if (theFeature.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY) ||
                 theFeature.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY)){
             visibility = this.typeManager.getPropertyCodeVisibility(visibility);
         }
-
+        
         StringBuilder ret = new StringBuilder ();
-
+        
         // the visibility for the declaration of variable for Attribute or
         // AssociationEnd
         switch (visibility) {
@@ -2196,14 +2193,14 @@ class ClassTemplate {
         default:
             // No modifier to add
         }
-
+        
         ret.append (" ");
         return ret;
     }
 
-    private Note getOneTextOfType(ModelElement theModelElement, String noteType) {
+    private Note getOneTextOfType(final ModelElement theModelElement, final String noteType) {
         String textName = JavaDesignerUtils.getJavaName (theModelElement);
-
+        
         List<Note> allNotes = ModelUtils.getAllNotes (theModelElement, noteType);
         if (allNotes.size () == 1) {
             return allNotes.get (0);
@@ -2211,14 +2208,14 @@ class ClassTemplate {
             this.report.addWarning (Messages.getString ("Error.Generation_error_external_DuplicateText", textName, noteType), theModelElement, "");
             return allNotes.get (0);
         }
-
+        
         // return null if no note is found
         return null;
     }
 
-    private Package getOwnerPackage(ModelTree element) {
+    private Package getOwnerPackage(final ModelTree element) {
         ModelTree parent = element.getOwner ();
-
+        
         if (parent == null) {
             // Should not happen, the worst case returns the root package
             return null;
@@ -2229,9 +2226,9 @@ class ClassTemplate {
         return getOwnerPackage (parent);
     }
 
-    private Set<String> getPackageImport(Package thePackage) {
-        Set<String> imports = new HashSet<> ();
-
+    private Set<String> getPackageImport(final Package thePackage) {
+        Set<String> imports = new TreeSet<> ();
+        
         // Imported elements
         for (ElementImport theImport : thePackage.getOwnedImport ()) {
             NameSpace importedNameSpace = theImport.getImportedElement ();
@@ -2255,14 +2252,14 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Package Imports
         for (PackageImport theImport : thePackage.getOwnedPackageImport ()) {
             Package importedPackage = theImport.getImportedPackage ();
             imports.add ("import " +
                     JavaDesignerUtils.getFullJavaName (this.session, importedPackage) + ".*;");
         }
-
+        
         // Add all other imports from tags
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (thePackage, JavaDesignerTagTypes.CLASS_JAVAIMPORT)) {
             for (TagParameter tagParameter : tag.getActual ()) {
@@ -2275,11 +2272,11 @@ class ClassTemplate {
         return imports;
     }
 
-    private CharSequence getParamJavadocContents(Operation theOperation) {
+    private CharSequence getParamJavadocContents(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         boolean generateDescriptionAsJavadoc = this.javaConfig.DESCRIPTIONASJAVADOC;
-
+        
         for (Parameter theParamter : theOperation.getIO ()) {
             if (generateDescriptionAsJavadoc) {
                 for (Note descriptionNote : ModelUtils.getAllNotes (theParamter, IOtherProfileElements.MODELELEMENT_DESCRIPTION)) {
@@ -2290,7 +2287,7 @@ class ClassTemplate {
                     ret.append (NL);
                 }
             }
-
+        
             for (Note descriptionNote : ModelUtils.getAllNotes (theParamter, JavaDesignerNoteTypes.PARAMETER_JAVADOC)) {
                 ret.append ("@param ");
                 ret.append (JavaDesignerUtils.getJavaName (theParamter));
@@ -2302,9 +2299,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getReturnJavadocContents(Operation theOperation) {
+    private CharSequence getReturnJavadocContents(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         Parameter returnedParameter = theOperation.getReturn ();
         if (returnedParameter != null) {
             if (this.javaConfig.DESCRIPTIONASJAVADOC) {
@@ -2314,7 +2311,7 @@ class ClassTemplate {
                     ret.append (NL);
                 }
             }
-
+        
             for (Note descriptionNote : ModelUtils.getAllNotes (returnedParameter, JavaDesignerNoteTypes.PARAMETER_JAVADOC)) {
                 ret.append ("@return ");
                 ret.append (descriptionNote.getContent ());
@@ -2324,22 +2321,22 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getSeeFormat(ModelElement theModelElement, String type, String text) throws CustomException {
+    private CharSequence getSeeFormat(final ModelElement theModelElement, final String type, final String text) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         // Compute the element java name
         String modelElementName = JavaDesignerUtils.getJavaName (theModelElement);
-
+        
         // See format for an Operation
         if (theModelElement instanceof Operation) {
             Operation op = (Operation) theModelElement;
             String str = "";
-
+        
             String opat = " [op]";
             if (text.length () == 0) {
                 opat += " " + modelElementName;
             }
-
+        
             ret.append (JavaDesignerUtils.getFullJavaName (this.session, op.getOwner ()));
             ret.append ("#");
             ret.append (modelElementName);
@@ -2348,14 +2345,14 @@ class ClassTemplate {
                 List<Parameter> parameters = op.getIO ();
                 for (Iterator<Parameter> iterator = parameters.iterator () ; iterator.hasNext () ;) {
                     Parameter theParameter = iterator.next ();
-
+        
                     // Insert only the type
                     str += this.typeManager.getTypeDeclaration (this.session, theParameter, isFullNameGeneration (theParameter));
                     if (iterator.hasNext ()) {
                         str += ", ";
                     }
                 }
-
+        
                 ret.append (str);
                 ret.append (")");
             } else if (type.equals ("Generate the object name with argument types and names")) {
@@ -2363,18 +2360,18 @@ class ClassTemplate {
                 List<Parameter> parameters = op.getIO ();
                 for (Iterator<Parameter> iterator = parameters.iterator () ; iterator.hasNext () ;) {
                     Parameter theParameter = iterator.next ();
-
+        
                     // Insert the type and the name
                     str += getDeclaration (theParameter);
                     if (iterator.hasNext ()) {
                         str += ", ";
                     }
                 }
-
+        
                 ret.append (str);
                 ret.append (")");
             }
-
+        
             ret.append (opat);
         } else if (theModelElement instanceof Feature) {
             // See format for an Attribute and AssociationEnd
@@ -2383,7 +2380,7 @@ class ClassTemplate {
             if (text.length () == 0) {
                 opat += " " + modelElementName;
             }
-
+        
             ret.append (JavaDesignerUtils.getFullJavaName (this.session, (ModelElement) at.getCompositionOwner ()));
             ret.append ("#");
             ret.append (modelElementName);
@@ -2392,16 +2389,16 @@ class ClassTemplate {
             // Enumeration
             ret.append (JavaDesignerUtils.getFullJavaName (this.session, theModelElement));
         }
-
+        
         // Text added in all cases
         ret.append (" ");
         ret.append (text);
         return ret;
     }
 
-    private CharSequence getSeeJavadocContents(ModelElement theModelElement) throws CustomException {
+    private CharSequence getSeeJavadocContents(final ModelElement theModelElement) throws CustomException {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (Dependency theDependency : theModelElement.getDependsOnDependency ()) {
             if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.SEEJAVADOC)) {
                 String noteContent;
@@ -2411,7 +2408,7 @@ class ClassTemplate {
                 } else {
                     noteContent = "";
                 }
-
+        
                 String typeOfLink = "";
                 String annotationContent = "";
                 String[] lines = noteContent.split (NL);
@@ -2428,13 +2425,13 @@ class ClassTemplate {
                         }
                     }
                 }
-
+        
                 ret.append ("@see ");
                 ret.append (getSeeFormat (theDependency.getDependsOn (), typeOfLink, annotationContent));
                 ret.append (NL);
             }
         }
-
+        
         if (ret.length () > 0) {
             ret.insert (0, NL);
             ret.insert (0, NL);
@@ -2442,9 +2439,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getTextualsAnnotations(ModelElement element) {
+    private CharSequence getTextualsAnnotations(final ModelElement element) {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (this.javaConfig.GENERATIONMODE_ROUNDTRIP) {
             if (element instanceof DataType) {
                 if ("DataType".equals (JavaDesignerUtils.getJavaName (element))) {
@@ -2457,7 +2454,7 @@ class ClassTemplate {
                     ret.append (NL);
                 }
             }
-
+        
             // Generation of the "Identifier" annotation
             if ((element instanceof Class) ||
                     (element instanceof Interface) ||
@@ -2473,7 +2470,7 @@ class ClassTemplate {
                 ret.append (NL);
             }
         }
-
+        
         for (Note note : ModelUtils.getAllNotes (element, JavaDesignerNoteTypes.PACKAGE_JAVAANNOTATION)) {
             for (String annot : note.getContent().split("\\n")) {
                 if (annot.startsWith("@")) {
@@ -2484,17 +2481,16 @@ class ClassTemplate {
                 ret.append(updateNewlines(annot));
             }
         }
-
+        
         ret.append(this.annotationManager.computeStereotypeAnnotations(element, getCurrentIndent()));
-
         return ret;
     }
 
-    private CharSequence getThrowsJavadocContents(Operation theOperation) {
+    private CharSequence getThrowsJavadocContents(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         boolean descriptionAsJavadoc = this.javaConfig.DESCRIPTIONASJAVADOC;
-
+        
         for (ElementImport theElementImport : theOperation.getOwnedImport ()) {
             if (theElementImport.isStereotyped(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.ELEMENTIMPORT_THROW)) {
                 NameSpace importedNameSpace = theElementImport.getImportedElement ();
@@ -2505,7 +2501,7 @@ class ClassTemplate {
                     } else {
                         descriptionNote = theElementImport.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.CLASS_JAVADOC);
                     }
-
+        
                     if (descriptionNote != null) {
                         ret.append ("@throws ");
                         ret.append (JavaDesignerUtils.getFullJavaName (this.session, importedNameSpace));
@@ -2516,7 +2512,7 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         for (RaisedException raisedException : theOperation.getThrown ()) {
             Classifier importedNameSpace = raisedException.getThrownType ();
             if (importedNameSpace instanceof GeneralClass) {
@@ -2526,7 +2522,7 @@ class ClassTemplate {
                 } else {
                     descriptionNote = raisedException.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.CLASS_JAVADOC);
                 }
-
+        
                 if (descriptionNote != null) {
                     ret.append ("@throws ");
                     ret.append (JavaDesignerUtils.getFullJavaName (this.session, importedNameSpace));
@@ -2539,9 +2535,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getTransformedOneNoteOfType(ModelElement theModelElement, String noteType, boolean genBalise) {
+    private CharSequence getTransformedOneNoteOfType(final ModelElement theModelElement, final String noteType, final boolean genBalise) {
         StringBuilder ret = new StringBuilder ();
-
+        
         Note theNote = getOneTextOfType (theModelElement, noteType);
         if (theNote != null) {
             String noteContent = theNote.getContent ();
@@ -2556,16 +2552,16 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean hasExtends(GeneralClass theGeneralClass) throws TemplateException {
+    private boolean hasExtends(final GeneralClass theGeneralClass) throws TemplateException {
         return (!getParentInheritances (theGeneralClass).isEmpty () || !ModelUtils.getFirstTagParameter (theGeneralClass, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAEXTENDS).isEmpty());
     }
 
-    private boolean hasImplements(GeneralClass theGeneralClass) throws TemplateException {
+    private boolean hasImplements(final GeneralClass theGeneralClass) throws TemplateException {
         // Mantis 5251
         for (InterfaceRealization interfaceRealization : theGeneralClass.getRealized ()) {
             if (!JavaDesignerUtils.isNoCode (interfaceRealization)) {
                 Interface implemented = interfaceRealization.getImplemented ();
-
+        
                 if (implemented != null) {
                     if (JavaDesignerUtils.isNoCode (implemented)) {
                         String intrefaceName = JavaDesignerUtils.getJavaName (implemented);
@@ -2580,12 +2576,12 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Tags
         if (theGeneralClass.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAIMPLEMENTS) != null) {
             return true;
         }
-
+        
         // Classes stereotyp?es interface
         for (Generalization parentGeneralization : theGeneralClass.getParent ()) {
             if (!JavaDesignerUtils.isNoCode (parentGeneralization)) {
@@ -2598,14 +2594,14 @@ class ClassTemplate {
         return false;
     }
 
-    private boolean hasInvariant(GeneralClass theGeneralClass) {
+    private boolean hasInvariant(final GeneralClass theGeneralClass) {
         // No invariants for interfaces
         if (isInterface (theGeneralClass)) {
             return false;
         }
-
+        
         String className = JavaDesignerUtils.getJavaName (theGeneralClass);
-
+        
         if (this.javaConfig.GENERATEINVARIANTS) {
             for (Constraint theConstraint : theGeneralClass.getConstraintDefinition ()) {
                 if (theConstraint.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAPRECONDITION) ||
@@ -2613,7 +2609,7 @@ class ClassTemplate {
                     this.report.addWarning (Messages.getString ("Warning.PrePostOnClass", className), theGeneralClass, "");
                 }
             }
-
+        
             for (Constraint theConstraint : theGeneralClass.getConstraintDefinition ()) {
                 if (theConstraint.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINVARIANT)) {
                     return true;
@@ -2623,9 +2619,9 @@ class ClassTemplate {
         return false;
     }
 
-    private CharSequence computeHeaderText(GeneralClass theGeneralClass) {
+    private CharSequence computeHeaderText(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (Note note : ModelUtils.getAllNotes (theGeneralClass, JavaDesignerNoteTypes.CLASS_JAVAHEADER)) {
             CharSequence content = updateNewlines (note.getContent ());
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
@@ -2639,45 +2635,43 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getId(MObject element, String style) {
+    private CharSequence getId(final MObject element, final String style) {
         StringBuilder ret = new StringBuilder ();
         String comment = "";
-
+        
         if ((style.equals (MarkerBegin)) || (style.equals (MarkerNew))) {
             comment = getIdLineBegin ();
         } else if (style == MarkerEnd) {
             comment = getIdLineEnd ();
         }
         ret.append (comment);
-
+        
         // Get the id
-        UUID siteId = element.getUuid ();
-
-        String shortIds = style + "/" + siteId;
-
-        // Ajout de "." pour que que la ligne fasse 79 caract?res
+        String identifier = element.getUuid().toString();
+        
+        String shortIds = style + "/" + identifier;
+        
+        // Add "." to complete the 79 char line
         for (int i = 0 ; i < 80 - comment.length () - shortIds.length () ; i++) {
             ret.append (".");
         }
-
+        
         ret.append (shortIds);
         ret.append (NL);
-
-        // On retourne le r?sultat (commentaire, points et identifiants courts)
         return ret;
     }
 
-    private CharSequence getIdBegin(MObject element) {
+    private CharSequence getIdBegin(final MObject element) {
         return getId (element, MarkerBegin);
     }
 
-    private CharSequence getIdEnd(MObject element) {
+    private CharSequence getIdEnd(final MObject element) {
         return getId (element, MarkerEnd);
     }
 
-    private CharSequence computeImplements(GeneralClass theGeneralClass) {
+    private CharSequence computeImplements(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         // Compute interfaces realizations
         for (InterfaceRealization interfaceRealization : theGeneralClass.getRealized ()) {
             if (!JavaDesignerUtils.isNoCode (interfaceRealization)) {
@@ -2685,19 +2679,19 @@ class ClassTemplate {
                 if (isJDK8Compatible()) {
                     ret.append(this.typeManager.computeAnnotations(interfaceRealization, true, false));
                 }
-
+        
                 boolean generateFullName = false;
                 if (isFullNameGeneration (interfaceRealization)) {
                     generateFullName = true;
                 }
-
+        
                 ret.append (" ");
                 ret.append (computeName (interfaceRealization.getImplemented (), generateFullName));
                 ret.append (getBindingParameters (interfaceRealization));
                 ret.append (",");
             }
         }
-
+        
         // Compute tags
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.CLASS_JAVAIMPLEMENTS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
@@ -2709,40 +2703,40 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         if (ret.length () > 1) {
             ret.delete (ret.length () - 1, ret.length ());
         }
         return ret;
     }
 
-    private CharSequence computeImports(GeneralClass theGeneralClass) throws CustomException, TemplateException {
+    private CharSequence computeImports(final GeneralClass theGeneralClass) throws CustomException, TemplateException {
         StringBuilder javaImports = new StringBuilder ();
         StringBuilder ret = new StringBuilder ();
         Set<String> imports = new TreeSet<> ();
-
+        
         if (this.javaConfig.GENERATIONMODE_ROUNDTRIP) {
             // Import de l'annotation stockant les identifiants Modelio
             imports.add ("import com.modeliosoft.modelio.javadesigner.annotations.objid;");
         }
-
+        
         // Add imports from type packages
         imports.addAll (getImportsFromTypesPackages (theGeneralClass));
-
+        
         // Imports from the classifier
-        imports.addAll (getClassImport (theGeneralClass, new HashSet<NameSpace>()));
-
+        imports.addAll (getClassImport (theGeneralClass, new TreeSet<NameSpace>()));
+        
         // Imports from the owner package
         Package parentPackage = getOwnerPackage (theGeneralClass);
         if (parentPackage != null) {
             imports.addAll (getPackageImport (parentPackage));
         }
-
+        
         // Remove invalid imports
         imports.remove ("import .*;");
         imports.remove ("import ;");
         imports.remove("");
-
+        
         // Format result
         for (String theImport : imports) {
             if (theImport.startsWith ("import java")) {
@@ -2756,7 +2750,7 @@ class ClassTemplate {
                 ret.append (NL);
             }
         }
-
+        
         ret.insert (0, javaImports);
         ret.append (NL);
         return ret;
@@ -2774,9 +2768,9 @@ class ClassTemplate {
         }
     }
 
-    private CharSequence computeInheritedAnnotation(GeneralClass theGeneralClass) {
+    private CharSequence computeInheritedAnnotation(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         if (theGeneralClass.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAANNOTATION_JAVAINHERITEDANNOTATION)) {
             ret.append (getCurrentIndent ());
             ret.append ("@java.lang.annotation.Inherited");
@@ -2785,11 +2779,11 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeInterfaceExtendsWithTaggedValue(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeInterfaceExtendsWithTaggedValue(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         List<Generalization> lParentLinks = getParentInheritances (theGeneralClass);
         int lCount = lParentLinks.size ();
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.CLASS_JAVAEXTENDS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
                 String value = tagParameter.getValue ();
@@ -2808,11 +2802,11 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeInterfaceInheritance(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeInterfaceInheritance(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         List<Generalization> lParentLinks = getParentInheritances (theGeneralClass);
         boolean lIsFirst = true;
-
+        
         for (Generalization obGeneralization : lParentLinks) {
             NameSpace superType = obGeneralization.getSuperType ();
             if (superType instanceof GeneralClass) {
@@ -2830,18 +2824,18 @@ class ClassTemplate {
                         // generate annotations
                         ret.append(this.typeManager.computeAnnotations(obGeneralization, true, false));
                     }
-
+        
                     if (isFullNameGeneration (obGeneralization)) {
                         generateFullName = true;
                     }
-
+        
                     if (lIsFirst) {
                         ret.append (" ");
                         lIsFirst = false;
                     } else {
                         ret.append (", ");
                     }
-
+        
                     ret.append (computeName (parentGeneralClass, generateFullName));
                     ret.append (getBindingParameters (obGeneralization));
                 }
@@ -2850,7 +2844,7 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isInTheSameCompilUnit(Classifier destOwner, Classifier dest) {
+    private boolean isInTheSameCompilUnit(final Classifier destOwner, final Classifier dest) {
         if (JavaDesignerUtils.isInner (destOwner)) {
             return isInTheSameCompilUnit ((Classifier) destOwner.getOwner (), dest);
         } else if (JavaDesignerUtils.isInner (dest)) {
@@ -2860,44 +2854,36 @@ class ClassTemplate {
         }
     }
 
-    private boolean isAbstractMethod(Operation theOperation) {
-        if (theOperation.isIsAbstract () ||
-                isInterface (theOperation.getOwner ())) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isAnnotationAttribute(Feature feature) {
+    private boolean isAnnotationAttribute(final Feature feature) {
         Classifier parent = (Classifier) feature.getCompositionOwner ();
         return (parent != null && parent.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAANNOTATION) && !feature.isIsClass());
     }
 
-    private boolean isCreateMethod(Operation operation) {
+    private boolean isCreateMethod(final Operation operation) {
         return operation.isStereotyped (IOtherProfileElements.MODULE_NAME, IOtherProfileElements.OPERATION_CREATE);
     }
 
-    private boolean isDeleteMethod(Operation operation) {
+    private boolean isDeleteMethod(final Operation operation) {
         return operation.isStereotyped (IOtherProfileElements.MODULE_NAME, IOtherProfileElements.OPERATION_DESTROY);
     }
 
-    private boolean isExtern(ModelElement element) {
+    private boolean isExtern(final ModelElement element) {
         return JavaDesignerUtils.isNoCode (element) ||
-                element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAEXTERN);
+                                        element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAEXTERN);
     }
 
-    private boolean isInterface(Classifier theGeneralClass) {
+    private boolean isInterface(final Classifier theGeneralClass) {
         return (theGeneralClass instanceof Interface);
     }
 
-    private boolean isJavaAnnotation(GeneralClass theGeneralClass) {
+    private boolean isJavaAnnotation(final GeneralClass theGeneralClass) {
         return theGeneralClass.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAANNOTATION);
     }
 
-    private boolean isAbstract(Operation theOperation) throws TemplateException {
+    private boolean isAbstract(final Operation theOperation) throws TemplateException {
         String ownerClassName = JavaDesignerUtils.getJavaName (theOperation.getOwner ());
         String operationName = JavaDesignerUtils.getJavaName (theOperation);
-
+        
         if (theOperation.isIsAbstract ()) {
             if (theOperation.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE) != null) {
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -2907,8 +2893,9 @@ class ClassTemplate {
                 }
             }
             return true;
-        } else if (isJDK8Compatible() && isInterface (theOperation.getOwner ())) {
-            if (theOperation.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE) != null) {
+        } else if (!isJDK8Compatible() && isInterface (theOperation.getOwner ())) {
+            if (theOperation.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE) != null
+                    || theOperation.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVARETURNED) != null) {
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
                     throw new TemplateException (Messages.getString ("Error.InterfaceBodyMethod", ownerClassName, operationName));
                 } else {
@@ -2920,9 +2907,9 @@ class ClassTemplate {
         return false;
     }
 
-    private boolean isNative(Operation theOperation) throws TemplateException {
+    private boolean isNative(final Operation theOperation) throws TemplateException {
         Classifier operationOwner = theOperation.getOwner ();
-
+        
         boolean ret = theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVANATIVE);
         if (ret && theOperation.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE) != null) {
             if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -2934,28 +2921,28 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isNotRedefinedFinalMethod(Operation theOperation) throws TemplateException {
+    private boolean isNotRedefinedFinalMethod(final Operation theOperation) throws TemplateException {
         boolean ret = true;
-
+        
         Operation theParentOperation = theOperation.getRedefines ();
-
+        
         if (theParentOperation != null && theParentOperation.isFinal ()) {
             if (this.javaConfig.ERRORONFIRSTWARNING) {
                 throw new TemplateException (Messages.getString ("Error.FinalRedefinedMethod", JavaDesignerUtils.getJavaName (theOperation.getOwner ()), JavaDesignerUtils.getJavaName (theOperation)));
             } else {
                 this.report.addWarning (Messages.getString ("Warning.FinalRedefinedMethod", JavaDesignerUtils.getJavaName (theOperation.getOwner ()), JavaDesignerUtils.getJavaName (theOperation)), theOperation, "");
             }
-
+        
             ret = false;
         }
         return ret;
     }
 
-    private boolean isNotUndefinedTypeParameter(Operation theOperation) throws TemplateException {
+    private boolean isNotUndefinedTypeParameter(final Operation theOperation) throws TemplateException {
         Classifier lComposedClass = theOperation.getOwner ();
-
+        
         boolean ret = true;
-
+        
         // Check IO parameters
         for (Parameter theParameter : theOperation.getIO ()) {
             if (!theParameter.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVATYPEEXPR) &&
@@ -2970,7 +2957,7 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Check returned parameters
         Parameter returnParameter = theOperation.getReturn ();
         if (returnParameter != null) {
@@ -2986,7 +2973,7 @@ class ClassTemplate {
                 }
             }
         }
-
+        
         // Display an error if necessary
         if (!ret) {
             if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -3006,58 +2993,58 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeEmptyMarker(MObject element, String noteType) {
+    private CharSequence computeEmptyMarker(final MObject element, final String noteType) {
         return computeMarkersWithText (element, noteType, "");
     }
 
-    private CharSequence computeMarkersWithText(MObject element, String noteType, String text) {
+    private CharSequence computeMarkersWithText(final MObject element, final String noteType, final String text) {
         StringBuilder ret = new StringBuilder ();
-
+        
         // On retourne le r?sultat (commentaire, points et identifiants courts)
         // si on est en model driven
         if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
             // Get the id
-            UUID siteId = element.getUuid ();
-
+            String identifier = element.getUuid().toString();
+        
             // Ligne de d?but
             String firstLine = getIdLineBegin () + "(" + noteType + ")";
             ret.append (firstLine);
-
-            String shortIdsFirstLine = MarkerNew + "/" + siteId;
-
+        
+            String shortIdsFirstLine = MarkerNew + "/" + identifier;
+        
             // Ajout de "." pour que que la premi?re ligne fasse 79 caract?res
             for (int i = 0 ; i < 80 - firstLine.length () -
                     shortIdsFirstLine.length () ; i++) {
                 ret.append (".");
             }
-
+        
             ret.append (shortIdsFirstLine);
             ret.append (NL);
-
+        
             ret.append (text);
             ret.append (NL);
-
+        
             // Seconde ligne
             String secondLine = getIdLineEnd () + "(" + noteType + ")";
             ret.append (secondLine);
-
-            String shortIdsSecondLine = MarkerEnd + "/" + siteId;
-
+        
+            String shortIdsSecondLine = MarkerEnd + "/" + identifier;
+        
             // Ajout de "." pour que que la seconde ligne fasse 79 caract?res
             for (int i = 0 ; i < 80 - secondLine.length () -
                     shortIdsSecondLine.length () ; i++) {
                 ret.append (".");
             }
-
+        
             ret.append (shortIdsSecondLine);
             ret.append (NL);
         }
         return ret;
     }
 
-    private CharSequence computeMembersText(GeneralClass theGeneralClass) {
+    private CharSequence computeMembersText(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (Note note : ModelUtils.getAllNotes (theGeneralClass, JavaDesignerNoteTypes.CLASS_JAVAMEMBERS)) {
             CharSequence content = updateNewlines (note.getContent ());
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
@@ -3068,18 +3055,18 @@ class ClassTemplate {
                 ret.append (content);
             }
         }
-
+        
         if (ret.length () > 0) {
             ret.insert (0, NL);
         }
         return ret;
     }
 
-    private CharSequence computeMethodBody(Operation theOperation) {
+    private CharSequence computeMethodBody(final Operation theOperation) {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getTransformedOneNoteOfType (theOperation, JavaDesignerNoteTypes.OPERATION_JAVACODE, this.javaConfig.GENERATIONMODE_MODELDRIVEN));
-
+        
         if (ret.length () == 0) {
             if (this.javaConfig.GENERATIONMODE_MODELDRIVEN) {
                 ret.append (computeEmptyMarker (theOperation, JavaDesignerNoteTypes.OPERATION_JAVACODE));
@@ -3090,7 +3077,7 @@ class ClassTemplate {
 
     private CharSequence computeOpenBlock() {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (" {");
         ret.append (NL);
         increaseIndentLevel ();
@@ -3106,15 +3093,15 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeMethodModifiers(Operation theOperation) throws TemplateException {
+    private CharSequence computeMethodModifiers(final Operation theOperation) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         GeneralClass operationOwner = (GeneralClass) theOperation.getOwner ();
         if (isInterface (operationOwner)) {
             if (!theOperation.getVisibility ().equals (VisibilityMode.PUBLIC)) {
                 this.report.addWarning (Messages.getString ("Warning.invalidVisibilityInterfaceMethod", JavaDesignerUtils.getFullJavaName (this.session, theOperation)), theOperation, "");
             }
-
+        
             if (theOperation.isFinal ()) {
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
                     throw new TemplateException (Messages.getString ("Error.InterfaceFinalMethod", JavaDesignerUtils.getJavaName (theOperation.getOwner ()), JavaDesignerUtils.getJavaName (theOperation)));
@@ -3122,7 +3109,7 @@ class ClassTemplate {
                     this.report.addWarning (Messages.getString ("Warning.InterfaceFinalMethod", JavaDesignerUtils.getJavaName (theOperation.getOwner ()), JavaDesignerUtils.getJavaName (theOperation)), theOperation, "");
                 }
             }
-
+        
             if (isJDK8Compatible()) {
                 if (theOperation.isIsClass ()) {
                     if (isDeleteMethod (theOperation)) {
@@ -3131,7 +3118,7 @@ class ClassTemplate {
                         ret.append ("static ");
                     }
                 }
-
+        
                 // jdk8 : automatically prepend 'default' in front of interface operation with implementation
                 if (!theOperation.isIsClass () && isImplemented(theOperation)) {
                     ret.append("default ");
@@ -3145,7 +3132,7 @@ class ClassTemplate {
                     }
                 }
             }
-
+        
             if (theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVASYNCHRONIZED)) {
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
                     throw new TemplateException (Messages.getString ("Error.InterfaceSynchronizedMethod", JavaDesignerUtils.getJavaName (theOperation.getOwner ()), JavaDesignerUtils.getJavaName (theOperation)));
@@ -3190,12 +3177,12 @@ class ClassTemplate {
                     break;
                 }
             }
-
+        
             if (!isCreateMethod (theOperation)) {
                 if (theOperation.isIsAbstract ()) {
                     ret.append ("abstract ");
                 }
-
+        
                 if (theOperation.isIsClass ()) {
                     if (isDeleteMethod (theOperation)) {
                         this.report.addWarning (Messages.getString ("Warning.invalidStaticDestructor", JavaDesignerUtils.getFullJavaName (this.session, theOperation)), theOperation, "");
@@ -3203,7 +3190,7 @@ class ClassTemplate {
                         ret.append ("static ");
                     }
                 }
-
+        
                 if (theOperation.isFinal ()) {
                     if (theOperation.isIsAbstract ()) {
                         if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -3215,7 +3202,7 @@ class ClassTemplate {
                         ret.append ("final ");
                     }
                 }
-
+        
                 if (theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVASYNCHRONIZED)) {
                     if (theOperation.isIsAbstract ()) {
                         if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -3228,11 +3215,11 @@ class ClassTemplate {
                     }
                 }
             }
-
-            if (theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVANATIVE)) {
+        
+            if (isNative(theOperation)) {
                 ret.append ("native ");
             }
-
+        
             if (theOperation.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.OPERATION_JAVASTRICT)) {
                 ret.append ("strictfp ");
             }
@@ -3240,34 +3227,41 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeModifiers(GeneralClass theGeneralClass) throws TemplateException {
+    private CharSequence computeModifiers(final GeneralClass theGeneralClass) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         ret.append (getCurrentIndent ());
-
+        
         if (isInterface (theGeneralClass)) {
             if (JavaDesignerUtils.isInner (theGeneralClass)) {
-                switch (theGeneralClass.getVisibility ()) {
-                case PUBLIC:
-                    ret.append ("public ");
-                    break;
-                case PROTECTED:
-                    ret.append ("protected ");
-                    break;
-                case PRIVATE:
-                    ret.append ("private ");
-                    break;
-                case PACKAGEVISIBILITY:
-                    break;
-                default:
-                    // Package visibility
-                    break;
+                if (theGeneralClass.getOwner () instanceof Interface) {
+                    switch (theGeneralClass.getVisibility ()) {
+                    case PUBLIC:
+                    case VISIBILITYUNDEFINED:
+                        // Nothing to do
+                            break;
+                    default:
+                        this.report.addWarning (Messages.getString ("Warning.InterfaceNonPublicInterface", JavaDesignerUtils.getJavaName (theGeneralClass.getOwner ()), JavaDesignerUtils.getJavaName (theGeneralClass)), theGeneralClass, "");
+                    }
+                } else {
+                    switch (theGeneralClass.getVisibility ()) {
+                    case PUBLIC:
+                        ret.append ("public ");
+                        break;
+                    case PROTECTED:
+                        ret.append ("protected ");
+                        break;
+                    case PRIVATE:
+                        ret.append ("private ");
+                        break;
+                    case PACKAGEVISIBILITY:
+                        break;
+                    default:
+                        // Package visibility
+                        break;
+                    }
                 }
-
-                if (theGeneralClass.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVASTATIC)) {
-                    ret.append ("static ");
-                }
-            } else if (JavaDesignerUtils.isInner (theGeneralClass)) {
+        
                 if (theGeneralClass.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVASTATIC)) {
                     ret.append ("static ");
                 }
@@ -3291,23 +3285,34 @@ class ClassTemplate {
             }
         } else { // This is a Class
             if (JavaDesignerUtils.isInner (theGeneralClass)) {
-                switch (theGeneralClass.getVisibility ()) {
-                case PUBLIC:
-                    ret.append ("public ");
-                    break;
-                case PROTECTED:
-                    ret.append ("protected ");
-                    break;
-                case PRIVATE:
-                    ret.append ("private ");
-                    break;
-                case PACKAGEVISIBILITY:
-                    break;
-                default:
-                    // Package visibility
-                    break;
+                if (theGeneralClass.getOwner () instanceof Interface) {
+                    switch (theGeneralClass.getVisibility ()) {
+                    case PUBLIC:
+                    case VISIBILITYUNDEFINED:
+                        // Nothing to do
+                            break;
+                    default:
+                        this.report.addWarning (Messages.getString ("Warning.InterfaceNonPublicClass", JavaDesignerUtils.getJavaName (theGeneralClass.getOwner ()), JavaDesignerUtils.getJavaName (theGeneralClass)), theGeneralClass, "");
+                    }
+                } else {
+                    switch (theGeneralClass.getVisibility ()) {
+                    case PUBLIC:
+                        ret.append ("public ");
+                        break;
+                    case PROTECTED:
+                        ret.append ("protected ");
+                        break;
+                    case PRIVATE:
+                        ret.append ("private ");
+                        break;
+                    case PACKAGEVISIBILITY:
+                        break;
+                    default:
+                        // Package visibility
+                        break;
+                    }
                 }
-
+        
                 if (theGeneralClass.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVASTATIC)) {
                     ret.append ("static ");
                 }
@@ -3328,10 +3333,10 @@ class ClassTemplate {
                     }
                     break;
                 }
-
+        
                 // otherwise the class is friendly, FA 7496
             }
-
+        
             if (theGeneralClass.isIsAbstract ()) {
                 ret.append ("abstract ");
             }
@@ -3342,7 +3347,7 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeName(ModelElement theElement, boolean generateFullName) {
+    private String computeName(final ModelElement theElement, final boolean generateFullName) {
         if (!generateFullName) {
             return JavaDesignerUtils.getJavaName (theElement);
         } else {
@@ -3350,38 +3355,21 @@ class ClassTemplate {
         }
     }
 
-    private Set<String> getNeededJavaUtilImports(GeneralClass theGeneralClass) throws CustomException, TemplateException {
-        Set<String> ret = new HashSet<> ();
-
+    private Set<String> getNeededJavaUtilImports(final GeneralClass theGeneralClass) throws CustomException, TemplateException {
+        Set<String> ret = new TreeSet<> ();
+        
         for (Attribute theAttribute : theGeneralClass.getOwnedAttribute()) {
             if (theAttribute.isTagged(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE) ||
                     (theAttribute.getMultiplicityMax ().equals ("*"))) {
-                String iType = this.typeManager.getInterfaceType (theAttribute);
-                String cType = this.typeManager.getImplementationType (theAttribute, iType);
-
-                if (iType.length () != 0 && !iType.equals ("Array")) {
-                    // No type added for Array
-                    ret.add (iType);
-                }
-
-                if (cType.length () != 0 && !cType.equals ("Array")) {
-                    // No type added for Array
-                    ret.add (cType);
-                }
-            }
-        }
-
-        for (AssociationEnd theAssociationEnd : theGeneralClass.getOwnedEnd()) {
-            if (theAssociationEnd.isNavigable()) {
-                if (isNotBadInnerClassAssociation (theAssociationEnd)) {
-                    String iType = this.typeManager.getInterfaceType (theAssociationEnd);
-                    String cType = this.typeManager.getImplementationType (theAssociationEnd, iType);
-
+                if (theAttribute.isIsClass() || !isInterface(theAttribute.getOwner())) {
+                    String iType = this.typeManager.getInterfaceType (theAttribute);
+                    String cType = this.typeManager.getImplementationType (theAttribute, iType);
+        
                     if (iType.length () != 0 && !iType.equals ("Array")) {
                         // No type added for Array
                         ret.add (iType);
                     }
-
+        
                     if (cType.length () != 0 && !cType.equals ("Array")) {
                         // No type added for Array
                         ret.add (cType);
@@ -3389,38 +3377,59 @@ class ClassTemplate {
                 }
             }
         }
-
+        
+        for (AssociationEnd theAssociationEnd : theGeneralClass.getOwnedEnd()) {
+            if (theAssociationEnd.isNavigable()) {
+                if (isNotBadInnerClassAssociation (theAssociationEnd)) {
+                    if (theAssociationEnd.isIsClass() || !isInterface(theAssociationEnd.getSource())) {
+                        String iType = this.typeManager.getInterfaceType (theAssociationEnd);
+                        String cType = this.typeManager.getImplementationType (theAssociationEnd, iType);
+        
+                        if (iType.length () != 0 && !iType.equals ("Array")) {
+                            // No type added for Array
+                            ret.add (iType);
+                        }
+        
+                        if (cType.length () != 0 && !cType.equals ("Array")) {
+                            // No type added for Array
+                            ret.add (cType);
+                        }
+                    }
+                }
+            }
+        }
+        
         for (Operation theOperation : theGeneralClass.getOwnedOperation()) {
             for (Parameter theParameter : theOperation.getIO ()) {
                 if (theParameter.isTagged(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE) ||
                         theParameter.getMultiplicityMax ().equals ("*")) {
                     String iType = this.typeManager.getInterfaceType (theParameter);
-
+        
                     if (iType.length () != 0 && !iType.equals ("Array")) {
                         // No type added for Array
                         ret.add (iType);
                     }
                 }
             }
-
+        
             Parameter returnParameter = theOperation.getReturn ();
             if (returnParameter != null &&
                     (returnParameter.isTagged(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE) || returnParameter.getMultiplicityMax ().equals ("*"))) { // PAN
                 String iType = this.typeManager.getInterfaceType (returnParameter);
-
+        
                 if (iType.length () != 0 && !iType.equals ("Array")) {
                     // No type added for Array
                     ret.add (iType);
                 }
             }
         }
-
+        
         for (GeneralClass theInnerClass : getInnerClasses (theGeneralClass)) {
             for (String newImport : getNeededJavaUtilImports (theInnerClass)) {
                 ret.add (newImport);
             }
         }
-
+        
         for (GeneralClass theInnerClass : getInternalClasses (theGeneralClass)) {
             for (String newImport : getNeededJavaUtilImports (theInnerClass)) {
                 ret.add (newImport);
@@ -3429,7 +3438,7 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isNotBadInnerClassAssociation(AssociationEnd theAssociationEnd) throws TemplateException {
+    private boolean isNotBadInnerClassAssociation(final AssociationEnd theAssociationEnd) throws TemplateException {
         boolean ret;
         Classifier dest = theAssociationEnd.getTarget();
         if (dest != null) {
@@ -3453,9 +3462,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isNotClassMemberInAnInterfaceWithoutInit(Attribute theAttribute) throws TemplateException {
+    private boolean isNotClassMemberInAnInterfaceWithoutInit(final Attribute theAttribute) throws TemplateException {
         boolean ret = true;
-
+        
         Classifier owner = theAttribute.getOwner ();
         Interface ownerInterface;
         if (owner instanceof Interface) {
@@ -3463,7 +3472,7 @@ class ClassTemplate {
         } else {
             ownerInterface = null;
         }
-
+        
         if (ownerInterface != null) {
             if (!theAttribute.isIsClass()) {
                 // No generation on instance attribute in an interface but it is not an error
@@ -3472,7 +3481,7 @@ class ClassTemplate {
             } else if (theAttribute.getValue().length() == 0) {
                 // No initial value on class attribute, this is an error
                 ret = false;
-
+        
                 if (this.javaConfig.ERRORONFIRSTWARNING) {
                     throw new TemplateException(Messages.getString("Error.InitInterfaceAttribute", JavaDesignerUtils.getJavaName(ownerInterface), JavaDesignerUtils.getJavaName(theAttribute)));
                 } else {
@@ -3483,12 +3492,12 @@ class ClassTemplate {
         return ret;
     }
 
-    private boolean isNotUndefinedType(AssociationEnd theAssociationEnd) {
+    private boolean isNotUndefinedType(final AssociationEnd theAssociationEnd) {
         if (theAssociationEnd.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR) ||
                 (theAssociationEnd.isTagged(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE))) {
             return true;
         }
-
+        
         Classifier owner = theAssociationEnd.getSource ();
         GeneralClass lComposedClass;
         if (owner instanceof GeneralClass) {
@@ -3496,7 +3505,7 @@ class ClassTemplate {
         } else {
             lComposedClass = null;
         }
-
+        
         Classifier typeGeneralClass = theAssociationEnd.getTarget();
         if (typeGeneralClass == null || JavaDesignerUtils.getJavaName (typeGeneralClass).equals ("undefined") || JavaDesignerUtils.isNoCode(typeGeneralClass)) {
             if (lComposedClass != null) {
@@ -3512,12 +3521,12 @@ class ClassTemplate {
         }
     }
 
-    private boolean isNotUndefinedType(Attribute theAttribute) {
+    private boolean isNotUndefinedType(final Attribute theAttribute) {
         if (theAttribute.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR) ||
                 (theAttribute.isTagged(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE))) {
             return true;
         }
-
+        
         Classifier owner = theAttribute.getOwner ();
         GeneralClass lComposedClass;
         if (owner instanceof GeneralClass) {
@@ -3526,7 +3535,7 @@ class ClassTemplate {
             lComposedClass = null;
         }
         GeneralClass typeGeneralClass = theAttribute.getType ();
-
+        
         if (typeGeneralClass == null || JavaDesignerUtils.getJavaName (typeGeneralClass).equals ("undefined") || JavaDesignerUtils.isNoCode(typeGeneralClass)) {
             if (lComposedClass != null) {
                 if (isInterface (lComposedClass)) {
@@ -3541,16 +3550,16 @@ class ClassTemplate {
         }
     }
 
-    private String computePackageDeclaration(Package element) {
+    private String computePackageDeclaration(final Package element) {
         String lName = JavaDesignerUtils.getFullJavaName (this.session, element);
-
+        
         if (!lName.equals ("")) { //$NON-NLS-1$
             return "package " + lName + ";" + NL + NL; //$NON-NLS-1$ //$NON-NLS-2$
         }
         return ""; //$NON-NLS-1$
     }
 
-    private String computeParameterModifiers(Parameter theParameter) {
+    private String computeParameterModifiers(final Parameter theParameter) {
         if (theParameter.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFINAL)) {
             return "final ";
         } else if (this.javaConfig.GENERATEFINALPARAMETERS && (theParameter.getParameterPassing () == PassingMode.IN)) {
@@ -3559,17 +3568,17 @@ class ClassTemplate {
         return "";
     }
 
-    private boolean isParentWithInvariant(GeneralClass ownerGeneralClass) throws CustomException, TemplateException {
-        Set<GeneralClass> alreadyScannedElements = new HashSet<> ();
+    private boolean isParentWithInvariant(final GeneralClass ownerGeneralClass) throws CustomException, TemplateException {
+        Set<GeneralClass> alreadyScannedElements = new TreeSet<> ();
         return isParentWithInvariant (ownerGeneralClass, alreadyScannedElements);
     }
 
-    private boolean isParentWithInvariant(GeneralClass ownerGeneralClass, Set<GeneralClass> alreadyScannedElements) throws CustomException, TemplateException {
+    private boolean isParentWithInvariant(final GeneralClass ownerGeneralClass, final Set<GeneralClass> alreadyScannedElements) throws CustomException, TemplateException {
         alreadyScannedElements.add (ownerGeneralClass);
-
+        
         for (Generalization theGeneralization : getParentInheritances (ownerGeneralClass)) {
             NameSpace theSuperType = theGeneralization.getSuperType ();
-
+        
             if (theSuperType instanceof Class &&
                     !alreadyScannedElements.contains (theSuperType)) {
                 Class superTypeClass = (Class) theSuperType;
@@ -3585,17 +3594,17 @@ class ClassTemplate {
         return false;
     }
 
-    private List<Generalization> getParentInheritances(GeneralClass theGeneralClass) throws TemplateException {
+    private List<Generalization> getParentInheritances(final GeneralClass theGeneralClass) throws TemplateException {
         List<Generalization> ret = new ArrayList<> ();
         String superClassName;
-
+        
         if (isInterface (theGeneralClass)) { // Start from an interface
             for (Generalization generalization : theGeneralClass.getParent ()) {
                 NameSpace superType = generalization.getSuperType ();
                 if (!JavaDesignerUtils.isNoCode (generalization)) {
                     if (superType instanceof GeneralClass) {
                         GeneralClass superTypeGeneralClass = (GeneralClass) superType;
-
+        
                         if (!isInterface (superTypeGeneralClass)) { // Error, this is not an interface
                             superClassName = JavaDesignerUtils.getJavaName (superTypeGeneralClass);
                             if (this.javaConfig.ERRORONFIRSTWARNING) {
@@ -3646,16 +3655,16 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeRetentionAnnotation(GeneralClass theGeneralClass) {
+    private CharSequence computeRetentionAnnotation(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (TaggedValue theTag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.JAVAANNOTATION_JAVARETENTIONANNOTATION)) {
             ret.append (getCurrentIndent ());
             ret.append ("@java.lang.annotation.Retention(");
-
+        
             for (TagParameter theTagParameter : theTag.getActual ()) {
                 String value = theTagParameter.getValue ();
-
+        
                 int pos = value.indexOf ("java.lang.annotation.RetentionPolicy.");
                 if (pos != 0) {
                     pos = value.indexOf ("RetentionPolicy.", 0);
@@ -3665,27 +3674,27 @@ class ClassTemplate {
                         ret.append ("java.lang.annotation.RetentionPolicy.");
                     }
                 }
-
+        
                 ret.append (value);
             }
-
+        
             ret.append (")");
             ret.append (NL);
         }
         return ret;
     }
 
-    private CharSequence computeTargetAnnotation(GeneralClass theGeneralClass) {
+    private CharSequence computeTargetAnnotation(final GeneralClass theGeneralClass) {
         StringBuilder ret = new StringBuilder ();
-
+        
         for (TaggedValue theTag : ModelUtils.getAllTaggedValues (theGeneralClass, JavaDesignerTagTypes.JAVAANNOTATION_JAVATARGETANNOTATION)) {
             ret.append (getCurrentIndent ());
             ret.append ("@java.lang.annotation.Target({");
-
+        
             for (Iterator<TagParameter> iterator = theTag.getActual ().iterator () ; iterator.hasNext () ;) {
                 TagParameter theTagParameter = iterator.next ();
                 String value = theTagParameter.getValue ();
-
+        
                 int pos = value.indexOf ("java.lang.annotation.ElementType.");
                 if (pos != 0) {
                     pos = value.indexOf ("ElementType.", 0);
@@ -3695,7 +3704,7 @@ class ClassTemplate {
                         ret.append ("java.lang.annotation.ElementType.");
                     }
                 }
-
+        
                 ret.append (value);
                 if (iterator.hasNext ()) {
                     ret.append (", ");
@@ -3707,9 +3716,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeTopText(ModelElement element) {
+    private CharSequence computeTopText(final ModelElement element) {
         StringBuilder ret = new StringBuilder ();
-
+        
         List<Note> notes = ModelUtils.getAllNotes (element, JavaDesignerNoteTypes.CLASS_JAVATOP);
         for (Note note : notes) {
             CharSequence content = updateNewlines (note.getContent ());
@@ -3724,14 +3733,14 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence updateNewlinesExceptLast(String text) {
+    private CharSequence updateNewlinesExceptLast(final String text) {
         StringBuilder ret = new StringBuilder ();
         String simpleNL = "\n";
-
+        
         String[] lines = text.split (simpleNL);
         for (int i = 0 ; i < lines.length ; i++) {
             String line = lines[i];
-
+        
             ret.append (line);
             if (i != lines.length - 1 && line.length () > 0) {
                 if (line.charAt (line.length () - 1) != '\r') {
@@ -3744,10 +3753,10 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence computeExtendsWithTaggedValue(TemplateParameter theTemplateParameter) throws TemplateException {
+    private CharSequence computeExtendsWithTaggedValue(final TemplateParameter theTemplateParameter) throws TemplateException {
         StringBuilder ret = new StringBuilder ();
         int parentCount = 0;
-
+        
         for (TaggedValue tag : ModelUtils.getAllTaggedValues (theTemplateParameter, JavaDesignerTagTypes.TEMPLATEPARAMETER_JAVAEXTENDS)) {
             for (TagParameter tagParameter : tag.getActual ()) {
                 String value = tagParameter.getValue ();
@@ -3769,15 +3778,15 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getPropertyDeclaration(AssociationEnd theAssociationEnd) throws CustomException, TemplateException {
+    private CharSequence getPropertyDeclaration(final AssociationEnd theAssociationEnd) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         boolean oldModelDriven = this.javaConfig.GENERATIONMODE_MODELDRIVEN;
         this.javaConfig.GENERATIONMODE_MODELDRIVEN = false;
-
+        
         boolean oldRoundTrip = this.javaConfig.GENERATIONMODE_ROUNDTRIP;
         this.javaConfig.GENERATIONMODE_ROUNDTRIP = false;
-
+        
         try {
             if (theAssociationEnd.isIsClass() || !(theAssociationEnd.getSource() instanceof Interface)) {
                 ret.append (getCurrentIndent ());
@@ -3790,49 +3799,49 @@ class ClassTemplate {
                 ret.append (NL);
                 ret.append (NL);
             }
-
+        
             // Add accessors in the model, they will be rollbacked
             AccessorManager accessorManager = new AccessorManager (this.session);
             accessorManager.init (this.javaConfig.getJavaConfiguration());
-
+        
             for (Operation tempAccessor : accessorManager.updateAccessors (theAssociationEnd, true)) {
                 // Check stereotypes only for operations
                 if (tempAccessor.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
                     Operation getter = tempAccessor;
-
+        
                     // Replace visibility with the good one
                     getter.setVisibility(getPropertyGetterVisibility(theAssociationEnd));
-
+        
                     // Replace comment in the generated code
                     String code = getter.getNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
                     if (code != null) {
                         code = code.replace(accessorManager.AUTOMATIC_UPDATE_COMMENT, accessorManager.PROPERTY_COMMENT);
                         getter.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE, code);
                     }
-
+        
                     if (oldRoundTrip) {
                         ret.append (computePropertyGetterAnnotation());
                     }
                     ret.append(computeMethod((getter)));
                 } else if (tempAccessor.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER)) {
                     Operation setter = tempAccessor;
-
+        
                     // Replace visibility with the good one
                     setter.setVisibility(getPropertySetterVisibility(theAssociationEnd));
-
+        
                     // Replace comment in the generated code
                     String code = setter.getNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
                     if (code != null) {
                         code = code.replace(accessorManager.AUTOMATIC_UPDATE_COMMENT, accessorManager.PROPERTY_COMMENT);
                         setter.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE, code);
                     }
-
+        
                     if (oldRoundTrip) {
                         ret.append (computePropertySetterAnnotation());
                     }
                     ret.append(computeMethod((setter)));
                 }
-
+        
                 // Delete the temporary created accessor
                 tempAccessor.delete();
             }
@@ -3845,16 +3854,16 @@ class ClassTemplate {
         return ret;
     }
 
-    private CharSequence getPropertyDeclaration(Attribute theAttribute) throws CustomException, TemplateException {
+    private CharSequence getPropertyDeclaration(final Attribute theAttribute) throws CustomException, TemplateException {
         StringBuilder ret = new StringBuilder ();
-
+        
         boolean oldModelDriven = this.javaConfig.GENERATIONMODE_MODELDRIVEN;
         this.javaConfig.GENERATIONMODE_MODELDRIVEN = false;
-
+        
         boolean oldRoundTrip = this.javaConfig.GENERATIONMODE_ROUNDTRIP;
         this.javaConfig.GENERATIONMODE_ROUNDTRIP = false;
-
-
+        
+        
         try {
             if (isNotClassMemberInAnInterfaceWithoutInit (theAttribute)) {
                 ret.append (getCurrentIndent ());
@@ -3867,52 +3876,52 @@ class ClassTemplate {
                 ret.append (NL);
                 ret.append (NL);
             }
-
+        
             // Reset attribute's visibility
             //theAttribute.setVisibility(oldVisibility);
-
+        
             // Add accessors in the model, they will be rollbacked
             AccessorManager accessorManager = new AccessorManager (this.session);
             accessorManager.init (this.javaConfig.getJavaConfiguration());
-
+        
             for (Operation tempAccessor : accessorManager.updateAccessors (theAttribute, true)) {
                 // Check stereotypes only for operations
                 if (tempAccessor.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
                     Operation getter = tempAccessor;
-
+        
                     // Replace visibility with the good one
                     getter.setVisibility(getPropertyGetterVisibility(theAttribute));
-
+        
                     // Replace comment in the generated code
                     String code = getter.getNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
                     if (code != null) {
                         code = code.replace(accessorManager.AUTOMATIC_UPDATE_COMMENT, accessorManager.PROPERTY_COMMENT);
                         getter.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE, code);
                     }
-
+        
                     if (oldRoundTrip) {
                         ret.append (computePropertyGetterAnnotation());
                     }
                     ret.append(computeMethod((getter)));
                 } else if (tempAccessor.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER)) {
                     Operation setter = tempAccessor;
-
+        
                     // Replace visibility with the good one
                     setter.setVisibility(getPropertySetterVisibility(theAttribute));
-
+        
                     // Replace comment in the generated code
                     String code = setter.getNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
                     if (code != null) {
                         code = code.replace(accessorManager.AUTOMATIC_UPDATE_COMMENT, accessorManager.PROPERTY_COMMENT);
                         setter.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE, code);
                     }
-
+        
                     if (oldRoundTrip) {
                         ret.append (computePropertySetterAnnotation());
                     }
                     ret.append(computeMethod((setter)));
                 }
-
+        
                 // Delete the temporary created accessor
                 tempAccessor.delete();
             }
@@ -3951,9 +3960,9 @@ class ClassTemplate {
         return ret;
     }
 
-    private VisibilityMode getPropertyGetterVisibility(Feature accessor) {
+    private VisibilityMode getPropertyGetterVisibility(final Feature accessor) {
         VisibilityMode visibility;
-
+        
         try {
             String code = ModelUtils.getFirstTagParameter(accessor, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAATTRIBUTEPROPERTY_JAVAGETTERVISIBILITY);
             visibility = VisibilityMode.valueOf(code.toUpperCase());
@@ -3963,9 +3972,9 @@ class ClassTemplate {
         return visibility;
     }
 
-    private VisibilityMode getPropertySetterVisibility(Feature accessor) {
+    private VisibilityMode getPropertySetterVisibility(final Feature accessor) {
         VisibilityMode visibility;
-
+        
         try {
             String code = ModelUtils.getFirstTagParameter(accessor, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAATTRIBUTEPROPERTY_JAVASETTERVISIBILITY);
             visibility = VisibilityMode.valueOf(code.toUpperCase());
@@ -3975,66 +3984,65 @@ class ClassTemplate {
         return visibility;
     }
 
-    private File getCopyrightFile(MObject element) {
+    private File getCopyrightFile(final MObject element) {
         ModelElement parent = (ModelElement) element.getCompositionOwner();
         while (parent != null && !(parent instanceof Component) && !parent.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVACOMPONENT)) {
             parent = (ModelElement) parent.getCompositionOwner();
         }
-
+        
         String path = null;
         if (parent != null) {
             path = ModelUtils.getFirstTagParameter(parent, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVACOMPONENT_COPYRIGHTFILE);
         }
-
+        
         if (path == null || path.isEmpty()) {
             path = this.javaConfig.COPYRIGHTFILE;
         }
-
+        
         File copyrightFile = new File(path);
         if (copyrightFile.isFile() && copyrightFile.canRead()) {
             return copyrightFile;
         }
-
+        
         // Try relative path
-        copyrightFile = new File(this.javaConfig.getJavaConfiguration().getProjectSpacePath().toFile(), path);
+        copyrightFile = new File(JavaDesignerModule.getInstance().getModuleContext().getProjectStructure().getPath().toFile(), path);
         if (copyrightFile.isFile() && copyrightFile.canRead()) {
             return copyrightFile;
         }
         return null;
     }
 
-    private void generateCopyright(MObject element, PrintStream out) {
+    private void generateCopyright(final MObject element, final PrintStream out) {
         File copyrightFile = getCopyrightFile (element);
-
+        
         if (copyrightFile != null) {
             StringBuilder content = computeCopyrightContent(copyrightFile);
-
+        
             if (content.length() > 0) {
                 out.println(content);
             }
         }
     }
 
-    private StringBuilder computeCopyrightContent(File copyrightFile) {
+    private StringBuilder computeCopyrightContent(final File copyrightFile) {
         StringBuilder content = this.copyrightCache.get(copyrightFile.getAbsolutePath());
-
+        
         if (content == null) {
             content = new StringBuilder();
-
+        
             try (InputStream ips = new FileInputStream(copyrightFile);
                     InputStreamReader ipsr = new InputStreamReader(ips);
                     BufferedReader br = new BufferedReader(ipsr)) {
-
+        
                 int len;
                 char[] cbuf = new char[2048];
                 while ( (len = br.read(cbuf)) > 0 ) {
                     content.append(cbuf, 0, len);
                 }
-
+        
                 br.close();
             } catch (IOException e) {
-                // Print the stack, just in case
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
             this.copyrightCache.put(copyrightFile.getAbsolutePath(), content);
         }
@@ -4051,4 +4059,5 @@ class ClassTemplate {
     private boolean isJDK8Compatible() {
         return this.javaConfig.JAVA8COMPATIBILITY;
     }
+
 }

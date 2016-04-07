@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.propertypage;
 
 import java.util.ArrayList;
-
 import org.modelio.api.module.IModule;
 import org.modelio.api.module.propertiesPage.IModulePropertyTable;
 import org.modelio.metamodel.uml.statik.Interface;
@@ -17,27 +16,26 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 class InterfacePropertyModel extends PropertyModel implements IPropertyModel {
     private Interface selectedInterface = null;
 
-
-    public InterfacePropertyModel(IModule module, Interface selectedInterface) {
+    public InterfacePropertyModel(final IModule module, final Interface selectedInterface) {
         super (module);
         this.selectedInterface = selectedInterface;
     }
 
     @Override
-    public void changeProperty(int row, String value) {
+    public void changeProperty(final int row, final String value) {
         String property = getProperty (row);
-
-            // Property "JavaNoCode", "JavaWrapper", "JavaFinal", "JavaVolatile", "JavaTransient", "JavaNoInitValue"
-            if (property.contentEquals (JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
-                boolean isActive = Boolean.parseBoolean (value);
+        
+        // Property "JavaNoCode", "JavaWrapper", "JavaFinal", "JavaVolatile", "JavaTransient", "JavaNoInitValue"
+        if (property.contentEquals (JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
+            boolean isActive = Boolean.parseBoolean (value);
             changePropertyBooleanTaggedValue (this.selectedInterface, IJavaDesignerPeerModule.MODULE_NAME, property, isActive);
-
-            } else if (property.contentEquals (JavaDesignerStereotypes.JAVAINTERFACE)) {
+        
+        } else if (property.contentEquals (JavaDesignerStereotypes.JAVAINTERFACE)) {
             changeStereotype (this.selectedInterface, IJavaDesignerPeerModule.MODULE_NAME, property, Boolean.parseBoolean (value));
-            } else if (property.contentEquals (JavaDesignerTagTypes.INTERFACE_JAVASTATIC)) {
-                boolean isActive = Boolean.parseBoolean (value);
+        } else if (property.contentEquals (JavaDesignerTagTypes.INTERFACE_JAVASTATIC)) {
+            boolean isActive = Boolean.parseBoolean (value);
             changePropertyBooleanTaggedValue (this.selectedInterface, IJavaDesignerPeerModule.MODULE_NAME, property, isActive);
-            }
+        }
     }
 
     /**
@@ -52,12 +50,12 @@ class InterfacePropertyModel extends PropertyModel implements IPropertyModel {
     @Override
     public ArrayList<String> getProperties() {
         ArrayList<String> properties = new ArrayList<> ();
-
+        
         properties.add (JavaDesignerStereotypes.JAVAINTERFACE);
-
+        
         if (this.selectedInterface.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINTERFACE)) {
             properties.add (JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE);
-
+        
             if (!this.selectedInterface.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
                 if (JavaDesignerUtils.isInner (this.selectedInterface)) {
                     properties.add (JavaDesignerTagTypes.INTERFACE_JAVASTATIC);
@@ -68,11 +66,11 @@ class InterfacePropertyModel extends PropertyModel implements IPropertyModel {
     }
 
     @Override
-    public void update(IModulePropertyTable table) {
+    public void update(final IModulePropertyTable table) {
         for (String property : getProperties ()) {
             if (property.contentEquals (JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
                 table.addProperty (Messages.getString ("Gui.Property.NoCode"), this.selectedInterface.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)); //$NON-NLS-1$
-
+        
             } else if (property.contentEquals (JavaDesignerStereotypes.JAVAINTERFACE)) {
                 table.addProperty (Messages.getString ("Gui.Property.JavaAutomation"), this.selectedInterface.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINTERFACE)); //$NON-NLS-1$
             } else if (property.contentEquals (JavaDesignerTagTypes.INTERFACE_JAVASTATIC)) {

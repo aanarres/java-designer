@@ -1,13 +1,11 @@
 package org.modelio.module.javadesigner.commands.creation;
 
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.ITransaction;
-import org.modelio.api.model.IUmlModel;
-import org.modelio.api.model.InvalidTransactionException;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.ITransaction;
+import org.modelio.api.modelio.model.IUmlModel;
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.statik.Association;
 import org.modelio.metamodel.uml.statik.AssociationEnd;
@@ -21,33 +19,30 @@ import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class CreateAssociationEndProperty extends DefaultModuleCommandHandler {
-
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
-        IModelingSession session = module.getModelingSession ();
-        try (ITransaction transaction = session.createTransaction("CreateAssociationEndProperty")) {
-            IUmlModel model = session.getModel ();
-
-            for (MObject element : selectedElements) {
-                if (element instanceof GeneralClass) {
-                    GeneralClass currentClass = (GeneralClass) element;
-
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
+        IModelingSession session = module.getModuleContext().getModelingSession();
+        try(ITransaction transaction = session.createTransaction("CreateAssociationEndProperty")) {
+            IUmlModel model = session.getModel();
+        
+            for(MObject element : selectedElements) {
+                if(element instanceof GeneralClass) {
+                    GeneralClass currentClass =(GeneralClass) element;
+        
                     Association createdAssoc = model.createAssociation(currentClass, currentClass, "");
-                    for (AssociationEnd end : createdAssoc.getEnd()) {
-                        if (end.getTarget() != null) {
+                    for(AssociationEnd end : createdAssoc.getEnd()) {
+                        if(end.getTarget() != null) {
                             ModelUtils.addStereotype(end, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY);
                         }
                     }
                 }
             }
-
+        
             transaction.commit();
-        } catch (InvalidTransactionException e) {
-            JavaDesignerModule.logService.error(e);
-        } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVACOMPONENT)); //$NON-NLS-1$
-        } catch (Exception e) {
-            JavaDesignerModule.logService.error(e);
+        } catch(ExtensionNotFoundException e) {
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVACOMPONENT)); //$NON-NLS-1$
+        } catch(Exception e) {
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
     }
 
@@ -56,32 +51,32 @@ public class CreateAssociationEndProperty extends DefaultModuleCommandHandler {
      * The commands are displayed, by default, depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
-        if (!super.accept(selectedElements, module)) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
+        if(!super.accept(selectedElements, module)) {
             return false;
         }
-        for (MObject element : selectedElements) {
-            if (!JavaDesignerUtils.isJavaElement (element) || (element instanceof Component)) {
+        for(MObject element : selectedElements) {
+            if(!JavaDesignerUtils.isJavaElement(element) ||(element instanceof Component)) {
                 return false;
             }
         }
-        return (selectedElements.size () != 0);
+        return(selectedElements.size() != 0);
     }
 
     /**
      * This method specifies whether or not a command must be deactivated.
-     * If the command has to be displayed (which means that the accept method has returned a positive value, it is sometimes needed to desactivate the command depending on specific constraints that are specific to the module.
+     * If the command has to be displayed(which means that the accept method has returned a positive value, it is sometimes needed to desactivate the command depending on specific constraints that are specific to the module.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
-        if (!super.isActiveFor(selectedElements, module)) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
+        if(!super.isActiveFor(selectedElements, module)) {
             return false;
         }
         boolean result = true;
-
+        
         // Not available on libraries
-        for (MObject element : selectedElements) {
-            if (ModelUtils.isLibrary(element)) {
+        for(MObject element : selectedElements) {
+            if(ModelUtils.isLibrary(element)) {
                 result = false;
                 break;
             }

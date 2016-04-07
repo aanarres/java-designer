@@ -4,17 +4,17 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.model.IVisitorElement;
+import com.modelio.module.xmlreverse.model.JaxbReversedData;
 import org.modelio.metamodel.uml.statik.NameSpace;
 import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.reverse.ui.ElementStatus;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.model.IVisitorElement;
-import com.modelio.module.xmlreverse.model.JaxbReversedData;
-
 public class ReverseConfig {
+    private ReverseType reverseType;
+
     private Map<String, ElementStatus> filesToReverse;
 
     private List<File> sourcepath;
@@ -31,8 +31,6 @@ public class ReverseConfig {
 
     private IReportWriter report;
 
-    private ReverseType reverseType;
-
     private JaxbReversedData model;
 
     private List<IVisitorElement> filteredElements;
@@ -47,10 +45,10 @@ public class ReverseConfig {
     /**
      * @param filesToReverse the filesToReverse to set
      */
-    public void setFilesToReverse(Map<String, ElementStatus> filesToReverse) {
+    public void setFilesToReverse(final Map<String, ElementStatus> filesToReverse) {
         this.filesToReverse = filesToReverse;
     }
-    
+
     public List<File> getSourcepath() {
         return this.sourcepath;
     }
@@ -65,7 +63,7 @@ public class ReverseConfig {
     /**
      * @param classpath the classpath to set
      */
-    public void setClasspath(List<File> classpath) {
+    public void setClasspath(final List<File> classpath) {
         this.classpath = classpath;
     }
 
@@ -79,7 +77,7 @@ public class ReverseConfig {
     /**
      * @param containerFile the containerFile to set
      */
-    public void setContainerFile(File containerFile) {
+    public void setContainerFile(final File containerFile) {
         this.containerFile = containerFile;
     }
 
@@ -100,7 +98,7 @@ public class ReverseConfig {
     /**
      * @param reverseMode the reverseMode to set
      */
-    public void setReverseMode(GeneralReverseMode reverseMode) {
+    public void setReverseMode(final GeneralReverseMode reverseMode) {
         this.strategyConfiguration.reverseMode = reverseMode;
     }
 
@@ -114,7 +112,7 @@ public class ReverseConfig {
     /**
      * @param reverseType the reverseType to set
      */
-    public void setReverseType(ReverseType reverseType) {
+    public void setReverseType(final ReverseType reverseType) {
         this.reverseType = reverseType;
     }
 
@@ -128,7 +126,7 @@ public class ReverseConfig {
     /**
      * @param model the model to set
      */
-    public void setModel(JaxbReversedData model) {
+    public void setModel(final JaxbReversedData model) {
         this.model = model;
     }
 
@@ -142,16 +140,11 @@ public class ReverseConfig {
     /**
      * @param filteredElements the filteredElements to set
      */
-    public void setFilteredElements(List<IVisitorElement> filteredElements) {
+    public void setFilteredElements(final List<IVisitorElement> filteredElements) {
         this.filteredElements = filteredElements;
     }
 
-    public ReverseConfig(Hashtable<String, ElementStatus> filesToReverse,
-    		             List<File> sourcepath, 
-    		             List<File> classpath, 
-    		             ReverseType reverseType,
-    		             File containerFile, 
-    		             File outputFile) {
+    public ReverseConfig(final Hashtable<String, ElementStatus> filesToReverse, final List<File> sourcepath, final List<File> classpath, final ReverseType reverseType, final File containerFile, final File outputFile) {
         this.filesToReverse = filesToReverse;
         this.sourcepath = sourcepath;
         this.classpath = classpath;
@@ -161,34 +154,34 @@ public class ReverseConfig {
     }
 
     public void print() {
-        JavaDesignerModule.logService.info ("---------------");
-        JavaDesignerModule.logService.info ("Nb files to reverse=" + //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("---------------");
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Nb files to reverse=" + //$NON-NLS-1$
                 this.filesToReverse.size ());
         for (String file : this.filesToReverse.keySet ()) {
             ElementStatus status = this.filesToReverse.get(file);
-            JavaDesignerModule.logService.info(status.getReverseStatus().toString());
-            JavaDesignerModule.logService.info("\t" + status.getType());
-            JavaDesignerModule.logService.info ("\tfile=" + file); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info(status.getReverseStatus().toString());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info("\t" + status.getType());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("\tfile=" + file); //$NON-NLS-1$
         }
         
-        JavaDesignerModule.logService.info ("Nb sourcepath=" + //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Nb sourcepath=" + //$NON-NLS-1$
                 this.sourcepath.size ());
         for (File path : this.sourcepath) {
-            JavaDesignerModule.logService.info ("sourcepath=" + path); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("sourcepath=" + path); //$NON-NLS-1$
         }
         
-        JavaDesignerModule.logService.info ("Nb classpath=" + //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Nb classpath=" + //$NON-NLS-1$
                 this.classpath.size ());
         for (File path : this.classpath) {
-            JavaDesignerModule.logService.info ("classpath=" + path); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("classpath=" + path); //$NON-NLS-1$
         }
-        JavaDesignerModule.logService.info ("reverseType=" + this.reverseType); //$NON-NLS-1$
-        JavaDesignerModule.logService.info ("containerFile=" + this.containerFile); //$NON-NLS-1$
-        JavaDesignerModule.logService.info ("outputFile=" + this.outputFile); //$NON-NLS-1$
-        JavaDesignerModule.logService.info ("---------------");
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("reverseType=" + this.reverseType); //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("containerFile=" + this.containerFile); //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("outputFile=" + this.outputFile); //$NON-NLS-1$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("---------------");
     }
 
-    public void setReport(IReportWriter report) {
+    public void setReport(final IReportWriter report) {
         this.report = report;
     }
 
@@ -200,11 +193,11 @@ public class ReverseConfig {
         return this.reverseRoot;
     }
 
-    public void setReverseRoot(NameSpace reverseRoot) {
+    public void setReverseRoot(final NameSpace reverseRoot) {
         this.reverseRoot = reverseRoot;
     }
 
-    public void setStrategyConfiguration(ReverseStrategyConfiguration strategyConfiguration) {
+    public void setStrategyConfiguration(final ReverseStrategyConfiguration strategyConfiguration) {
         this.strategyConfiguration = strategyConfiguration;
     }
 
@@ -212,18 +205,20 @@ public class ReverseConfig {
         return this.strategyConfiguration;
     }
 
+    public String getEncoding() {
+        return this.strategyConfiguration.ENCODING;
+    }
+
     public enum GeneralReverseMode {
         SIMPLE_STRUCTURAL_REVERSE,
         COMPLETE_STRUCTURAL_REVERSE,
         COMPLETE_REVERSE;
-        
+
         @Override
         public String toString() {
             return Messages.getString("Gui.GeneralReverseMode." + this.name());
         }
+
     }
 
-    public String getEncoding() {
-        return this.strategyConfiguration.ENCODING;
-    }
 }

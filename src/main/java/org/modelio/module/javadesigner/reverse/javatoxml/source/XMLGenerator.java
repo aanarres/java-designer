@@ -3,9 +3,8 @@ package org.modelio.module.javadesigner.reverse.javatoxml.source;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-
+import java.util.Map;
 import org.modelio.module.javadesigner.reverse.antlr.ASTTree;
 import org.modelio.module.javadesigner.reverse.antlr.AstUtils;
 import org.modelio.module.javadesigner.reverse.antlr.JavaParser;
@@ -17,13 +16,13 @@ import org.modelio.module.javadesigner.reverse.javautil.XMLStringWriter;
 public abstract class XMLGenerator {
     public static final String ANNOTATION_PARAMETER_SEPARATOR = "#";
 
-    public abstract void generateXML(final ASTTree ast, final Context ctx) throws XMLGeneratorException, IOException;
+    public abstract void generateXML(final ASTTree ast, final Context ctx) throws IOException, XMLGeneratorException;
 
-    protected void generateAnnotationsXMLTags(List<ASTTree> annotations) throws IOException {
+    protected void generateAnnotationsXMLTags(final List<ASTTree> annotations) throws IOException {
         for (ASTTree annotation : annotations) {
             String stereotypeName = AstUtils.getSimpleName(annotation);
             Map<String, String> parameters = new HashMap<>();
-
+        
             ASTTree parameterList = (ASTTree) annotation.getFirstChildWithType(JavaParser.ANNOTATION_INIT_LIST);
             if (parameterList != null) {
                 // for example @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,13 +48,12 @@ public abstract class XMLGenerator {
                     }
                 }
             }
-
+        
             generateAnnotation(annotation.getSourceCode(), stereotypeName, parameters);
         }
     }
 
-
-    public static void generateAnnotation( String content, String stereotypeName, Map<String, String> parameters) throws IOException {
+    public static void generateAnnotation(final String content, final String stereotypeName, final Map<String, String> parameters) throws IOException {
         // Add note "JavaAnnotation"
         XMLBuffer.model.write ("<note note-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write ("JavaAnnotation");
@@ -64,12 +62,12 @@ public abstract class XMLGenerator {
         XMLBuffer.model.write ("<content><![CDATA["); //$NON-NLS-1$
         XMLBuffer.model.write (xw.encodedata (content.toString ()));
         XMLBuffer.model.write ("]" + "]></content>\n"); //$NON-NLS-1$
-
+        
         // Add stereotype
         XMLBuffer.model.write ("<stereotype stereotype-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (stereotypeName);
         XMLBuffer.model.write ("\"/>\n"); //$NON-NLS-1$
-
+        
         // Add tag parameters
         for (Entry<String, String> parameter: parameters.entrySet()) {
             String key = stereotypeName + ANNOTATION_PARAMETER_SEPARATOR + parameter.getKey();
@@ -80,8 +78,9 @@ public abstract class XMLGenerator {
                 GeneratorUtils.generateTaggedValueTag(key);
             }
         }
-
+        
         // Close note
         XMLBuffer.model.write ("</note>\n"); //$NON-NLS-1$
     }
+
 }

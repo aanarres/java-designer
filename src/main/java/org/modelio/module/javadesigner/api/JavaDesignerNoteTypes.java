@@ -15,7 +15,7 @@ public interface JavaDesignerNoteTypes {
     public static final String CLASS_JAVACODE = "JavaCode";
 
     public static final String CLASS_JAVACOMMENT = "JavaComment";
-    
+
     public static final String CLASS_JAVADOC = "Javadoc";
 
     public static final String CLASS_JAVAHEADER = "JavaHeader";
@@ -25,9 +25,9 @@ public interface JavaDesignerNoteTypes {
     public static final String CLASS_JAVATOP = "JavaTop";
 
     public static final String DATATYPE_JAVABOTTOM = "JavaBottom";
-    
+
     public static final String DATATYPE_JAVACOMMENT = "JavaComment";
-    
+
     public static final String DATATYPE_JAVADOC = "Javadoc";
 
     public static final String DATATYPE_JAVAHEADER = "JavaHeader";
@@ -35,9 +35,9 @@ public interface JavaDesignerNoteTypes {
     public static final String DATATYPE_JAVAMEMBERS = "JavaMembers";
 
     public static final String DATATYPE_JAVAANNOTATION = "JavaAnnotation";
-    
+
     public static final String DATATYPE_JAVATOP = "JavaTop";
-    
+
     public static final String DEPENDENCY_SEEJAVADOC = "SeeJavadoc";
 
     public static final String ELEMENTIMPORT_JAVADOC = "Javadoc";
@@ -47,23 +47,23 @@ public interface JavaDesignerNoteTypes {
     public static final String ENUMERATIONLITERAL_JAVACODE = "JavaCode";
 
     public static final String ENUMERATIONLITERAL_JAVACOMMENT = "JavaComment";
-    
+
     public static final String ENUMERATIONLITERAL_JAVADOC = "Javadoc";
-    
+
     public static final String ENUMERATIONLITERAL_JAVAINITVALUECOMMENT = "JavaInitValueComment";
 
     public static final String ENUMERATION_JAVAANNOTATION = "JavaAnnotation";
 
     public static final String ENUMERATION_JAVACOMMENT = "JavaComment";
-    
+
     public static final String ENUMERATION_JAVADOC = "Javadoc";
 
     public static final String ENUMERATION_JAVAMEMBERS = "JavaMembers";
-    
+
     public static final String FEATURE_JAVAANNOTATION = "JavaAnnotation";
 
     public static final String FEATURE_JAVACOMMENT = "JavaComment";
-    
+
     public static final String FEATURE_JAVADOC = "Javadoc";
 
     public static final String INTERFACE_JAVAANNOTATION = "JavaAnnotation";
@@ -73,7 +73,7 @@ public interface JavaDesignerNoteTypes {
     public static final String INTERFACE_JAVACODE = "JavaCode";
 
     public static final String INTERFACE_JAVACOMMENT = "JavaComment";
-    
+
     public static final String INTERFACE_JAVADOC = "Javadoc";
 
     public static final String INTERFACE_JAVAHEADER = "JavaHeader";
@@ -95,6 +95,5 @@ public interface JavaDesignerNoteTypes {
     public static final String PARAMETER_JAVAANNOTATION = "JavaAnnotation";
 
     public static final String PARAMETER_JAVADOC = "Javadoc";
-
 
 }

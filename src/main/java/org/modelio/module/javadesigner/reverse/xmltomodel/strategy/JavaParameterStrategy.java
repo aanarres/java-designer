@@ -2,8 +2,12 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.model.JaxbParameter;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.strategy.ParameterStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.statik.GeneralClass;
@@ -22,30 +26,24 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.model.JaxbParameter;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.strategy.ParameterStrategy;
-
 public class JavaParameterStrategy extends ParameterStrategy {
     private boolean isInParameterFinalGenerationActive;
 
-    public JavaParameterStrategy(IModelingSession session, ReverseStrategyConfiguration config) {
+    public JavaParameterStrategy(final IModelingSession session, final ReverseStrategyConfiguration config) {
         super (session);
         this.isInParameterFinalGenerationActive = config.GENERATEFINALPARAMETERS;
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbParameter jaxb_element, Parameter modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbParameter jaxb_element, final Parameter modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         String oldName = modelio_element.getName ();
         boolean hasJavaName = modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME);
-
+        
         String name = jaxb_element.getName ();
         if (name != null && !JavaDesignerUtils.getJavaName (modelio_element).equals (name)) {
             modelio_element.setName (name);
         }
-
+        
         if (owner instanceof Operation) {
             modelio_element.setComposed (null);
             modelio_element.setComposed ((Operation) owner);
@@ -53,7 +51,7 @@ public class JavaParameterStrategy extends ParameterStrategy {
             modelio_element.setOwnerTemplateParameter (null);
             modelio_element.setOwnerTemplateParameter ((TemplateParameter) owner);
         }
-
+        
         // We must merge "type" tags into one tag with several parameters
         JaxbTaggedValue arrayTag = null;
         for (Object sub : new ArrayList<> (jaxb_element.getBaseTypeOrClassTypeOrNote ())) {
@@ -69,7 +67,7 @@ public class JavaParameterStrategy extends ParameterStrategy {
                 }
             }
         }
-
+        
         // If Array is one of the values, it must be the first one in the list
         if (arrayTag != null) {
             List<String> parameters = arrayTag.getTagParameter ();
@@ -81,16 +79,16 @@ public class JavaParameterStrategy extends ParameterStrategy {
                 }
             }
         }
-
+        
         String multMin = modelio_element.getMultiplicityMin();
         String multMax = modelio_element.getMultiplicityMax();
         PassingMode oldPassingMode = modelio_element.getParameterPassing();
-
+        
         List<MObject> ret = super.updateProperties(jaxb_element, modelio_element, owner, repository);
-
+        
         // Reset the passing mode
         modelio_element.setParameterPassing(oldPassingMode);
-
+        
         // Set multiplicity
         // undo super work.
         modelio_element.setMultiplicityMin(multMin);
@@ -115,22 +113,22 @@ public class JavaParameterStrategy extends ParameterStrategy {
                 modelio_element.setMultiplicityMax(jaxbParameterMultiplicity);
             }
         }
-
+        
         handleMultipleTags (jaxb_element);
-
+        
         modelio_element.setType (null);
-
+        
         if (name != null && hasJavaName) {
             try {
                 modelio_element.setName (oldName);
-
+        
                 ModelUtils.setFirstTagParameter (this.session, modelio_element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME, name);
                 if (ret == null) {
                     ret = new ArrayList<> ();
                 }
                 ret.add (modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME));
             } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
         return ret;
@@ -139,15 +137,15 @@ public class JavaParameterStrategy extends ParameterStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbParameter jaxb_element) {
+    private void handleMultipleTags(final JaxbParameter jaxb_element) {
         JaxbTaggedValue firstBindTag = null;
-
+        
         List<JaxbTaggedValue> toRemove = new ArrayList<> ();
         List<Object> sub_elements = jaxb_element.getBaseTypeOrClassTypeOrNote ();
         for (Object sub_element : sub_elements) {
             if (sub_element instanceof JaxbTaggedValue) {
                 JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
-
+        
                 if (currentTag.getTagType ().equals (JavaDesignerTagTypes.PARAMETER_JAVABIND)) {
                     if (firstBindTag == null) {
                         firstBindTag = currentTag;
@@ -158,14 +156,14 @@ public class JavaParameterStrategy extends ParameterStrategy {
                 }
             }
         }
-
+        
         sub_elements.removeAll (toRemove);
     }
 
     @Override
-    public void postTreatment(JaxbParameter jaxb_element, Parameter modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbParameter jaxb_element, final Parameter modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
-
+        
         // Remove type if there is a type expr
         if (modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVATYPEEXPR) != null) {
             modelio_element.setType (null);
@@ -174,19 +172,19 @@ public class JavaParameterStrategy extends ParameterStrategy {
             IReportWriter report = repository.getReportWriter ();
             report.addWarning (Messages.getString("reverse.Type_not_found.title", typexpr), modelio_element, Messages.getString("reverse.Type_not_found.description", typexpr)); //$NON-NLS-1$ //$NON-NLS-2$
         }
-
+        
         // Change multiplicity for predefined atomic types
         GeneralClass type = modelio_element.getType ();
         if (JavaFeatureReverseUtils.getInstance ().isAtomicType (type) && modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAWRAPPER) == null ) {
             String modelioParameterMultiplicityMin = modelio_element.getMultiplicityMin ();
             String modelioParameterMultiplicityMax = modelio_element.getMultiplicityMax ();
-
+        
             if (modelioParameterMultiplicityMin.equals ("0") &&
                     modelioParameterMultiplicityMax.equals ("1")) {
                 modelio_element.setMultiplicityMin ("1");
             }
         }
-
+        
         if (modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFINAL)) {
             modelio_element.setParameterPassing(PassingMode.IN);
         } else if (this.isInParameterFinalGenerationActive && modelio_element.getParameterPassing() == PassingMode.IN) {

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- definition -->
 	<groupId>org.modelio.module</groupId>
 	<artifactId>javadesigner</artifactId>
-	<version>3.4.02</version>
+	<version>3.5.00</version>
 	<name>JavaDesigner</name>
 
 	<!-- repositories -->
@@ -34,7 +33,7 @@
 		<dependency>
 			<groupId>org.modelio</groupId>
 			<artifactId>MDAKit</artifactId>
-			<version>[3.4.0,3.4.1)</version>
+			<version>[3.5.0,3.5.1)</version>
 			<type>pom</type>
 			<scope>provided</scope>
 		</dependency>
@@ -48,7 +47,8 @@
 		<dependency>
 			<groupId>com.modelio.module</groupId>
 			<artifactId>xmlreverse</artifactId>
-			<version>3.1.02</version>
+			<version>3.2.02</version>
+            <type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.javatuples</groupId>
@@ -60,6 +60,21 @@
 			<artifactId>antlr-runtime</artifactId>
 			<version>3.4.1</version>
 		</dependency>
+
+        <dependency>
+            <groupId>org.modelio.module</groupId>
+            <artifactId>modelermodule</artifactId>
+            <version>8.6.05</version>
+            <scope>provided</scope>
+        </dependency>
+		
+        <dependency>
+            <groupId>org.modelio</groupId>
+            <artifactId>org.modelio.core.session</artifactId>
+            <version>3.5.0-SNAPSHOT</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 	<!-- // Build // -->
@@ -80,7 +95,7 @@
 			<plugin>
 				<groupId>org.modelio</groupId>
 				<artifactId>modelio-maven-plugin</artifactId>
-				<version>3.4.0.05</version>
+				<version>3.5.0.00</version>
 				<executions>
 					<execution>
 					    <id>ModuleValidation</id>
@@ -136,8 +151,8 @@
 						<descriptor>assembly.xml</descriptor>
 					</descriptors>
 					<finalName>${project.name}_${project.version}</finalName>
+					<attach>false</attach>
 					<appendAssemblyId>false</appendAssemblyId>
-					 <attach>false</attach>
 				</configuration>
 				<executions>
 					<execution>
@@ -161,9 +176,8 @@
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<move
-									file="${project.basedir}/target/${project.name}_${project.version}.zip"
-									tofile="${project.basedir}/target/${project.name}_${project.version}.jmdac" />
+                                <move file="${project.basedir}/target/${project.name}_${project.version}.zip" tofile="${project.basedir}/target/${project.name}_${project.version}.jmdac" />
+
 							</target>
 						</configuration>
 						<goals>
@@ -204,14 +218,14 @@
 											modelio-maven-plugin
 										</artifactId>
 										<versionRange>
-											[3.4.0.05,3.4.1)
+                                                [3.5.0.00,)
 										</versionRange>
 										<goals>
 											<goal>
-												module-configuration
+                                                    module-validation
 											</goal>
 											<goal>
-												module-validation
+                                                    module-configuration
 											</goal>
 										</goals>
 									</pluginExecutionFilter>
@@ -226,6 +240,6 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
+    <description>The Java Designer module provides a complete range of features dedicated to Java development, including Java code and Javadoc generation from UML2 models. It also provides an automatic model completion feature, incorporating automatic accessor production and synchronization, and a reverse service used to reverse-engineer existing Java application.</description>
 </project>
 

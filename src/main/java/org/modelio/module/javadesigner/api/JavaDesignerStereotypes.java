@@ -35,12 +35,11 @@ public interface JavaDesignerStereotypes {
     public static final String JAVASETTER = "JavaSetter";
 
     public static final String JAVASTATIC = "JavaStatic";
-    
+
     public static final String SEEJAVADOC = "SeeJavadoc";
 
     public static final String JAVAASSOCIATIONENDPROPERTY = "JavaAssociationEndProperty";
 
     public static final String JAVAATTRIBUTEPROPERTY = "JavaAttributeProperty";
-
 
 }

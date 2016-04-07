@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.reverse.newwizard.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TraverseEvent;
@@ -28,6 +27,10 @@ import org.modelio.module.javadesigner.reverse.newwizard.externaljars.ExternalJa
 import org.modelio.module.javadesigner.reverse.newwizard.filechooser.FileChooserComposite;
 
 public class JavaReverseWizardView extends ModelioDialog implements Listener {
+     List<String> titles = new ArrayList<>();
+
+    private boolean isBinary;
+
     public Button okButton;
 
     public Button cancel;
@@ -44,11 +47,7 @@ public class JavaReverseWizardView extends ModelioDialog implements Listener {
 
     public IExternalJarsModel externalJarsClasspathModel;
 
-    List<String> titles = new ArrayList<>();
-
-    private boolean isBinary;
-
-    public JavaReverseWizardView(Shell parentShell, IFileChooserModel fileChooserModel, IClasspathModel classpathModel, IExternalJarsModel externalJarsClasspathModel, boolean isBinary) {
+    public JavaReverseWizardView(final Shell parentShell, final IFileChooserModel fileChooserModel, final IClasspathModel classpathModel, final IExternalJarsModel externalJarsClasspathModel, final boolean isBinary) {
         super(parentShell);
         this.fileChooserModel = fileChooserModel;
         this.classpathModel = classpathModel;
@@ -57,7 +56,7 @@ public class JavaReverseWizardView extends ModelioDialog implements Listener {
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(final Event event) {
         if (event.widget.equals(this.next)) {
             this.tabFolder.setSelection(this.tabFolder
                     .getSelectionIndex() + 1);
@@ -96,7 +95,7 @@ public class JavaReverseWizardView extends ModelioDialog implements Listener {
     }
 
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         this.previous = createButton(parent, IDialogConstants.PROCEED_ID,
                 Messages.getString("Gui.JavaReverseWizardView.PreviousButton"),
                 false);
@@ -121,7 +120,7 @@ public class JavaReverseWizardView extends ModelioDialog implements Listener {
     }
 
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         // Avoid box closing when pressing enter
         parent.addTraverseListener(new TraverseListener() {
             @Override

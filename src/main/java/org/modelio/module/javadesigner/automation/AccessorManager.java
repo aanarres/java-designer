@@ -3,11 +3,9 @@ package org.modelio.module.javadesigner.automation;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.IUmlModel;
-import org.modelio.api.module.IModuleUserConfiguration;
-import org.modelio.metamodel.Metamodel;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.IUmlModel;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
@@ -59,21 +57,20 @@ public class AccessorManager {
 
     public final String AUTOMATIC_UPDATE_COMMENT = "// Automatically generated method. Please delete this comment before entering specific code.";
 
-    private static final String NL = System.getProperty ("line.separator");//$NON-NLS-1$
+    private static final String NL = System.getProperty ("line.separator"); // $NON-NLS-1$
+
+    public final String PROPERTY_COMMENT = "// Automatically generated method. Please do not modify this code.";
 
     private IModelingSession session;
 
     private IUmlModel model;
 
-    public final String PROPERTY_COMMENT = "// Automatically generated method. Please do not modify this code.";
-
-
-    public AccessorManager(IModelingSession session) {
+    public AccessorManager(final IModelingSession session) {
         this.session = session;
         this.model = session.getModel();
     }
 
-    private String getDefaultGetterCode(String featureName, Attribute feature) {
+    private String getDefaultGetterCode(final String featureName, final Attribute feature) {
         if (feature.isIsDerived () || feature.isIsAbstract ()) {
             return "return null;";
         } else if (feature.isIsClass ()) {
@@ -83,7 +80,7 @@ public class AccessorManager {
         }
     }
 
-    private String getDefaultGetterCode(String featureName, AssociationEnd feature) {
+    private String getDefaultGetterCode(final String featureName, final AssociationEnd feature) {
         if (feature.isIsDerived () || feature.isIsAbstract ()) {
             return "return null;";
         } else if (feature.isIsClass ()) {
@@ -93,7 +90,7 @@ public class AccessorManager {
         }
     }
 
-    private String getDefaultSetterCode(String featureName, String parameterName, AssociationEnd feature) {
+    private String getDefaultSetterCode(final String featureName, final String parameterName, final AssociationEnd feature) {
         if (feature.isIsDerived () || feature.isIsAbstract ()) {
             return "";
         } else if (feature.isIsClass ()) {
@@ -103,7 +100,7 @@ public class AccessorManager {
         }
     }
 
-    private String getDefaultSetterCode(String featureName, String parameterName, Attribute feature) {
+    private String getDefaultSetterCode(final String featureName, final String parameterName, final Attribute feature) {
         if (feature.isIsDerived () || feature.isIsAbstract ()) {
             return "";
         } else if (feature.isIsClass ()) {
@@ -113,15 +110,15 @@ public class AccessorManager {
         }
     }
 
-    private VisibilityMode getGetterVisibility(Feature theFeature) {
+    private VisibilityMode getGetterVisibility(final Feature theFeature) {
         VisibilityMode ret;
         String param;
-
+        
         // Operations in Interfaces should always be public
         if (theFeature.getCompositionOwner() instanceof Interface) {
             return VisibilityMode.PUBLIC;
         }
-
+        
         switch (theFeature.getVisibility ()) {
         case PUBLIC:
             param = this.PUBLICACCESSORVISIBILITY;
@@ -135,7 +132,7 @@ public class AccessorManager {
         default:
             param = this.FRIENDLYACCESSORVISIBILITY;
         }
-
+        
         if (param.equals (JavaDesignerParameters.AccessorVisibility.Private.toString ())) {
             ret = VisibilityMode.PRIVATE;
         } else if (param.equals (JavaDesignerParameters.AccessorVisibility.Protected.toString ())) {
@@ -149,15 +146,15 @@ public class AccessorManager {
         return ret;
     }
 
-    private VisibilityMode getSetterVisibility(Feature theFeature) {
+    private VisibilityMode getSetterVisibility(final Feature theFeature) {
         VisibilityMode ret;
         String param;
-
+        
         // Operations in Interfaces should always be public
         if (theFeature.getCompositionOwner() instanceof Interface) {
             return VisibilityMode.PUBLIC;
         }
-
+        
         switch (theFeature.getVisibility ()) {
         case PUBLIC:
             param = this.PUBLICMODIFIERVISIBILITY;
@@ -171,7 +168,7 @@ public class AccessorManager {
         default:
             param = this.FRIENDLYMODIFIERVISIBILITY;
         }
-
+        
         if (param.equals (JavaDesignerParameters.AccessorVisibility.Private.toString ())) {
             ret = VisibilityMode.PRIVATE;
         } else if (param.equals (JavaDesignerParameters.AccessorVisibility.Protected.toString ())) {
@@ -185,72 +182,72 @@ public class AccessorManager {
         return ret;
     }
 
-    private void createGetter(Attribute theAttribute) throws CustomException, ExtensionNotFoundException {
+    private void createGetter(final Attribute theAttribute) throws CustomException, ExtensionNotFoundException {
         // Create the operation and the dependency between the attribute and
         // the operation
         Operation theGetter = this.model.createOperation ();
         Dependency dep = this.model.createDependency (theGetter, theAttribute, null);
         ModelUtils.addStereotype(dep, JavaDesignerStereotypes.JAVAGETTER);
-
+        
         // Set visibility
         VisibilityMode newVisibility = getGetterVisibility (theAttribute);
         theGetter.setVisibility (newVisibility);
-
+        
         // let the update synchronize everything else
         updateGetter (theAttribute, theGetter);
     }
 
-    private void createGetter(AssociationEnd theAssociationEnd) throws ExtensionNotFoundException, CustomException {
+    private void createGetter(final AssociationEnd theAssociationEnd) throws CustomException, ExtensionNotFoundException {
         // Create the operation and the dependency between the attribute and
         // the operation
         Operation theGetter = this.model.createOperation ();
         Dependency dep = this.model.createDependency (theGetter, theAssociationEnd, null);
         ModelUtils.addStereotype(dep, JavaDesignerStereotypes.JAVAGETTER);
-
+        
         // Set visibility
         VisibilityMode newVisibility = getGetterVisibility (theAssociationEnd);
         theGetter.setVisibility (newVisibility);
-
+        
         // let the update synchronize everything else
         updateGetter (theAssociationEnd, theGetter);
     }
 
-    private void createSetter(Attribute theAttribute) throws ExtensionNotFoundException, CustomException {
+    private void createSetter(final Attribute theAttribute) throws CustomException, ExtensionNotFoundException {
         // Create the operation and the dependency between the attribute and
         // the operation
         Operation theSetter = this.model.createOperation ();
         Dependency dep = this.model.createDependency (theSetter, theAttribute, null);
         ModelUtils.addStereotype(dep, JavaDesignerStereotypes.JAVASETTER);
-
+        
         // Set visibility
         VisibilityMode newVisibility = getSetterVisibility (theAttribute);
         theSetter.setVisibility (newVisibility);
-
+        
         // let the update synchronize everything else
         updateSetter (theAttribute, theSetter);
     }
 
-    private void createSetter(AssociationEnd theAssociationEnd) throws ExtensionNotFoundException, CustomException {
+    private void createSetter(final AssociationEnd theAssociationEnd) throws CustomException, ExtensionNotFoundException {
         // Create the operation and the dependency between the attribute and
         // the operation
         Operation theSetter = this.model.createOperation ();
         Dependency dep = this.model.createDependency (theSetter, theAssociationEnd, null);
         ModelUtils.addStereotype(dep, JavaDesignerStereotypes.JAVASETTER);
-
+        
         // Set visibility
         VisibilityMode newVisibility = getSetterVisibility (theAssociationEnd);
         theSetter.setVisibility (newVisibility);
-
+        
         // let the update synchronize everything else
         updateSetter (theAssociationEnd, theSetter);
     }
 
     @SuppressWarnings("deprecation")
-    private void updateParameterType(Parameter theParameter, Attribute theAttribute) throws ExtensionNotFoundException, CustomException {
+    private void updateParameterType(final Parameter theParameter, final Attribute theAttribute) throws CustomException, ExtensionNotFoundException {
         theParameter.setMultiplicityMin (theAttribute.getMultiplicityMin ());
         theParameter.setMultiplicityMax (theAttribute.getMultiplicityMax ());
         theParameter.setType (theAttribute.getType ());
-
+        
         // Remove all tags on the parameter
         List<TaggedValue> parameterTags = new ArrayList<> (theParameter.getTag ());
         for (TaggedValue theTag : parameterTags) {
@@ -271,7 +268,7 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         // Recover all tags from the attribute
         for (TaggedValue theTag : theAttribute.getTag ()) {
             TagType attributeTagType = theTag.getDefinition ();
@@ -289,14 +286,14 @@ public class AccessorManager {
                         tagTypeName.equals (IOtherProfileElements.FEATURE_TYPE)) {
                     String moduleName = tagTypeName.equals (IOtherProfileElements.FEATURE_TYPE) ? IOtherProfileElements.MODULE_NAME : IJavaDesignerPeerModule.MODULE_NAME;
                     TaggedValue newTag = this.model.createTaggedValue (moduleName, tagTypeName, theParameter);
-
+        
                     for (TagParameter theTagParameter : theTag.getActual ()) {
                         this.model.createTagParameter (theTagParameter.getValue (), newTag);
                     }
                 }
             }
         }
-
+        
         // The customization file might contain incoherent default collections for Attributes & Parameters:
         // Set or remove {type} of the parameter according to the Attribute settings.
         String type = JavaTypeManager.getInstance().getInterfaceType(theAttribute);
@@ -310,18 +307,18 @@ public class AccessorManager {
         }
     }
 
-    private void updateParameterType(Parameter theParameter, AssociationEnd theAssociationEnd) throws ExtensionNotFoundException, CustomException {
+    private void updateParameterType(final Parameter theParameter, final AssociationEnd theAssociationEnd) throws CustomException, ExtensionNotFoundException {
         Classifier target = theAssociationEnd.getTarget();
         if (! (target instanceof GeneralClass)) {
             return;
         }
-
+        
         GeneralClass associationEndType = (GeneralClass) target;
-
+        
         theParameter.setMultiplicityMin (theAssociationEnd.getMultiplicityMin ());
         theParameter.setMultiplicityMax (theAssociationEnd.getMultiplicityMax ());
         theParameter.setType (associationEndType);
-
+        
         // Remove all tags on the parameter
         List<TaggedValue> parameterTags = new ArrayList<> (theParameter.getTag ());
         for (TaggedValue theTag : parameterTags) {
@@ -338,7 +335,7 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         // Recover all tags from the association end
         for (TaggedValue theTag : theAssociationEnd.getTag ()) {
             TagType assocTagType = theTag.getDefinition ();
@@ -358,7 +355,7 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         // The customization file might contain incoherent default collections for AssociationEnd & Parameters:
         // Set or remove {type} of the parameter according to the AssociationEnd settings.
         String type = JavaTypeManager.getInstance().getInterfaceType(theAssociationEnd);
@@ -371,37 +368,37 @@ public class AccessorManager {
             // Set the type in the type tag
             ModelUtils.setTagParameterAt(this.session, theParameter, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, type, 1);
         }
-
+        
         if (theAssociationEnd.getQualifier().size() > 0) {
             // Get the last qualifier name, to update the type tag
             for (Attribute qualifier : theAssociationEnd.getQualifier ()) {
                 String qualifierType = null;
-
+        
                 try {
                     qualifierType = JavaTypeManager.getInstance ().computeSimpleType (this.session, qualifier, genFullName (qualifier)).toString();
-
+        
                     String bindingParameters = "";
-
+        
                     for (TaggedValue tag : ModelUtils.getAllTaggedValues (qualifier, JavaDesignerTagTypes.ATTRIBUTE_JAVABIND)) {
                         for (Iterator<TagParameter> iterator = tag.getActual ().iterator () ; iterator.hasNext () ;) {
                             TagParameter theTagParameter = iterator.next ();
                             bindingParameters += theTagParameter.getValue ();
-
+        
                             if (iterator.hasNext ()) {
                                 bindingParameters += ",";
                             }
                         }
                     }
-
+        
                     if (bindingParameters.length () > 0) {
                         qualifierType += "<";
                         qualifierType += bindingParameters;
                         qualifierType += ">";
                     }
                 } catch (CustomException e) {
-                    JavaDesignerModule.logService.error(e);
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
                 }
-
+        
                 if (qualifierType != null) {
                     // Set the qualifier name in the type tag
                     ModelUtils.setTagParameterAt(this.session, theParameter, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, qualifierType.toString(), 2);
@@ -410,35 +407,35 @@ public class AccessorManager {
         }
     }
 
-    private void updateGetter(Attribute theAttribute, Operation theGetter) throws ExtensionNotFoundException, CustomException {
+    private void updateGetter(final Attribute theAttribute, final Operation theGetter) throws CustomException, ExtensionNotFoundException {
         // Set the correct owner if necessary
         Classifier correctOwner = theAttribute.getOwner ();
         if (!correctOwner.equals (theGetter.getOwner ()) && correctOwner.getStatus().isModifiable()) {
             theGetter.setOwner (correctOwner);
         }
-
+        
         String attributeName = JavaDesignerUtils.getJavaName (theAttribute);
         String newGetterName = JavaTypeManager.getInstance ().getDefaultGetterName (this.session, theAttribute, false);
         theGetter.setName (newGetterName);
-
+        
         // Update visibility
         //VisibilityMode newVisibility = getGetterVisibility (theAttribute);
         //theGetter.setVisibility (newVisibility);
-
+        
         // Update static modifier
         boolean isIsClass = theAttribute.isIsClass () && !(correctOwner instanceof Interface);
         theGetter.setIsClass (isIsClass);
-
+        
         // Create the return parameter if necessary
         Parameter returnParameter = theGetter.getReturn ();
         if (returnParameter == null) {
             returnParameter = this.model.createParameter ();
             theGetter.setReturn (returnParameter);
         }
-
+        
         // Update the output type with the attribute type
         updateParameterType (returnParameter, theAttribute);
-
+        
         if (!(correctOwner instanceof Interface)) {
             // Update the code
             Note codeNote = theGetter.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
@@ -458,20 +455,20 @@ public class AccessorManager {
                         } else {
                             returnNote.setContent (getDefaultGetterCode (attributeName, theAttribute));
                         }
-                    }               
+                    }
                 }
             }
         } else {
             // Java operations in interfaces should always be abstract
             theGetter.setIsAbstract(true);
         }
-
+        
         // Add the stereotype if necessary
         if (!theGetter.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
-            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER, Metamodel.getMClass(Operation.class));
+            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER, theGetter.getMClass().getMetamodel().getMClass(Operation.class));
             theGetter.getExtension().add (obStereotype);
         }
-
+        
         // Deal with NoCode tag
         if (JavaDesignerUtils.isNoCode (theAttribute)) {
             this.model.createTaggedValue (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, theGetter);
@@ -480,35 +477,35 @@ public class AccessorManager {
         }
     }
 
-    private void updateGetter(AssociationEnd theAssociationEnd, Operation theGetter) throws ExtensionNotFoundException, CustomException {
+    private void updateGetter(final AssociationEnd theAssociationEnd, final Operation theGetter) throws CustomException, ExtensionNotFoundException {
         // Set the correct owner if necessary
         Classifier correctOwner = theAssociationEnd.getSource ();
         if (!correctOwner.equals (theGetter.getOwner ()) && correctOwner.getStatus().isModifiable()) {
             theGetter.setOwner (correctOwner);
         }
-
+        
         String associationEndName = JavaDesignerUtils.getJavaName (theAssociationEnd);
         String newGetterName = JavaTypeManager.getInstance ().getDefaultGetterName (this.session, theAssociationEnd, false);
         theGetter.setName (newGetterName);
-
+        
         // Update visibility
         //VisibilityMode newVisibility = getGetterVisibility (theAssociationEnd);
         //theGetter.setVisibility (newVisibility);
-
+        
         // Update static modifier
         boolean isIsClass = theAssociationEnd.isIsClass () && !(correctOwner instanceof Interface);
         theGetter.setIsClass (isIsClass);
-
+        
         // Create the return parameter if necessary
         Parameter returnParameter = theGetter.getReturn ();
         if (returnParameter == null) {
             returnParameter = this.model.createParameter ();
             theGetter.setReturn (returnParameter);
         }
-
+        
         // Update the output type with the attribute type
         updateParameterType (returnParameter, theAssociationEnd);
-
+        
         if (!(correctOwner instanceof Interface)) {
             // Update the code
             Note codeNote = theGetter.getNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.OPERATION_JAVACODE);
@@ -528,20 +525,20 @@ public class AccessorManager {
                         } else {
                             returnNote.setContent (getDefaultGetterCode (associationEndName, theAssociationEnd));
                         }
-                    }               
+                    }
                 }
             }
         } else {
             // Java operations in interfaces should always be abstract
             theGetter.setIsAbstract(true);
         }
-
+        
         // Add the stereotype if necessary
         if (!theGetter.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
-            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER, Metamodel.getMClass(Operation.class));
+            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER, theGetter.getMClass().getMetamodel().getMClass(Operation.class));
             theGetter.getExtension().add (obStereotype);
         }
-
+        
         // Deal with NoCode tag
         if (JavaDesignerUtils.isNoCode (theAssociationEnd)) {
             this.model.createTaggedValue (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, theGetter);
@@ -550,31 +547,31 @@ public class AccessorManager {
         }
     }
 
-    private void updateSetter(Attribute theAttribute, Operation theSetter) throws ExtensionNotFoundException, CustomException {
+    private void updateSetter(final Attribute theAttribute, final Operation theSetter) throws CustomException, ExtensionNotFoundException {
         // Set the correct owner if necessary
         Classifier correctOwner = theAttribute.getOwner ();
         if (!correctOwner.equals (theSetter.getOwner ()) && correctOwner.getStatus().isModifiable()) {
             theSetter.setOwner (correctOwner);
         }
-
+        
         String attributeName = JavaDesignerUtils.getJavaName (theAttribute);
         String newSetterName = JavaTypeManager.getInstance ().getDefaultSetterName (this.session, theAttribute, false);
         theSetter.setName (newSetterName);
-
+        
         // Update visibility
         //VisibilityMode newVisibility = getSetterVisibility (theAttribute);
         //theSetter.setVisibility (newVisibility);
-
+        
         // Update static modifier
         boolean isIsClass = theAttribute.isIsClass () && !(correctOwner instanceof Interface);
         theSetter.setIsClass (isIsClass);
-
+        
         // Delete the return parameter if necessary
         Parameter returnParameter = theSetter.getReturn ();
         if (returnParameter != null) {
             returnParameter.delete ();
         }
-
+        
         List<Parameter> IOParameters = theSetter.getIO ();
         Parameter firstParameter;
         if (IOParameters.size () == 0) {
@@ -585,13 +582,13 @@ public class AccessorManager {
         } else {
             firstParameter = IOParameters.get (0);
         }
-
+        
         // Update the first parameter of the setter only
         updateParameterType (firstParameter, theAttribute);
-
+        
         // Keep the firstParameterName
         String firstParameterName = firstParameter.getName ();
-
+        
         if (!(correctOwner instanceof Interface)) {
             // Update the code
             String defaultCodeNoteContent = this.AUTOMATIC_UPDATE_COMMENT +
@@ -602,7 +599,7 @@ public class AccessorManager {
                 codeNote = this.model.createNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.CLASS_JAVACODE, theSetter, defaultCodeNoteContent);
             } else {
                 String codeNoteContent = codeNote.getContent ();
-
+        
                 // If the java code is empty, put the default setter code
                 if (codeNoteContent.isEmpty () ||
                         codeNoteContent.contains (this.AUTOMATIC_UPDATE_COMMENT)) {
@@ -614,13 +611,13 @@ public class AccessorManager {
             // Java operations in interfaces should always be abstract
             theSetter.setIsAbstract(true);
         }
-
+        
         // Add the stereotype if necessary
         if (!theSetter.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER)) {
-            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER, Metamodel.getMClass(Operation.class));
+            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER, theSetter.getMClass().getMetamodel().getMClass(Operation.class));
             theSetter.getExtension().add (obStereotype);
         }
-
+        
         // Deal with NoCode tag
         if (JavaDesignerUtils.isNoCode (theAttribute)) {
             this.model.createTaggedValue (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, theSetter);
@@ -629,31 +626,31 @@ public class AccessorManager {
         }
     }
 
-    private void updateSetter(AssociationEnd theAssociationEnd, Operation theSetter) throws ExtensionNotFoundException, CustomException {
+    private void updateSetter(final AssociationEnd theAssociationEnd, final Operation theSetter) throws CustomException, ExtensionNotFoundException {
         // Set the correct owner if necessary
         Classifier correctOwner = theAssociationEnd.getSource ();
         if (!correctOwner.equals (theSetter.getOwner ()) && correctOwner.getStatus().isModifiable()) {
             theSetter.setOwner (correctOwner);
         }
-
+        
         String associationEndName = JavaDesignerUtils.getJavaName (theAssociationEnd);
         String newSetterName = JavaTypeManager.getInstance ().getDefaultSetterName (this.session, theAssociationEnd, false);
         theSetter.setName (newSetterName);
-
+        
         // Update visibility
         //VisibilityMode newVisibility = getSetterVisibility (theAssociationEnd);
         //theSetter.setVisibility (newVisibility);
-
+        
         // Update static modifier
         boolean isIsClass = theAssociationEnd.isIsClass () && !(correctOwner instanceof Interface);
         theSetter.setIsClass (isIsClass);
-
+        
         // Delete the return parameter if necessary
         Parameter returnParameter = theSetter.getReturn ();
         if (returnParameter != null) {
             returnParameter.delete ();
         }
-
+        
         List<Parameter> IOParameters = theSetter.getIO ();
         Parameter firstParameter;
         if (IOParameters.size () == 0) {
@@ -663,19 +660,19 @@ public class AccessorManager {
             theSetter.getIO().add (firstParameter);
         } else {
             firstParameter = IOParameters.get (0);
-
+        
             // Delete other IOParameters if they exist
             for (int i = 1 ; i < IOParameters.size () ; i++) {
                 IOParameters.get (i).delete();
             }
         }
-
+        
         // Update the first parameter of the setter
         updateParameterType (firstParameter, theAssociationEnd);
-
+        
         // Keep the firstParameterName
         String firstParameterName = firstParameter.getName ();
-
+        
         if (!(correctOwner instanceof Interface)) {
             // Update the code
             String defaultCodeNoteContent = this.AUTOMATIC_UPDATE_COMMENT +
@@ -686,7 +683,7 @@ public class AccessorManager {
                 codeNote = this.model.createNote (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.CLASS_JAVACODE, theSetter, defaultCodeNoteContent);
             } else {
                 String codeNoteContent = codeNote.getContent ();
-
+        
                 // If the java code is empty, put the default setter code
                 if (codeNoteContent.isEmpty () ||
                         codeNoteContent.contains (this.AUTOMATIC_UPDATE_COMMENT)) {
@@ -698,13 +695,13 @@ public class AccessorManager {
             // Java operations in interfaces should always be abstract
             theSetter.setIsAbstract(true);
         }
-
+        
         // Add the stereotype if necessary
         if (!theSetter.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER)) {
-            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER, Metamodel.getMClass(Operation.class));
+            Stereotype obStereotype = this.session.getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVASETTER, theSetter.getMClass().getMetamodel().getMClass(Operation.class));
             theSetter.getExtension().add (obStereotype);
         }
-
+        
         // Deal with NoCode tag
         if (JavaDesignerUtils.isNoCode (theAssociationEnd)) {
             this.model.createTaggedValue (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, theSetter);
@@ -713,14 +710,14 @@ public class AccessorManager {
         }
     }
 
-    public List<Operation> updateAccessors(Attribute theAttribute, boolean createNewAccessors) throws ExtensionNotFoundException, CustomException {
+    public List<Operation> updateAccessors(final Attribute theAttribute, final boolean createNewAccessors) throws CustomException, ExtensionNotFoundException {
         List<Operation> getters = new ArrayList<> ();
         List<Operation> setters = new ArrayList<> ();
         List<Operation> ret = new ArrayList<>();
-
+        
         for (Dependency theDependency : theAttribute.getImpactedDependency ()) {
             ModelElement impactedElement = theDependency.getImpacted ();
-
+        
             // Check stereotypes only for operations
             if (impactedElement instanceof Operation) {
                 if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
@@ -730,7 +727,7 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         KindOfAccess changeable = theAttribute.getChangeable ();
         if (JavaDesignerUtils.getNearestNameSpace (theAttribute).isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAANNOTATION)) {
             changeable = KindOfAccess.ACCESNONE; // TODO display warning
@@ -741,7 +738,7 @@ public class AccessorManager {
                 changeable = KindOfAccess.ACCESNONE;
             }
         }
-
+        
         switch (changeable) {
         case READ:
             // If no getter exists, create a new one
@@ -754,7 +751,7 @@ public class AccessorManager {
                     updateGetter (theAttribute, theGetter);
                 }
             }
-
+        
             // If some setter exists, destroy them
             if (!setters.isEmpty () && createNewAccessors) {
                 for (Operation theSetter : setters) {
@@ -769,7 +766,7 @@ public class AccessorManager {
                     theGetter.delete();
                 }
             }
-
+        
             // If no setter exists, create a new one
             if (setters.isEmpty ()) {
                 if (createNewAccessors) {
@@ -780,7 +777,7 @@ public class AccessorManager {
                     updateSetter (theAttribute, theSetter);
                 }
             }
-
+        
             break;
         case READWRITE:
             // If no getter exists, create a new one
@@ -793,7 +790,7 @@ public class AccessorManager {
                     updateGetter (theAttribute, theGetter);
                 }
             }
-
+        
             // If no setter exists, create a new one
             if (setters.isEmpty ()) {
                 if (createNewAccessors) {
@@ -804,17 +801,17 @@ public class AccessorManager {
                     updateSetter (theAttribute, theSetter);
                 }
             }
-
+        
             break;
         default: { // In other case, delete all accessors
-
+        
             // If some getter exists, destroy them
             if (!getters.isEmpty () && createNewAccessors) {
                 for (Operation theGetter : getters) {
                     theGetter.delete ();
                 }
             }
-
+        
             // If some setter exists, destroy them
             if (!setters.isEmpty () && createNewAccessors) {
                 for (Operation theSetter : setters) {
@@ -823,10 +820,10 @@ public class AccessorManager {
             }
         }
         }
-
+        
         for (Dependency theDependency : theAttribute.getImpactedDependency ()) {
             ModelElement impactedElement = theDependency.getImpacted ();
-
+        
             // Check stereotypes only for operations
             if (impactedElement instanceof Operation) {
                 if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
@@ -836,17 +833,16 @@ public class AccessorManager {
                 }
             }
         }
-
         return ret;
     }
 
-    public List<Operation> updateAccessors(AssociationEnd theAssociationEnd, boolean createNewAccessors) throws ExtensionNotFoundException, CustomException {
+    public List<Operation> updateAccessors(final AssociationEnd theAssociationEnd, final boolean createNewAccessors) throws CustomException, ExtensionNotFoundException {
         List<Operation> getters = new ArrayList<> ();
         List<Operation> setters = new ArrayList<> ();
-
+        
         for (Dependency theDependency : theAssociationEnd.getImpactedDependency ()) {
             ModelElement impactedElement = theDependency.getImpacted ();
-
+        
             // Check stereotypes only for operations
             if (impactedElement instanceof Operation) {
                 if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
@@ -856,7 +852,7 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         if (theAssociationEnd.getTarget() != null) {
             KindOfAccess changeable = theAssociationEnd.getChangeable ();
             if (JavaDesignerUtils.getNearestNameSpace (theAssociationEnd).isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAANNOTATION)) {
@@ -868,7 +864,7 @@ public class AccessorManager {
                     changeable = KindOfAccess.ACCESNONE;
                 }
             }
-
+        
             switch (changeable) {
             case READ:
                 // If no getter exists, create a new one
@@ -881,7 +877,7 @@ public class AccessorManager {
                         updateGetter (theAssociationEnd, theGetter);
                     }
                 }
-
+        
                 // If some setter exists, destroy them
                 if (!setters.isEmpty () && createNewAccessors) {
                     for (Operation theSetter : setters) {
@@ -896,7 +892,7 @@ public class AccessorManager {
                         theGetter.delete ();
                     }
                 }
-
+        
                 // If no setter exists, create a new one
                 if (setters.isEmpty ()) {
                     if (createNewAccessors) {
@@ -907,7 +903,7 @@ public class AccessorManager {
                         updateSetter (theAssociationEnd, theSetter);
                     }
                 }
-
+        
                 break;
             case READWRITE:
                 // If no getter exists, create a new one
@@ -920,7 +916,7 @@ public class AccessorManager {
                         updateGetter (theAssociationEnd, theGetter);
                     }
                 }
-
+        
                 // If no setter exists, create a new one
                 if (setters.isEmpty ()) {
                     if (createNewAccessors) {
@@ -931,17 +927,17 @@ public class AccessorManager {
                         updateSetter (theAssociationEnd, theSetter);
                     }
                 }
-
+        
                 break;
             default: { // In other case, delete all accessors
-
+        
                 // If some getter exists, destroy them
                 if (!getters.isEmpty () && createNewAccessors) {
                     for (Operation theGetter : getters) {
                         theGetter.delete ();
                     }
                 }
-
+        
                 // If some setter exists, destroy them
                 if (!setters.isEmpty () && createNewAccessors) {
                     for (Operation theSetter : setters) {
@@ -957,7 +953,7 @@ public class AccessorManager {
                     theGetter.delete ();
                 }
             }
-
+        
             // If some setter exists, destroy them
             if (!setters.isEmpty () && createNewAccessors) {
                 for (Operation theSetter : setters) {
@@ -965,11 +961,11 @@ public class AccessorManager {
                 }
             }
         }
-
+        
         List<Operation> ret = new ArrayList<>();
         for (Dependency theDependency : theAssociationEnd.getImpactedDependency ()) {
             ModelElement impactedElement = theDependency.getImpacted ();
-
+        
             // Check stereotypes only for operations
             if (impactedElement instanceof Operation) {
                 if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
@@ -979,7 +975,6 @@ public class AccessorManager {
                 }
             }
         }
-
         return ret;
     }
 
@@ -987,9 +982,9 @@ public class AccessorManager {
      * Check all operations, and deletes getters and setters that are no more linked to Attributes/AssociationEnds.
      * @return True if at least one operation was deleted.
      */
-    public boolean deleteAccessors(Classifier theClassifier) {
+    public boolean deleteAccessors(final Classifier theClassifier) {
         boolean ret = false;
-
+        
         for (Operation theOperation : theClassifier.getOwnedOperation()) {
             if (theOperation.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
                 boolean isStereotyped = false;
@@ -1020,17 +1015,17 @@ public class AccessorManager {
         return ret;
     }
 
-    private boolean genFullName(ModelElement theModelElement) {
+    private boolean genFullName(final ModelElement theModelElement) {
         boolean value = this.FULLNAMEGENERATION;
         return value ||
-                theModelElement.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME);
+                                                theModelElement.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PARAMETER_JAVAFULLNAME);
     }
 
     /**
      * Initialize the parameter values in the accessor manager.
      * @param javaConfig The module configuration containing the real values of these parameters.
      */
-    public void init(IModuleUserConfiguration javaConfig) {
+    public void init(final IModuleUserConfiguration javaConfig) {
         this.FULLNAMEGENERATION = javaConfig.getParameterValue (JavaDesignerParameters.FULLNAMEGENERATION).equalsIgnoreCase ("TRUE");
         this.PUBLICACCESSORVISIBILITY = javaConfig.getParameterValue (JavaDesignerParameters.PUBLICACCESSORVISIBILITY);
         this.PROTECTEDACCESSORVISIBILITY = javaConfig.getParameterValue (JavaDesignerParameters.PROTECTEDACCESSORVISIBILITY);
@@ -1042,12 +1037,12 @@ public class AccessorManager {
         this.FRIENDLYMODIFIERVISIBILITY = javaConfig.getParameterValue (JavaDesignerParameters.FRIENDLYMODIFIERVISIBILITY);
     }
 
-    public boolean deleteAccessors(Feature feature) {
+    public boolean deleteAccessors(final Feature feature) {
         boolean ret = false;
-
+        
         for (Dependency theDependency : feature.getImpactedDependency ()) {
             ModelElement impactedElement = theDependency.getImpacted ();
-
+        
             // Check stereotypes only for operations
             if (impactedElement instanceof Operation) {
                 if (theDependency.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {

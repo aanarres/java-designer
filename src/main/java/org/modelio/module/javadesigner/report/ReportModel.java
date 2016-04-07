@@ -2,11 +2,9 @@ package org.modelio.module.javadesigner.report;
 
 import java.util.Set;
 import java.util.TreeSet;
-
+import com.modelio.module.xmlreverse.IReportWriter;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.vcore.smkernel.mapi.MObject;
-
-import com.modelio.module.xmlreverse.IReportWriter;
 
 public class ReportModel implements IReportWriter {
     private Set<ElementMessage> errors;
@@ -15,7 +13,6 @@ public class ReportModel implements IReportWriter {
 
     private Set<ElementMessage> infos;
 
-
     public ReportModel() {
         this.errors = new TreeSet<> ();
         this.warnings = new TreeSet<> ();
@@ -23,7 +20,7 @@ public class ReportModel implements IReportWriter {
     }
 
     @Override
-    public void addWarning(String initialMessage, MObject element, String description) {
+    public void addWarning(final String initialMessage, final MObject element, final String description) {
         String message = initialMessage;
         if (message == null) {
             message = "";
@@ -33,7 +30,7 @@ public class ReportModel implements IReportWriter {
     }
 
     @Override
-    public void addError(String initialMessage, MObject element, String description) {
+    public void addError(final String initialMessage, final MObject element, final String description) {
         String message = initialMessage;
         if (message == null) {
             message = "";
@@ -55,20 +52,20 @@ public class ReportModel implements IReportWriter {
         return !(hasErrors () || hasWarnings () || hasInfos ());
     }
 
-    public void addWarning(String message, MObject element) {
+    public void addWarning(final String message, final MObject element) {
         this.warnings.add (new ElementMessage (message, element, ""));
     }
 
-    public void addError(String message, MObject element) {
+    public void addError(final String message, final MObject element) {
         this.errors.add (new ElementMessage (message, element, ""));
     }
 
     @Override
-    public void addInfo(String message, MObject element, String description) {
+    public void addInfo(final String message, final MObject element, final String description) {
         this.infos.add (new ElementMessage (message, element, description));
     }
 
-    public void addInfo(String message, MObject element) {
+    public void addInfo(final String message, final MObject element) {
         this.infos.add (new ElementMessage (message, element, ""));
     }
 
@@ -91,15 +88,19 @@ public class ReportModel implements IReportWriter {
         return !this.warnings.isEmpty ();
     }
 
+    @Override
+    public void addTrace(final String message) {
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info(message);
+    }
+
     class ElementMessage implements Comparable<ElementMessage> {
         public String message;
 
-        public MObject element;
-
         public String description;
 
+        public MObject element;
 
-        ElementMessage(String message, MObject element, String description) {
+        ElementMessage(final String message, final MObject element, final String description) {
             this.message = message;
             this.element = element;
             this.description = description;
@@ -117,7 +118,7 @@ public class ReportModel implements IReportWriter {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (this == obj)
                 return true;
             if (obj == null)
@@ -146,10 +147,10 @@ public class ReportModel implements IReportWriter {
         }
 
         @Override
-        public int compareTo(ElementMessage anotherMessage) {
+        public int compareTo(final ElementMessage anotherMessage) {
             int msgval = this.message.compareTo (anotherMessage.message);
             int thiselthash = (this.element != null) ? this.element.hashCode() : 0;
-            int othelthash = (anotherMessage.element != null) ? anotherMessage.element.hashCode() : 0;            
+            int othelthash = (anotherMessage.element != null) ? anotherMessage.element.hashCode() : 0;
             return (msgval == 0)? (thiselthash-othelthash):msgval;
         }
 
@@ -157,11 +158,6 @@ public class ReportModel implements IReportWriter {
             return ReportModel.this;
         }
 
-    }
-
-    @Override
-    public void addTrace(String message) {
-        JavaDesignerModule.logService.info(message);
     }
 
 }

@@ -1,10 +1,13 @@
 package org.modelio.module.javadesigner.reverse.xmltomodel;
 
 import java.io.File;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.XMLReverse;
+import com.modelio.module.xmlreverse.model.IVisitorElement;
+import com.modelio.module.xmlreverse.model.JaxbReversedData;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.uml.statik.NameSpace;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.reverse.ReverseStrategyConfiguration;
@@ -28,37 +31,28 @@ import org.modelio.module.javadesigner.reverse.xmltomodel.strategy.JavaStereotyp
 import org.modelio.module.javadesigner.reverse.xmltomodel.strategy.JavaTaggedValueStrategy;
 import org.modelio.module.javadesigner.reverse.xmltomodel.strategy.JavaTemplateParameterStrategy;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.XMLReverse;
-import com.modelio.module.xmlreverse.model.IVisitorElement;
-import com.modelio.module.xmlreverse.model.JaxbReversedData;
-
 public class JavaReverse {
-
-    public void reverseModel(IModelingSession session, File file, NameSpace root, IReportWriter report, ReverseStrategyConfiguration config) {
+    public void reverseModel(final IModelingSession session, final File file, final NameSpace root, final IReportWriter report, final ReverseStrategyConfiguration config) {
         XMLReverse revers = initReverse(session, root, report, config);
         
-        JavaDesignerModule.logService.info ("Start of reverse core at " + Calendar.getInstance ().getTime ().toGMTString ());
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Start of reverse core at " + LocalDateTime.now());
         
         revers.reverse (file, root, config.ENCODING);
         
-        JavaDesignerModule.logService.info ("End of reverse core at " + Calendar.getInstance ().getTime ().toGMTString ());
-}
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("End of reverse core at " + LocalDateTime.now());
+    }
 
-    protected XMLReverse initReverse(IModelingSession session,
-            NameSpace root,
-            IReportWriter report,
-            ReverseStrategyConfiguration config) {
+    protected XMLReverse initReverse(final IModelingSession session, final NameSpace root, final IReportWriter report, final ReverseStrategyConfiguration config) {
         XMLReverse revers = new XMLReverse (session);
         
         JavaNameSpaceFinder finder = new JavaNameSpaceFinder(root);
-
+        
         JavaModelElementDeleteStrategy deleteStrategy = new JavaModelElementDeleteStrategy ();
         if (config.DESCRIPTIONASJAVADOC) {
             deleteStrategy.addJavaNoteType ("description");
         }
         revers.setModelElementDeleteStrategy (deleteStrategy);
-
+        
         revers.addAttributeStrategy (new JavaAttributeStrategy (session));
         revers.addAssociationEndStrategy (new JavaAssociationEndStrategy (session));
         revers.addClassStrategy (new JavaClassStrategy (session, config));
@@ -71,7 +65,7 @@ public class JavaReverse {
         revers.addModelStrategy (new JavaModelStrategy (finder, config));
         // revers.addModelElementStrategy (new JavaModelElementStrategy ());
         revers.addNoteStrategy (new JavaNoteStrategy (session, config));
-        revers.addOperationStrategy (new JavaOperationStrategy (session, config));
+        revers.addOperationStrategy (new JavaOperationStrategy (session, config, deleteStrategy));
         revers.addPackageStrategy (new JavaPackageStrategy (session, finder));
         revers.addParameterStrategy (new JavaParameterStrategy (session, config));
         revers.addReportItemStrategy (new JavaReportItemStrategy ());
@@ -82,21 +76,21 @@ public class JavaReverse {
         
         revers.setReportWriter (report);
         revers.setNameSpaceFinder (finder);
-        
-		return revers;
+        return revers;
     }
 
-    public void reverseModel(IModelingSession session, JaxbReversedData model, List<IVisitorElement> filteredElements, NameSpace root, IReportWriter report, ReverseStrategyConfiguration config) {
+    public void reverseModel(final IModelingSession session, final JaxbReversedData model, final List<IVisitorElement> filteredElements, final NameSpace root, final IReportWriter report, final ReverseStrategyConfiguration config) {
         XMLReverse revers = initReverse(session, root, report, config);
         
         JavaModelStrategy strategy = new JavaModelStrategy ((JavaNameSpaceFinder) revers.getNameSpaceFinder(), config);
         strategy.setElementsToKeep(filteredElements);
         revers.addModelStrategy (strategy);
         
-        JavaDesignerModule.logService.info ("Start of reverse core at " + Calendar.getInstance ().getTime ().toGMTString ());
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("Start of reverse core at " + LocalDateTime.now());
         
         revers.reverse (model, root);
         
-        JavaDesignerModule.logService.info ("End of reverse core at " + Calendar.getInstance ().getTime ().toGMTString ());
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info ("End of reverse core at " + LocalDateTime.now());
     }
+
 }

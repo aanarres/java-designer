@@ -10,8 +10,7 @@ class JavaCustomType {
 
     private String javaImport;
 
-
-    JavaCustomType(String id) {
+    JavaCustomType(final String id) {
         this.id = id;
         this.javaType = "";
         this.wrappedType = "";
@@ -22,11 +21,11 @@ class JavaCustomType {
         return this.javaType;
     }
 
-    public void setJavaType(String javaType) {
+    public void setJavaType(final String javaType) {
         this.javaType = javaType;
     }
 
-    public String computeType(boolean useWrapper) {
+    public String computeType(final boolean useWrapper) {
         if (useWrapper && this.wrappedType != null &&
                 this.wrappedType.length () != 0) {
             return this.wrappedType;
@@ -38,7 +37,7 @@ class JavaCustomType {
         return this.wrappedType;
     }
 
-    public void setWrappedType(String wrappedType) {
+    public void setWrappedType(final String wrappedType) {
         this.wrappedType = wrappedType;
     }
 
@@ -49,15 +48,15 @@ class JavaCustomType {
     @Override
     public String toString() {
         return "id=\"" + this.id + "\" javaType=\"" + this.javaType +
-                "\" wrappedType=\"" + this.wrappedType + "\" javaImport=\"" +
-                this.javaImport + "\"";
+                                "\" wrappedType=\"" + this.wrappedType + "\" javaImport=\"" +
+                                this.javaImport + "\"";
     }
 
     public String getJavaImport() {
         return this.javaImport;
     }
 
-    public void setJavaImport(String javaImport) {
+    public void setJavaImport(final String javaImport) {
         this.javaImport = javaImport;
     }
 

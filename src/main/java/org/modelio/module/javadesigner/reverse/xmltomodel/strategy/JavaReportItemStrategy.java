@@ -1,19 +1,16 @@
 package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.List;
-
-import org.modelio.vcore.smkernel.mapi.MObject;
-
 import com.modelio.module.xmlreverse.IReadOnlyRepository;
 import com.modelio.module.xmlreverse.IReportWriter;
 import com.modelio.module.xmlreverse.model.JaxbReportItem;
 import com.modelio.module.xmlreverse.model.JaxbTargetItem;
 import com.modelio.module.xmlreverse.strategy.ReportItemStrategy;
+import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class JavaReportItemStrategy extends ReportItemStrategy {
-
     @Override
-    public List<MObject> updateProperties(JaxbReportItem jaxb_element, MObject modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbReportItem jaxb_element, final MObject modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         String message = jaxb_element.getReport ();
         message = message.trim ();
         
@@ -37,7 +34,7 @@ public class JavaReportItemStrategy extends ReportItemStrategy {
     }
 
     @Override
-    public void postTreatment(JaxbReportItem jaxb_element, MObject modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbReportItem jaxb_element, final MObject modelio_element, final IReadOnlyRepository repository) {
         IReportWriter report = repository.getReportWriter ();
         
         if (report != null) {

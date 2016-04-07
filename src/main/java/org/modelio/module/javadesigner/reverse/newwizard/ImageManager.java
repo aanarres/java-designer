@@ -1,9 +1,8 @@
 package org.modelio.module.javadesigner.reverse.newwizard;
 
 import java.util.HashMap;
-
 import org.eclipse.swt.graphics.Image;
-import org.modelio.api.modelio.Modelio;
+import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 /**
@@ -11,14 +10,13 @@ import org.modelio.vcore.smkernel.mapi.MObject;
  * and stored in a map to avoid multiple loadings.
  */
 public class ImageManager {
-    private static ImageManager INSTANCE;
-
     private static String modulePath = null;
+
+    private static ImageManager INSTANCE;
 
     private HashMap<String, Image> map;
 
-
-    public static void setModulePath(String cxxPath) {
+    public static void setModulePath(final String cxxPath) {
         ImageManager.modulePath = cxxPath;
     }
 
@@ -52,11 +50,10 @@ public class ImageManager {
 
     /**
      * Get the Image corresponding to the String.
-     * @param element
-     * The element to use for choosing the image.
+     * @param element The element to use for choosing the image.
      * @return An Image.
      */
-    public Image getIcon(String element) {
+    public Image getIcon(final String element) {
         Image ret;
         
         ret = this.map.get(element);
@@ -65,13 +62,12 @@ public class ImageManager {
 
     /**
      * Get the Image corresponding to the object.
-     * @param element
-     * The element to use for choosing the image.
+     * @param element The element to use for choosing the image.
      * @return An Image.
      */
-    public Image getIcon(MObject element) {
-        Image ret = Modelio.getInstance().getImageService().getStereotypedImage(element, null, false);
-        return ret;
+    public Image getIcon(final MObject element) {
+        
+        return JavaDesignerModule.getInstance().getModuleContext().getModelioServices().getImageService().getStereotypedImage(element, null, false);
     }
 
 }

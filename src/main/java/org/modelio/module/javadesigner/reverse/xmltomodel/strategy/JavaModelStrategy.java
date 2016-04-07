@@ -2,19 +2,7 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.bind.JAXBElement;
-
-import org.modelio.metamodel.uml.statik.Classifier;
-import org.modelio.module.javadesigner.api.IJavaDesignerPeerModule;
-import org.modelio.module.javadesigner.api.JavaDesignerTagTypes;
-import org.modelio.module.javadesigner.i18n.Messages;
-import org.modelio.module.javadesigner.reverse.ReverseConfig.GeneralReverseMode;
-import org.modelio.module.javadesigner.reverse.ReverseStrategyConfiguration;
-import org.modelio.module.javadesigner.reverse.xmltomodel.JavaNameSpaceFinder;
-import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
-import org.modelio.vcore.smkernel.mapi.MObject;
-
 import com.modelio.module.xmlreverse.IReadOnlyRepository;
 import com.modelio.module.xmlreverse.IReportWriter;
 import com.modelio.module.xmlreverse.model.IVisitorElement;
@@ -52,6 +40,15 @@ import com.modelio.module.xmlreverse.model.JaxbUsedClass;
 import com.modelio.module.xmlreverse.model.JaxbUsedPackage;
 import com.modelio.module.xmlreverse.model.defaultvisitor.DefaultReverseModelVisitor;
 import com.modelio.module.xmlreverse.strategy.ModelStrategy;
+import org.modelio.metamodel.uml.statik.Classifier;
+import org.modelio.module.javadesigner.api.IJavaDesignerPeerModule;
+import org.modelio.module.javadesigner.api.JavaDesignerTagTypes;
+import org.modelio.module.javadesigner.i18n.Messages;
+import org.modelio.module.javadesigner.reverse.ReverseConfig.GeneralReverseMode;
+import org.modelio.module.javadesigner.reverse.ReverseStrategyConfiguration;
+import org.modelio.module.javadesigner.reverse.xmltomodel.JavaNameSpaceFinder;
+import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
+import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class JavaModelStrategy extends ModelStrategy {
     protected List<IVisitorElement> elementsToKeep = null;
@@ -61,31 +58,29 @@ public class JavaModelStrategy extends ModelStrategy {
     protected ReverseStrategyConfiguration config;
 
     @Override
-    public List<MObject> updateProperties(JaxbModel jaxb_element, MObject modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbModel jaxb_element, final MObject modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         if (repository.getReportWriter().hasErrors()) {
             // If there are errors in the report, something went wrong in the parser...
             // We have to remove all sub elements to skip the "model" reverse
             // but allow the report to be completed.
             jaxb_element.getPackageOrClazzOrInterface().clear();
         }
-
+        
         // In some case, we must remove elements from the jaxb model
         if (isFilterActive()) {
             ElementFilterVisitor visitor = new ElementFilterVisitor();
             jaxb_element.accept(visitor);
         }
-
         return super.updateProperties(jaxb_element, modelio_element, owner, repository);
     }
 
-    public JavaModelStrategy(JavaNameSpaceFinder nameSpaceFinder, ReverseStrategyConfiguration config) {
+    public JavaModelStrategy(final JavaNameSpaceFinder nameSpaceFinder, final ReverseStrategyConfiguration config) {
         this.javaNameSpaceFinder = nameSpaceFinder;
         this.config = config;
     }
 
     @Override
-    public void postTreatment(JaxbModel jaxb_element, MObject modelio_element,
-            IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbModel jaxb_element, final MObject modelio_element, final IReadOnlyRepository repository) {
         // Generate one info per external class reversed
         IReportWriter report = repository.getReportWriter();
         for (Classifier elt : this.javaNameSpaceFinder.getExternalClassifiers()) {
@@ -93,9 +88,9 @@ public class JavaModelStrategy extends ModelStrategy {
             // been reversed in between) that's why the tagged value is checked once again.
             if (!elt.isDeleted() && (elt).isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAEXTERN)) {
                 report.addInfo(Messages.getString("Info.ExternClassifierCreation.Message",
-                                                  JavaDesignerUtils.getJavaName(elt)),
-                                                  elt,
-                                                  Messages.getString("Info.ExternClassifierCreation.Description"));
+                        JavaDesignerUtils.getJavaName(elt)),
+                        elt,
+                        Messages.getString("Info.ExternClassifierCreation.Description"));
             }
         }
         super.postTreatment(jaxb_element, modelio_element, repository);
@@ -105,7 +100,7 @@ public class JavaModelStrategy extends ModelStrategy {
         return this.elementsToKeep;
     }
 
-    public void setElementsToKeep(List<IVisitorElement> elementsToKeep) {
+    public void setElementsToKeep(final List<IVisitorElement> elementsToKeep) {
         this.elementsToKeep = elementsToKeep;
     }
 
@@ -121,68 +116,68 @@ public class JavaModelStrategy extends ModelStrategy {
         public ElementFilterVisitor() {
             // Empty c'tor
         }
-        
-        private boolean keepElement(Object element) {
+
+        private boolean keepElement(final Object element) {
             switch (JavaModelStrategy.this.config.reverseMode) {
-                case SIMPLE_STRUCTURAL_REVERSE: {
-                    if ((element instanceof JaxbAssociationEnd)
-                            || (element instanceof JaxbAttribute)
-                            || (element instanceof JaxbClassType)
-                            || (element instanceof JaxbDefaultType)
-                            || (element instanceof JaxbDependency)
-                            || (element instanceof JaxbDestination)
-                            || (element instanceof JaxbGeneralization)
-                            || (element instanceof JaxbOperation)
-                            || (element instanceof JaxbParameter)
-                            || (element instanceof JaxbRaisedException)
-                            || (element instanceof JaxbRealization)
-                            || (element instanceof JaxbReturnParameter)
-                            || (element instanceof JaxbTemplateBinding)
-                            || (element instanceof JaxbTemplateParameter)
-                            || (element instanceof JaxbTemplateParameterSubstitution)
-                            || (element instanceof JaxbType)) {
+            case SIMPLE_STRUCTURAL_REVERSE: {
+                if ((element instanceof JaxbAssociationEnd)
+                        || (element instanceof JaxbAttribute)
+                        || (element instanceof JaxbClassType)
+                        || (element instanceof JaxbDefaultType)
+                        || (element instanceof JaxbDependency)
+                        || (element instanceof JaxbDestination)
+                        || (element instanceof JaxbGeneralization)
+                        || (element instanceof JaxbOperation)
+                        || (element instanceof JaxbParameter)
+                        || (element instanceof JaxbRaisedException)
+                        || (element instanceof JaxbRealization)
+                        || (element instanceof JaxbReturnParameter)
+                        || (element instanceof JaxbTemplateBinding)
+                        || (element instanceof JaxbTemplateParameter)
+                        || (element instanceof JaxbTemplateParameterSubstitution)
+                        || (element instanceof JaxbType)) {
+                    return false;
+                }
+            }
+            //$FALL-THROUGH$
+            case COMPLETE_STRUCTURAL_REVERSE: {
+                if ((element instanceof JaxbConstraint)
+                        || (element instanceof JaxbElementImport)
+                        || (element instanceof JaxbInstance)
+                        || (element instanceof JaxbNote)
+                        || (element instanceof JaxbPackageImport)
+                        || (element instanceof JaxbUse)
+                        || (element instanceof JaxbUsedClass)
+                        || (element instanceof JaxbUsedPackage)) {
+                    return false;
+                } else if (element instanceof JAXBElement) {
+                    // Ignore init values
+                    JAXBElement<?> jaxb_sub = (JAXBElement<?>) element;
+                    String localPart = jaxb_sub.getName().getLocalPart();
+                    if ("value".equals(localPart) || "default-value".equals(localPart)) {
                         return false;
                     }
                 }
-                //$FALL-THROUGH$
-                case COMPLETE_STRUCTURAL_REVERSE: {
-                    if ((element instanceof JaxbConstraint)
-                            || (element instanceof JaxbElementImport)
-                            || (element instanceof JaxbInstance)
-                            || (element instanceof JaxbNote)
-                            || (element instanceof JaxbPackageImport)
-                            || (element instanceof JaxbUse)
-                            || (element instanceof JaxbUsedClass)
-                            || (element instanceof JaxbUsedPackage)) {
-                        return false;
-                    } else if (element instanceof JAXBElement) {
-                        // Ignore init values
-                        JAXBElement<?> jaxb_sub = (JAXBElement<?>) element;
-                        String localPart = jaxb_sub.getName().getLocalPart();
-                        if ("value".equals(localPart) || "default-value".equals(localPart)) {
-                            return false;
-                        }
-                    }
-                }
-                //$FALL-THROUGH$
+            }
+            //$FALL-THROUGH$
             default:
-                case COMPLETE_REVERSE: {
-                    // Ignore elements unchecked in the reverse wizard
-                    if (JavaModelStrategy.this.elementsToKeep != null) {
-                        if ((element instanceof JaxbClass)
-                                || (element instanceof JaxbDataType)
-                                || (element instanceof JaxbEnumeration)
-                                || (element instanceof JaxbInterface)) {
-                            return JavaModelStrategy.this.elementsToKeep.contains(element);
-                        }
+            case COMPLETE_REVERSE: {
+                // Ignore elements unchecked in the reverse wizard
+                if (JavaModelStrategy.this.elementsToKeep != null) {
+                    if ((element instanceof JaxbClass)
+                            || (element instanceof JaxbDataType)
+                            || (element instanceof JaxbEnumeration)
+                            || (element instanceof JaxbInterface)) {
+                        return JavaModelStrategy.this.elementsToKeep.contains(element);
                     }
                 }
+            }
             }
             return true;
         }
 
         @Override
-        public Object visitClass(JaxbClass element) {
+        public Object visitClass(final JaxbClass element) {
             for (Object c_element : new ArrayList<>(element.getClazzOrInterfaceOrInstance())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -196,7 +191,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitDataType(JaxbDataType element) {
+        public Object visitDataType(final JaxbDataType element) {
             for (Object c_element : new ArrayList<>(element.getOperationOrTemplateBindingOrTemplateParameter())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -210,7 +205,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitEnumeration(JaxbEnumeration element) {
+        public Object visitEnumeration(final JaxbEnumeration element) {
             for (Object c_element : new ArrayList<>(element.getNoteOrConstraintOrStereotype())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -223,9 +218,8 @@ public class JavaModelStrategy extends ModelStrategy {
             return null;
         }
 
-
         @Override
-        public Object visitInterface(JaxbInterface element) {
+        public Object visitInterface(final JaxbInterface element) {
             for (Object c_element : new ArrayList<>(element.getClazzOrInterfaceOrEnumeration())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -239,7 +233,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitPackage(JaxbPackage element) {
+        public Object visitPackage(final JaxbPackage element) {
             for (Object c_element : new ArrayList<>(element.getGroupOrPackageOrClazz())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -253,7 +247,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitModel(JaxbModel element) {
+        public Object visitModel(final JaxbModel element) {
             for (Object c_element : new ArrayList<>(element.getPackageOrClazzOrInterface())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -267,7 +261,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitGroup(JaxbGroup element) {
+        public Object visitGroup(final JaxbGroup element) {
             for (Object c_element : new ArrayList<>(element.getPackageOrClazzOrInterface())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -280,10 +274,8 @@ public class JavaModelStrategy extends ModelStrategy {
             return null;
         }
 
-
-
         @Override
-        public Object visitAssociationEnd(JaxbAssociationEnd element) {
+        public Object visitAssociationEnd(final JaxbAssociationEnd element) {
             for (Object c_element : new ArrayList<>(element.getBaseTypeOrClassTypeOrNote())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -297,7 +289,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitAttribute(JaxbAttribute element) {
+        public Object visitAttribute(final JaxbAttribute element) {
             for (Object c_element : new ArrayList<>(element.getValueOrBaseTypeOrClassType())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -311,7 +303,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitInstance(JaxbInstance element) {
+        public Object visitInstance(final JaxbInstance element) {
             for (Object c_element : new ArrayList<>(element.getNoteOrConstraintOrStereotype())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -325,7 +317,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitOperation(JaxbOperation element) {
+        public Object visitOperation(final JaxbOperation element) {
             for (Object c_element : new ArrayList<>(element.getParameterOrTemplateParameterOrReturnParameter())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -339,7 +331,7 @@ public class JavaModelStrategy extends ModelStrategy {
         }
 
         @Override
-        public Object visitSignal(JaxbSignal element) {
+        public Object visitSignal(final JaxbSignal element) {
             for (Object c_element : new ArrayList<>(element.getOperationRepresentationOrNoteOrConstraint())) {
                 if (keepElement(c_element)) {
                     if (c_element instanceof IVisitorElement) {
@@ -351,5 +343,7 @@ public class JavaModelStrategy extends ModelStrategy {
             }
             return super.visitSignal(element);
         }
+
     }
+
 }

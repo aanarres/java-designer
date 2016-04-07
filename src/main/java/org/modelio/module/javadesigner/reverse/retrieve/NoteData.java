@@ -9,8 +9,7 @@ public abstract class NoteData implements IRetrieveData {
 
     protected IReportWriter report;
 
-
-    public NoteData(String noteType, String noteContent, IReportWriter report) {
+    public NoteData(final String noteType, final String noteContent, final IReportWriter report) {
         this.noteType = noteType;
         this.noteContent = noteContent;
         this.report = report;
@@ -20,7 +19,7 @@ public abstract class NoteData implements IRetrieveData {
         return this.noteType;
     }
 
-    public void setNoteType(String noteType) {
+    public void setNoteType(final String noteType) {
         this.noteType = noteType;
     }
 
@@ -28,7 +27,7 @@ public abstract class NoteData implements IRetrieveData {
         return this.noteContent;
     }
 
-    public void setNoteContent(String noteContent) {
+    public void setNoteContent(final String noteContent) {
         this.noteContent = noteContent;
     }
 

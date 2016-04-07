@@ -4,9 +4,9 @@ import org.modelio.module.javadesigner.reverse.javatoxml.identification.Identifi
 import org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.StructuralModelUtils;
 
 class ClassTemplateParameterXMLGenerator extends TemplateParameterXMLGenerator {
-	
-	@Override
-	protected Identified getIdentifiedTemplateParameter(String templateName, final Context ctx) {
-		return StructuralModelUtils.getClassTemplateParameter(templateName, ctx.getGStack().getCurrentStructuralElement());
-	}
+    @Override
+    protected Identified getIdentifiedTemplateParameter(final String templateName, final Context ctx) {
+        return StructuralModelUtils.getClassTemplateParameter(templateName, ctx.getGStack().getCurrentStructuralElement());
+    }
+
 }

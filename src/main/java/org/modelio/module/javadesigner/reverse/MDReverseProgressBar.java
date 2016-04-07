@@ -4,10 +4,10 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 import java.util.Collection;
-
+import com.modelio.module.xmlreverse.IReportWriter;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.modelio.api.model.IModelingSession;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.api.module.IModule;
 import org.modelio.metamodel.uml.statik.NameSpace;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
@@ -17,28 +17,25 @@ import org.modelio.module.javadesigner.reverse.retrieve.IRetrieveData;
 import org.modelio.module.javadesigner.reverse.retrieve.RetrieveParser;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-
 public class MDReverseProgressBar extends ProgressBar implements IRunnableWithProgress {
     private Collection<NameSpace> elementsToReverse;
 
     private IReportWriter report;
 
-
-    public MDReverseProgressBar(IModule module, Collection<NameSpace> elementsToReverse, IReportWriter report) {
+    public MDReverseProgressBar(final IModule module, final Collection<NameSpace> elementsToReverse, final IReportWriter report) {
         super (module, elementsToReverse.size ());
         this.elementsToReverse = elementsToReverse;
         this.report = report;
     }
 
     @Override
-    public void run(IProgressMonitor localMonitor) throws InvocationTargetException, InterruptedException {
+    public void run(final IProgressMonitor localMonitor) throws InterruptedException, InvocationTargetException {
         init (true);
         monitor = localMonitor;
         monitor.beginTask ("Reversing", this.elementsToReverse.size ());
         
         // Reverse in Model Driven
-        IModelingSession session = this.module.getModelingSession();
+        IModelingSession session = this.module.getModuleContext().getModelingSession();
         RetrieveParser parser = new RetrieveParser(this.report);
         for (NameSpace eltToRetrieve : this.elementsToReverse) {
             File fileToRetrieve = JavaDesignerUtils.getFilename (eltToRetrieve, this.module);
@@ -48,7 +45,7 @@ public class MDReverseProgressBar extends ProgressBar implements IRunnableWithPr
                     retrieveData.inject(session, eltToRetrieve);
                 }
         
-                JavaDesignerUtils.updateDate (this.module.getModelingSession(), eltToRetrieve, Calendar.getInstance ().getTimeInMillis ());
+                JavaDesignerUtils.updateDate (session, eltToRetrieve, Calendar.getInstance ().getTimeInMillis ());
             } catch (Exception e) {
                 this.report.addError(Messages.getString ("Error.RetrieveError.Message", fileToRetrieve), eltToRetrieve, Messages.getString ("Error.RetrieveError.Description", e.getMessage()));
                 monitor.setCanceled (true);
@@ -65,7 +62,7 @@ public class MDReverseProgressBar extends ProgressBar implements IRunnableWithPr
 
     private String getEncoding() {
         try {
-            switch (this.module.getConfiguration().getParameterValue(JavaDesignerParameters.ENCODING)) {
+            switch (this.module.getModuleContext().getConfiguration().getParameterValue(JavaDesignerParameters.ENCODING)) {
             case "ISO_8859_1":
             case "ISO-8859-1":
                 return "ISO-8859-1";
@@ -90,4 +87,5 @@ public class MDReverseProgressBar extends ProgressBar implements IRunnableWithPr
             return "UTF-8";
         }
     }
+
 }

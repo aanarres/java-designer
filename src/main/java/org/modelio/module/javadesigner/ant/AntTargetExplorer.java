@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.ant;
 
 import java.util.List;
-
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -18,22 +17,21 @@ import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.reverse.newwizard.ListContentProvider;
 
 class AntTargetExplorer extends ModelioDialog {
+     String result;
+
     private TreeViewer treeViewer;
-    
-    String result;
-    
-    
-    protected AntTargetExplorer(Shell parentShell) {
+
+    protected AntTargetExplorer(final Shell parentShell) {
         super (parentShell);
     }
-    
+
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         super.addDefaultButtons (parent);
     }
-    
+
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         this.treeViewer = new TreeViewer (parent, SWT.SINGLE | SWT.BORDER);
         this.treeViewer.getTree ().setLayoutData (new GridData (SWT.FILL, SWT.FILL, true, true));
         
@@ -60,7 +58,7 @@ class AntTargetExplorer extends ModelioDialog {
         });
         return parent;
     }
-    
+
     @Override
     public void init() {
         Shell shell = this.getShell ();
@@ -68,8 +66,8 @@ class AntTargetExplorer extends ModelioDialog {
         setTitle (Messages.getString ("Gui.antSelector.title")); //$NON-NLS-1$
         setMessage (Messages.getString ("Gui.antSelector.message")); //$NON-NLS-1$
     }
-    
-    public static String getTarget(Shell parent, List<String> targets) throws InterruptedException {
+
+    public static String getTarget(final Shell parent, final List<String> targets) throws InterruptedException {
         AntTargetExplorer l_Explorer = new AntTargetExplorer (parent);
         l_Explorer.create ();
         l_Explorer.treeViewer.setInput (targets);
@@ -81,11 +79,11 @@ class AntTargetExplorer extends ModelioDialog {
             throw new InterruptedException();
         }
     }
-    
+
     @Override
     protected Point getInitialSize() {
         Point initial = new Point(300, 350);
         return initial;
     }
-    
+
 }

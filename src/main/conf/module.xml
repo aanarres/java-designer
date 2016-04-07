@@ -3,7 +3,7 @@
     <ClassPath>
         <PathEntry path="lib/${project.artifactId}-${project.version}.jar"/>
         <PathEntry path="lib/org.modelio.documentation.javadesigner-${project.version}.jar"/>
-        <PathEntry path="lib/xmlreverse-3.1.02.jar"/>
+        <PathEntry path="lib/xmlreverse-3.2.02.jar"/>
         <PathEntry path="lib/javatuples-1.2.jar"/>
         <PathEntry path="lib/antlr-runtime-3.4.1.jar"/>
     </ClassPath>
@@ -99,7 +99,6 @@
             <Stereotype name="JavaDocInvariant" metaclass="Constraint" is-hidden="false" label="Javadoc Invariant" uid="007c081c-0000-0251-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaEnumeration" metaclass="Enumeration" is-hidden="false" label="Java Enumeration" uid="01ec23a8-0000-0262-0000-000000000000">
                 <Icon path="JavaDesigner/res/bmp/enumeration.png"/>
@@ -122,17 +121,14 @@
             <Stereotype name="JavaFileGroup" metaclass="ElementImport" is-hidden="false" label="File group" uid="eb8c18e0-0002-d167-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaGetter" metaclass="Operation" is-hidden="false" label="Getter" uid="01ec25e8-0000-00f0-0000-000000000000">
                 <Icon path="res/bmp/auto.png"/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaGetter" metaclass="Dependency" is-hidden="false" label="Getter" uid="01ec23a8-0000-012b-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaInterface" metaclass="Interface" is-hidden="false" label="Java Interface" uid="01ec23a8-0000-0267-0000-000000000000">
                 <Icon path="JavaDesigner/res/bmp/interface.png"/>
@@ -157,7 +153,6 @@
             <Stereotype name="JavaInvariant" metaclass="Constraint" is-hidden="false" label="Invariants" uid="007c037c-0000-0003-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaPackage" metaclass="Package" is-hidden="false" label="Java Package" uid="01ec23a8-0000-0126-0000-000000000000">
                 <Icon path="JavaDesigner/res/bmp/package.png"/>
@@ -175,49 +170,38 @@
             <Stereotype name="JavaPostCondition" metaclass="Constraint" is-hidden="false" label="Post Conditions" uid="007c037c-0000-0007-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaPreCondition" metaclass="Constraint" is-hidden="false" label="Pre Conditions" uid="007c037c-0000-0005-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaResource" metaclass="Artifact" is-hidden="false" label="" uid="00c80378-0001-ac88-0000-000000000000">
                 <Icon path="JavaDesigner/res/bmp/file.png"/>
                 <Image path="JavaDesigner/res/bmp/file.png"/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaSetter" metaclass="Operation" is-hidden="false" label="Setter" uid="01ec25e8-0000-00f5-0000-000000000000">
                 <Icon path="res/bmp/auto.png"/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaSetter" metaclass="Dependency" is-hidden="false" label="Setter" uid="01ec23a8-0000-0130-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="JavaStatic" metaclass="ElementImport" is-hidden="false" label="" uid="000c0b48-0000-37da-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="SeeJavadoc" metaclass="Dependency" is-hidden="false" label="" uid="01240268-0000-00e0-0000-000000000000">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="StandardMethod" metaclass="Operation" is-hidden="false" label="Standard Method" uid="35d8b4ff-a669-11e1-8eb3-002564c97630">
                 <Icon path="res/bmp/auto.png"/>
                 <Image path=""/>
-                <TagTypes/>
             </Stereotype>
             <Stereotype name="AbstractJavaAnnotation" metaclass="ModelElement" is-hidden="true" label="Annotation" uid="e8ecd0b2-3bf5-49d1-baca-ee1504b9ea22">
                 <Icon path=""/>
                 <Image path=""/>
-                <TagTypes>
-                    <TagType name="AnnotationParameters" uid="b38a2803-6e8c-4cbb-8e2f-63f98ab2972e" label="Parameters" parameter-card="*" is-hidden="false" is-signed="false"/>
-                </TagTypes>
             </Stereotype>
             <MetaclassReference uid="258010dc-0000-006d-0000-000000000000" metaclass="AssociationEnd">
                 <TagTypes>
@@ -437,57 +421,221 @@
         </Profile>
     </Profiles>
     <Parameters>
-        <Parameter id="GenerationMode" group="" uid="01ec25e8-0000-0700-0000-000000000000"/>
-        <Parameter id="AutoGenerate" group="" uid="01ec25e8-0000-0704-0000-000000000000"/>
-        <Parameter id="RetrieveDefaultBehaviour" group="" uid="01ec25e8-0000-0706-0000-000000000000"/>
-        <Parameter id="DiagramCreationOnReverse" group="" uid="01ec25e8-0000-070b-0000-000000000000"/>
-        <Parameter id="Encoding" group="" uid="6a276a28-0bea-11df-b8eb-0019b95c085c"/>
-        <Parameter id="JDKPath" group="" uid="01ec25e8-0000-070d-0000-000000000000"/>
-        <Parameter id="AccessibleClasses" group="" uid="01ec25e8-0000-070f-0000-000000000000"/>
-        <Parameter id="GenerationPath" group="" uid="01ec25e8-0000-0711-0000-000000000000"/>
-        <Parameter id="JavahGenerationPath" group="" uid="01ec25e8-0000-0713-0000-000000000000"/>
-        <Parameter id="CompilationPath" group="" uid="01ec25e8-0000-0715-0000-000000000000"/>
-        <Parameter id="JarFilePath" group="" uid="01ec25e8-0000-0717-0000-000000000000"/>
-        <Parameter id="GenDocPath" group="" uid="01ec25e8-0000-0719-0000-000000000000"/>
-        <Parameter id="SourceFilesPath" group="" uid="01ec25e8-0000-071b-0000-000000000000"/>
-        <Parameter id="CustomizationFile" group="" uid="01ec25e8-0000-071d-0000-000000000000"/>
-        <Parameter id="CopyrightFile" group="" uid="6687a8d5-3e95-11e0-8fc3-002564c97630"/>
-        <Parameter id="ErrorOnFirstWarning" group="" uid="01ec25e8-0000-071f-0000-000000000000"/>
-        <Parameter id="ReadOnlyElementNotGenerated" group="" uid="01ec25e8-0000-0721-0000-000000000000"/>
-        <Parameter id="LockGeneratedFiles" group="" uid="2c5d9a32-8425-11df-a692-002564c97630"/>
-        <Parameter id="FullNameGeneration" group="" uid="01ec25e8-0000-0723-0000-000000000000"/>
-        <Parameter id="GenerateFinalParameters" group="" uid="ac898f03-b516-11df-b5f1-002564c97630"/>
-        <Parameter id="InterfaceImplementation" group="" uid="01ec2730-0000-04bd-0000-000000000000"/>
-        <Parameter id="AccessorsGeneration" group="" uid="01ec25e8-0000-0725-0000-000000000000"/>
-        <Parameter id="PublicAccessorVisibility" group="" uid="01ec25e8-0000-072a-0000-000000000000"/>
-        <Parameter id="PublicModifierVisibility" group="" uid="01ec25e8-0000-0730-0000-000000000000"/>
-        <Parameter id="ProtectedAccessorVisibility" group="" uid="01ec25e8-0000-0736-0000-000000000000"/>
-        <Parameter id="ProtectedModifierVisibility" group="" uid="01ec25e8-0000-073c-0000-000000000000"/>
-        <Parameter id="FriendlyAccessorVisibility" group="" uid="01ec25e8-0000-0742-0000-000000000000"/>
-        <Parameter id="FriendlyModifierVisibility" group="" uid="01ec25e8-0000-0748-0000-000000000000"/>
-        <Parameter id="PrivateAccessorVisibility" group="" uid="01ec25e8-0000-074e-0000-000000000000"/>
-        <Parameter id="PrivateModifierVisibility" group="" uid="01ec25e8-0000-0754-0000-000000000000"/>
-        <Parameter id="GeneratePrePostConditions" group="" uid="01ec25e8-0000-075a-0000-000000000000"/>
-        <Parameter id="GenerateInvariants" group="" uid="01ec25e8-0000-0761-0000-000000000000"/>
-        <Parameter id="InvariantsName" group="" uid="01ec25e8-0000-0766-0000-000000000000"/>
-        <Parameter id="UseExternalEdition" group="" uid="01ec25e8-0000-076a-0000-000000000000"/>
-        <Parameter id="ExternalEditorCommandLine" group="" uid="01ec25e8-0000-076c-0000-000000000000"/>
-        <Parameter id="EclipseProject" group="" uid="01ec25e8-0000-076e-0000-000000000000"/>
-        <Parameter id="AutoReverse" group="" uid="01ec25e8-0000-0770-0000-000000000000"/>
-        <Parameter id="CompilationOptions" group="" uid="01ec25e8-0000-0772-0000-000000000000"/>
-        <Parameter id="UseJavah" group="" uid="01ec25e8-0000-0774-0000-000000000000"/>
-        <Parameter id="RunParameters" group="" uid="01ec25e8-0000-0776-0000-000000000000"/>
-        <Parameter id="GenerateJavadoc" group="" uid="01ec25e8-0000-0778-0000-000000000000"/>
-        <Parameter id="DescriptionAsJavadoc" group="" uid="01ec25e8-0000-077a-0000-000000000000"/>
-        <Parameter id="JavaDocOptions" group="" uid="01ec25e8-0000-077c-0000-000000000000"/>
-        <Parameter id="AutomaticallyOpenJavadoc" group="" uid="01ec2a7c-0000-01e0-0000-000000000000"/>
-        <Parameter id="PackageSrcInRamc" group="" uid="01ec25e8-0000-077e-0000-000000000000"/>
-        <Parameter id="PackageJarInRamc" group="" uid="01ec25e8-0000-0780-0000-000000000000"/>
-        <Parameter id="GenerateDefaultReturn" group="" uid="5ffba198-56f9-11e1-a8d2-002564c97630"/>
-        <Parameter id="AutoUpdateStandardMethods" group="" uid="8c1f04c4-aeea-11e1-a168-002564c97630"/>
-        <Parameter id="GenerateJavadocMarkers" group="" uid="c60eb8f5-c78b-11e2-9d6e-02004c4f4f50"/>
-        <Parameter id="ComponentSubPath" group="" uid="221d7c72-ca01-4094-97db-c9040b08fc75"/>
-        <Parameter id="JavaCompatibility" group="" uid="cec5209f-5a2c-4897-8575-757650e8ab02"/>
+        <Parameter id="GenerationMode" group="%group.General.label" uid="01ec25e8-0000-0700-0000-000000000000" type="Enum" default-value="" label="%parameter.GenerationMode.label">
+            <Enumeration>
+                <Literal value="RoundTrip" label="%parameter.GenerationMode.RoundTrip.label"/>
+                <Literal value="ModelDriven" label="%parameter.GenerationMode.ModelDriven.label"/>
+                <Literal value="Release" label="%parameter.GenerationMode.Release.label"/>
+            </Enumeration>
+            <Description>%parameter.GenerationMode.description</Description>
+        </Parameter>
+        <Parameter id="RetrieveDefaultBehaviour" group="%group.General.label" uid="01ec25e8-0000-0706-0000-000000000000" type="Enum" default-value="" label="%parameter.RetrieveDefaultBehaviour.label">
+            <Enumeration>
+                <Literal value="Ask" label="%parameter.RetrieveDefaultBehaviour.Ask.label"/>
+                <Literal value="Retrieve" label="%parameter.RetrieveDefaultBehaviour.Retrieve.label"/>
+                <Literal value="Keep" label="%parameter.RetrieveDefaultBehaviour.Keep.label"/>
+            </Enumeration>
+            <Description>%parameter.RetrieveDefaultBehaviour.description</Description>
+        </Parameter>
+        <Parameter id="Encoding" group="%group.General.label" uid="6a276a28-0bea-11df-b8eb-0019b95c085c" type="Enum" default-value="" label="%parameter.Encoding.label">
+            <Enumeration>
+                <Literal value="ISO-8859-1" label="%parameter.Encoding.ISO-8859-1.label"/>
+                <Literal value="US-ASCII" label="%parameter.Encoding.US-ASCII.label"/>
+                <Literal value="UTF-8" label="%parameter.Encoding.UTF-8.label"/>
+                <Literal value="UTF-16BE" label="%parameter.Encoding.UTF-16BE.label"/>
+                <Literal value="UTF-16LE" label="%parameter.Encoding.UTF-16LE.label"/>
+                <Literal value="UTF-16" label="%parameter.Encoding.UTF-16.label"/>
+            </Enumeration>
+            <Description>%parameter.Encoding.description</Description>
+        </Parameter>
+        <Parameter id="JavaCompatibility" group="%group.General.label" uid="cec5209f-5a2c-4897-8575-757650e8ab02" type="Enum" default-value="" label="%parameter.JavaCompatibility.label">
+            <Enumeration>
+                <Literal value="Java7" label="%parameter.JavaCompatibility.Java7.label"/>
+                <Literal value="Java8" label="%parameter.JavaCompatibility.Java8.label"/>
+            </Enumeration>
+            <Description>%parameter.JavaCompatibility.description</Description>
+        </Parameter>
+        <Parameter id="AccessibleClasses" group="%group.General.label" uid="01ec25e8-0000-070f-0000-000000000000" type="String" default-value="" label="%parameter.AccessibleClasses.label">
+            <Description>%parameter.AccessibleClasses.description</Description>
+        </Parameter>
+        <Parameter id="JDKPath" group="%group.Directories.label" uid="01ec25e8-0000-070d-0000-000000000000" type="Directory" default-value="" label="%parameter.JDKPath.label">
+            <Description>%parameter.JDKPath.description</Description>
+        </Parameter>
+        <Parameter id="GenerationPath" group="%group.Directories.label" uid="01ec25e8-0000-0711-0000-000000000000" type="Directory" default-value="" label="%parameter.GenerationPath.label">
+            <Description>%parameter.GenerationPath.description</Description>
+        </Parameter>
+        <Parameter id="ComponentSubPath" group="%group.Directories.label" uid="221d7c72-ca01-4094-97db-c9040b08fc75" type="String" default-value="" label="%parameter.ComponentSubPath.label">
+            <Description>%parameter.ComponentSubPath.description</Description>
+        </Parameter>
+        <Parameter id="JavahGenerationPath" group="%group.Directories.label" uid="01ec25e8-0000-0713-0000-000000000000" type="Directory" default-value="" label="%parameter.JavahGenerationPath.label">
+            <Description>%parameter.JavahGenerationPath.description</Description>
+        </Parameter>
+        <Parameter id="CompilationPath" group="%group.Directories.label" uid="01ec25e8-0000-0715-0000-000000000000" type="Directory" default-value="" label="%parameter.CompilationPath.label">
+            <Description>%parameter.CompilationPath.description</Description>
+        </Parameter>
+        <Parameter id="JarFilePath" group="%group.Directories.label" uid="01ec25e8-0000-0717-0000-000000000000" type="Directory" default-value="" label="%parameter.JarFilePath.label">
+            <Description>%parameter.JarFilePath.description</Description>
+        </Parameter>
+        <Parameter id="GenDocPath" group="%group.Directories.label" uid="01ec25e8-0000-0719-0000-000000000000" type="Directory" default-value="" label="%parameter.GenDocPath.label">
+            <Description>%parameter.GenDocPath.description</Description>
+        </Parameter>
+        <Parameter id="CustomizationFile" group="%group.Code generation.label" uid="01ec25e8-0000-071d-0000-000000000000" type="File" default-value="" label="%parameter.CustomizationFile.label">
+            <Description>%parameter.CustomizationFile.description</Description>
+        </Parameter>
+        <Parameter id="CopyrightFile" group="%group.Code generation.label" uid="6687a8d5-3e95-11e0-8fc3-002564c97630" type="File" default-value="" label="%parameter.CopyrightFile.label">
+            <Description>%parameter.CopyrightFile.description</Description>
+        </Parameter>
+        <Parameter id="ErrorOnFirstWarning" group="%group.Code generation.label" uid="01ec25e8-0000-071f-0000-000000000000" type="Boolean" default-value="" label="%parameter.ErrorOnFirstWarning.label">
+            <Description>%parameter.ErrorOnFirstWarning.description</Description>
+        </Parameter>
+        <Parameter id="FullNameGeneration" group="%group.Code generation.label" uid="01ec25e8-0000-0723-0000-000000000000" type="Boolean" default-value="" label="%parameter.FullNameGeneration.label">
+            <Description>%parameter.FullNameGeneration.description</Description>
+        </Parameter>
+        <Parameter id="GenerateFinalParameters" group="%group.Code generation.label" uid="ac898f03-b516-11df-b5f1-002564c97630" type="Boolean" default-value="" label="%parameter.GenerateFinalParameters.label">
+            <Description>%parameter.GenerateFinalParameters.description</Description>
+        </Parameter>
+        <Parameter id="GenerateDefaultReturn" group="%group.Code generation.label" uid="5ffba198-56f9-11e1-a8d2-002564c97630" type="Boolean" default-value="" label="%parameter.GenerateDefaultReturn.label">
+            <Description>%parameter.GenerateDefaultReturn.description</Description>
+        </Parameter>
+        <Parameter id="InterfaceImplementation" group="%group.Automation.label" uid="01ec2730-0000-04bd-0000-000000000000" type="Enum" default-value="" label="%parameter.InterfaceImplementation.label">
+            <Enumeration>
+                <Literal value="Ask" label="%parameter.InterfaceImplementation.Ask.label"/>
+                <Literal value="Always" label="%parameter.InterfaceImplementation.Always.label"/>
+                <Literal value="Never" label="%parameter.InterfaceImplementation.Never.label"/>
+            </Enumeration>
+            <Description>%parameter.InterfaceImplementation.description</Description>
+        </Parameter>
+        <Parameter id="AccessorsGeneration" group="%group.Automation.label" uid="01ec25e8-0000-0725-0000-000000000000" type="Enum" default-value="" label="%parameter.AccessorsGeneration.label">
+            <Enumeration>
+                <Literal value="Always" label="%parameter.AccessorsGeneration.Always.label"/>
+                <Literal value="Smart" label="%parameter.AccessorsGeneration.Smart.label"/>
+                <Literal value="Never" label="%parameter.AccessorsGeneration.Never.label"/>
+            </Enumeration>
+            <Description>%parameter.AccessorsGeneration.description</Description>
+        </Parameter>
+        <Parameter id="PublicAccessorVisibility" group="%group.Automation.label" uid="01ec25e8-0000-072a-0000-000000000000" type="Enum" default-value="" label="%parameter.PublicAccessorVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.PublicAccessorVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.PublicAccessorVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.PublicAccessorVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.PublicAccessorVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.PublicAccessorVisibility.description</Description>
+        </Parameter>
+        <Parameter id="PublicModifierVisibility" group="%group.Automation.label" uid="01ec25e8-0000-0730-0000-000000000000" type="Enum" default-value="" label="%parameter.PublicModifierVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.PublicModifierVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.PublicModifierVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.PublicModifierVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.PublicModifierVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.PublicModifierVisibility.description</Description>
+        </Parameter>
+        <Parameter id="ProtectedAccessorVisibility" group="%group.Automation.label" uid="01ec25e8-0000-0736-0000-000000000000" type="Enum" default-value="" label="%parameter.ProtectedAccessorVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.ProtectedAccessorVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.ProtectedAccessorVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.ProtectedAccessorVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.ProtectedAccessorVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.ProtectedAccessorVisibility.description</Description>
+        </Parameter>
+        <Parameter id="ProtectedModifierVisibility" group="%group.Automation.label" uid="01ec25e8-0000-073c-0000-000000000000" type="Enum" default-value="" label="%parameter.ProtectedModifierVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.ProtectedModifierVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.ProtectedModifierVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.ProtectedModifierVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.ProtectedModifierVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.ProtectedModifierVisibility.description</Description>
+        </Parameter>
+        <Parameter id="FriendlyAccessorVisibility" group="%group.Automation.label" uid="01ec25e8-0000-0742-0000-000000000000" type="Enum" default-value="" label="%parameter.FriendlyAccessorVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.FriendlyAccessorVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.FriendlyAccessorVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.FriendlyAccessorVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.FriendlyAccessorVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.FriendlyAccessorVisibility.description</Description>
+        </Parameter>
+        <Parameter id="FriendlyModifierVisibility" group="%group.Automation.label" uid="01ec25e8-0000-0748-0000-000000000000" type="Enum" default-value="" label="%parameter.FriendlyModifierVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.FriendlyModifierVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.FriendlyModifierVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.FriendlyModifierVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.FriendlyModifierVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.FriendlyModifierVisibility.description</Description>
+        </Parameter>
+        <Parameter id="PrivateAccessorVisibility" group="%group.Automation.label" uid="01ec25e8-0000-074e-0000-000000000000" type="Enum" default-value="" label="%parameter.PrivateAccessorVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.PrivateAccessorVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.PrivateAccessorVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.PrivateAccessorVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.PrivateAccessorVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.PrivateAccessorVisibility.description</Description>
+        </Parameter>
+        <Parameter id="PrivateModifierVisibility" group="%group.Automation.label" uid="01ec25e8-0000-0754-0000-000000000000" type="Enum" default-value="" label="%parameter.PrivateModifierVisibility.label">
+            <Enumeration>
+                <Literal value="Public" label="%parameter.PrivateModifierVisibility.Public.label"/>
+                <Literal value="Protected" label="%parameter.PrivateModifierVisibility.Protected.label"/>
+                <Literal value="Friendly" label="%parameter.PrivateModifierVisibility.Friendly.label"/>
+                <Literal value="Private" label="%parameter.PrivateModifierVisibility.Private.label"/>
+            </Enumeration>
+            <Description>%parameter.PrivateModifierVisibility.description</Description>
+        </Parameter>
+        <Parameter id="GeneratePrePostConditions" group="%group.Constraints.label" uid="01ec25e8-0000-075a-0000-000000000000" type="Boolean" default-value="" label="%parameter.GeneratePrePostConditions.label">
+            <Description>%parameter.GeneratePrePostConditions.description</Description>
+        </Parameter>
+        <Parameter id="GenerateInvariants" group="%group.Constraints.label" uid="01ec25e8-0000-0761-0000-000000000000" type="Boolean" default-value="" label="%parameter.GenerateInvariants.label">
+            <Description>%parameter.GenerateInvariants.description</Description>
+        </Parameter>
+        <Parameter id="InvariantsName" group="%group.Constraints.label" uid="01ec25e8-0000-0766-0000-000000000000" type="String" default-value="" label="%parameter.InvariantsName.label">
+            <Description>%parameter.InvariantsName.description</Description>
+        </Parameter>
+        <Parameter id="UseExternalEdition" group="%group.External edition.label" uid="01ec25e8-0000-076a-0000-000000000000" type="Boolean" default-value="" label="%parameter.UseExternalEdition.label">
+            <Description>%parameter.UseExternalEdition.description</Description>
+        </Parameter>
+        <Parameter id="ExternalEditorCommandLine" group="%group.External edition.label" uid="01ec25e8-0000-076c-0000-000000000000" type="File" default-value="" label="%parameter.ExternalEditorCommandLine.label">
+            <Description>%parameter.ExternalEditorCommandLine.description</Description>
+        </Parameter>
+        <Parameter id="CompilationOptions" group="%group.Compilation.label" uid="01ec25e8-0000-0772-0000-000000000000" type="String" default-value="" label="%parameter.CompilationOptions.label">
+            <Description>%parameter.CompilationOptions.description</Description>
+        </Parameter>
+        <Parameter id="UseJavah" group="%group.Compilation.label" uid="01ec25e8-0000-0774-0000-000000000000" type="Boolean" default-value="" label="%parameter.UseJavah.label">
+            <Description>%parameter.UseJavah.description</Description>
+        </Parameter>
+        <Parameter id="RunParameters" group="%group.Compilation.label" uid="01ec25e8-0000-0776-0000-000000000000" type="String" default-value="" label="%parameter.RunParameters.label">
+            <Description>%parameter.RunParameters.description</Description>
+        </Parameter>
+        <Parameter id="GenerateJavadoc" group="%group.JavaDoc.label" uid="01ec25e8-0000-0778-0000-000000000000" type="Boolean" default-value="" label="%parameter.GenerateJavadoc.label">
+            <Description>%parameter.GenerateJavadoc.description</Description>
+        </Parameter>
+        <Parameter id="DescriptionAsJavadoc" group="%group.JavaDoc.label" uid="01ec25e8-0000-077a-0000-000000000000" type="Boolean" default-value="" label="%parameter.DescriptionAsJavadoc.label">
+            <Description>%parameter.DescriptionAsJavadoc.description</Description>
+        </Parameter>
+        <Parameter id="JavaDocOptions" group="%group.JavaDoc.label" uid="01ec25e8-0000-077c-0000-000000000000" type="String" default-value="" label="%parameter.JavaDocOptions.label">
+            <Description>%parameter.JavaDocOptions.description</Description>
+        </Parameter>
+        <Parameter id="AutomaticallyOpenJavadoc" group="%group.JavaDoc.label" uid="01ec2a7c-0000-01e0-0000-000000000000" type="Boolean" default-value="" label="%parameter.AutomaticallyOpenJavadoc.label">
+            <Description>%parameter.AutomaticallyOpenJavadoc.description</Description>
+        </Parameter>
+        <Parameter id="GenerateJavadocMarkers" group="%group.JavaDoc.label" uid="c60eb8f5-c78b-11e2-9d6e-02004c4f4f50" type="Boolean" default-value="" label="%parameter.GenerateJavadocMarkers.label">
+            <Description>%parameter.GenerateJavadocMarkers.description</Description>
+        </Parameter>
+        <Parameter id="PackageSrcInRamc" group="%group.ModelComponents.label" uid="01ec25e8-0000-077e-0000-000000000000" type="Boolean" default-value="" label="%parameter.PackageSrcInRamc.label">
+            <Description>%parameter.PackageSrcInRamc.description</Description>
+        </Parameter>
+        <Parameter id="PackageJarInRamc" group="%group.ModelComponents.label" uid="01ec25e8-0000-0780-0000-000000000000" type="Boolean" default-value="" label="%parameter.PackageJarInRamc.label">
+            <Description>%parameter.PackageJarInRamc.description</Description>
+        </Parameter>
+        <Parameter id="ReadOnlyElementNotGenerated" group="%group.Subversion.label" uid="01ec25e8-0000-0721-0000-000000000000" type="Boolean" default-value="" label="%parameter.ReadOnlyElementNotGenerated.label">
+            <Description>%parameter.ReadOnlyElementNotGenerated.description</Description>
+        </Parameter>
+        <Parameter id="LockGeneratedFiles" group="%group.Subversion.label" uid="2c5d9a32-8425-11df-a692-002564c97630" type="Boolean" default-value="" label="%parameter.LockGeneratedFiles.label">
+            <Description>%parameter.LockGeneratedFiles.description</Description>
+        </Parameter>
     </Parameters>
     <Gui>
         <Commands>
@@ -619,7 +767,7 @@
         </Views>
     </Gui>
     <Dependencies>
-        <Required name="ModelerModule" version="8.5.13"/>
+        <Required name="ModelerModule" version="8.6.05"/>
     </Dependencies>
     <Resources>
         <DocFiles>

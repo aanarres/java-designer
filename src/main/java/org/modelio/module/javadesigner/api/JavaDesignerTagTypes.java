@@ -241,7 +241,7 @@ public interface JavaDesignerTagTypes {
     public static final String RAISEDEXCEPTION_JAVAFULLNAME = "JavaFullName";
 
     public static final String TEMPLATEPARAMETER_JAVAEXTENDS = "JavaExtends";
-    
+
     public static final String TEMPLATEPARAMETER_JAVAFULLNAME = "JavaFullName";
 
     public static final String JAVAASSOCIATIONENDPROPERTY_JAVAGETTERVISIBILITY = "JavaGetterVisibility";
@@ -253,6 +253,5 @@ public interface JavaDesignerTagTypes {
     public static final String JAVAATTRIBUTEPROPERTY_JAVASETTERVISIBILITY = "JavaSetterVisibility";
 
     public static final String JAVACOMPONENT_COPYRIGHTFILE = "CopyrightFile";
-
 
 }

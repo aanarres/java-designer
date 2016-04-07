@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.progress;
 
 import java.util.Calendar;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.modelio.api.module.IModule;
 import org.modelio.module.javadesigner.i18n.Messages;
@@ -21,13 +20,12 @@ public abstract class ProgressBar {
 
     protected static IProgressMonitor monitor;
 
-
-    public ProgressBar(IModule module, int nb) {
+    public ProgressBar(final IModule module, final int nb) {
         this.module = module;
         nbElements = nb;
     }
 
-    protected void setMaximumValue(int max) {
+    protected void setMaximumValue(final int max) {
         nbElements = max;
     }
 
@@ -38,7 +36,7 @@ public abstract class ProgressBar {
         displayRemainingTime = true;
     }
 
-    protected static String formatTime(long timeInSeconds) {
+    protected static String formatTime(final long timeInSeconds) {
         String res = ""; //$NON-NLS-1$
         long time = timeInSeconds;
         long hours = time / 3600L;
@@ -69,7 +67,7 @@ public abstract class ProgressBar {
         return (Calendar.getInstance ().getTimeInMillis () - startLastTask) / 1000L;
     }
 
-    protected static long getRemainingTime(long elapsedTime) {
+    protected static long getRemainingTime(final long elapsedTime) {
         double averageTime = (double) elapsedTime / (double) currentPosition;
         long remainingTime = (long) (averageTime * (nbElements - currentPosition));
         return remainingTime;
@@ -78,9 +76,9 @@ public abstract class ProgressBar {
     /**
      * Code to update the progress bar (Time and +1)
      */
-    public static boolean updateProgressBar(String message) {
+    public static boolean updateProgressBar(final String message) {
         currentPosition++;
-
+        
         boolean ret = true;
         if (monitor != null) {
             String elapsed = (new StringBuilder (Messages.getString ("Info.ProgressBar.ElapsedTime"))).append (formatTime (getElapsedTime ())).toString (); //$NON-NLS-1$
@@ -104,9 +102,9 @@ public abstract class ProgressBar {
     /**
      * Change the task name in the progress bar.
      * @param taskName The new name to display.
-     * @return <code>true</code> when the progress monitor isn't canceled. 
+     * @return <code>true</code> when the progress monitor isn't canceled.
      */
-    public static boolean setTaskName(String taskName) {
+    public static boolean setTaskName(final String taskName) {
         boolean ret = true;
         if (monitor != null) {
             monitor.setTaskName (taskName);
@@ -116,7 +114,7 @@ public abstract class ProgressBar {
         return ret;
     }
 
-    protected void init(boolean withRemainingTime) {
+    protected void init(final boolean withRemainingTime) {
         startTime = Calendar.getInstance ().getTimeInMillis ();
         startLastTask = startTime;
         currentPosition = 0;

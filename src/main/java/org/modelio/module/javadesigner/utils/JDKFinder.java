@@ -70,7 +70,7 @@ public class JDKFinder {
                 line = reader.readLine ();
             }
         } catch (IOException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
         return jdkList;
     }

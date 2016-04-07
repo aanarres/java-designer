@@ -20,7 +20,6 @@ class JavaElement {
 
     private HashMap<String, String> setterVariants;
 
-
     public JavaElement() {
         this.getterVariants = new HashMap<> ();
         this.setterVariants = new HashMap<> ();
@@ -36,7 +35,7 @@ class JavaElement {
         return this.defaultGetterPattern;
     }
 
-    public String getGetterPattern(String elementType) {
+    public String getGetterPattern(final String elementType) {
         String variantPattern = this.getterVariants.get (elementType);
         
         if (variantPattern == null) {
@@ -45,7 +44,7 @@ class JavaElement {
         return variantPattern;
     }
 
-    public void setDefaultGetterPattern(String defaultGetterPattern) {
+    public void setDefaultGetterPattern(final String defaultGetterPattern) {
         this.defaultGetterPattern = defaultGetterPattern;
     }
 
@@ -53,7 +52,7 @@ class JavaElement {
         return this.defaultSetterPattern;
     }
 
-    public String getSetterPattern(String elementType) {
+    public String getSetterPattern(final String elementType) {
         String variantPattern = this.setterVariants.get (elementType);
         
         if (variantPattern == null) {
@@ -62,7 +61,7 @@ class JavaElement {
         return variantPattern;
     }
 
-    public void setDefaultSetterPattern(String defaultSetterPattern) {
+    public void setDefaultSetterPattern(final String defaultSetterPattern) {
         this.defaultSetterPattern = defaultSetterPattern;
     }
 
@@ -70,7 +69,7 @@ class JavaElement {
         return this.defaultInterfaceContainer;
     }
 
-    public void setDefaultInterfaceContainer(String defaultInterfaceContainer) {
+    public void setDefaultInterfaceContainer(final String defaultInterfaceContainer) {
         this.defaultInterfaceContainer = defaultInterfaceContainer;
     }
 
@@ -78,7 +77,7 @@ class JavaElement {
         return this.defaultImplementationContainer;
     }
 
-    public void setDefaultImplementationContainer(String defaultImplementationContainer) {
+    public void setDefaultImplementationContainer(final String defaultImplementationContainer) {
         this.defaultImplementationContainer = defaultImplementationContainer;
     }
 
@@ -86,11 +85,11 @@ class JavaElement {
         return this.defaultInterfaceContainerImport;
     }
 
-    public void setDefaultInterfaceContainerImport(String defaultInterfaceContainerImport) {
+    public void setDefaultInterfaceContainerImport(final String defaultInterfaceContainerImport) {
         this.defaultInterfaceContainerImport = defaultInterfaceContainerImport;
     }
 
-    public void setDefaultImplementationContainerImport(String defaultImplementationContainerImport) {
+    public void setDefaultImplementationContainerImport(final String defaultImplementationContainerImport) {
         this.defaultImplementationContainerImport = defaultImplementationContainerImport;
     }
 
@@ -117,11 +116,11 @@ class JavaElement {
         return ret;
     }
 
-    public void addGetterVariant(String type, String variantPattern) {
+    public void addGetterVariant(final String type, final String variantPattern) {
         this.getterVariants.put (type, variantPattern);
     }
 
-    public void addSetterVariant(String type, String variantPattern) {
+    public void addSetterVariant(final String type, final String variantPattern) {
         this.setterVariants.put (type, variantPattern);
     }
 

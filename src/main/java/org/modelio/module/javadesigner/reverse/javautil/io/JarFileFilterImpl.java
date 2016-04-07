@@ -14,7 +14,7 @@ class JarFileFilterImpl implements FileFilter {
      * @return <code>true</code> if the file ends with .jar.
      */
     @Override
-    public boolean accept(File pathname) {
+    public boolean accept(final File pathname) {
         if (pathname.isDirectory ()) {
             return true;
         } else if (pathname.isFile () &&

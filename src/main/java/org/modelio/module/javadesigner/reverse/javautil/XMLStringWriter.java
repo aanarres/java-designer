@@ -5,15 +5,14 @@ public class XMLStringWriter {
     /**
      * Don't try to be too smart but at least recognize the predefined entities.
      */
-    protected String[] knownEntities = { "gt", "amp", "lt", "apos", "quot" };//$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+    protected String[] knownEntities = { "gt", "amp", "lt", "apos", "quot" }; // $NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
     private StringBuilder sb = new StringBuilder ();
-
 
     /**
      * Escape &lt;, &gt; &amp; &apos;, &quot; as their entities and drop characters that are illegal in XML documents.
      */
-    public String encode(String value) {
+    public String encode(final String value) {
         this.sb.setLength (0);
         for (int i = 0 ; i < value.length () ; i++) {
             char c = value.charAt (i);
@@ -89,7 +88,7 @@ public class XMLStringWriter {
     /**
      * Is the given argument a character or entity reference?
      */
-    public boolean isReference(String ent) {
+    public boolean isReference(final String ent) {
         if (!(ent.charAt (0) == '&') || !ent.endsWith (";")) { //$NON-NLS-1$
             return false;
         }
@@ -130,7 +129,7 @@ public class XMLStringWriter {
      * </p>
      * @since 1.10, Ant 1.5
      */
-    public boolean isLegalCharacter(char c) {
+    public boolean isLegalCharacter(final char c) {
         if (c == 0x9 || c == 0xA || c == 0xD) {
             return true;
         } else if (c < 0x20) {

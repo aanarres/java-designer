@@ -14,12 +14,10 @@ import org.modelio.module.javadesigner.api.IJavaDesignerPeerModule;
 import org.modelio.module.javadesigner.api.JavaDesignerStereotypes;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-
 class JavaElementIdentificator extends DefaultModelVisitor {
     private static final JavaElementIdentificator INSTANCE = new JavaElementIdentificator ();
 
-
-    public static boolean isJavaElement(MObject element) {
+    public static boolean isJavaElement(final MObject element) {
         if (element != null) {
             Object ret = element.accept (INSTANCE);
         
@@ -30,47 +28,47 @@ class JavaElementIdentificator extends DefaultModelVisitor {
     }
 
     @Override
-    public Object visitArtifact(Artifact theArtifact) {
+    public Object visitArtifact(final Artifact theArtifact) {
         return theArtifact.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JARFILE);
     }
 
     @Override
-    public Object visitClass(Class theClass) {
+    public Object visitClass(final Class theClass) {
         return theClass.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVACLASS);
     }
 
     @Override
-    public Object visitComponent(Component theComponent) {
+    public Object visitComponent(final Component theComponent) {
         return theComponent.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVACOMPONENT) || theComponent.isStereotyped (IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODULE_IMPLEMENTATION);
     }
 
     @Override
-    public Object visitDataType(DataType theDataType) {
+    public Object visitDataType(final DataType theDataType) {
         return theDataType.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVADATATYPE);
     }
 
     @Override
-    public Object visitEnumeration(Enumeration theEnumeration) {
+    public Object visitEnumeration(final Enumeration theEnumeration) {
         return theEnumeration.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAENUMERATION);
     }
 
     @Override
-    public Object visitInterface(Interface theInterface) {
+    public Object visitInterface(final Interface theInterface) {
         return theInterface.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINTERFACE);
     }
 
     @Override
-    public Object visitPackage(Package thePackage) {
+    public Object visitPackage(final Package thePackage) {
         return thePackage.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAPACKAGE);
     }
 
     @Override
-    public Object visitModuleComponent(ModuleComponent theModule) {
+    public Object visitModuleComponent(final ModuleComponent theModule) {
         return false;
     }
 
     @Override
-    public Object visitProfile(Profile theProfile) {
+    public Object visitProfile(final Profile theProfile) {
         return false;
     }
 

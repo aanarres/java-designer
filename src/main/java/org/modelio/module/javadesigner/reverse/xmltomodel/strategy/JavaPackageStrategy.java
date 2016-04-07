@@ -3,8 +3,10 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.model.JaxbPackage;
+import com.modelio.module.xmlreverse.strategy.PackageStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
@@ -25,20 +27,16 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.model.JaxbPackage;
-import com.modelio.module.xmlreverse.strategy.PackageStrategy;
-
 public class JavaPackageStrategy extends PackageStrategy {
     private JavaNameSpaceFinder javaNameSpaceFinder;
 
-    public JavaPackageStrategy(IModelingSession session, JavaNameSpaceFinder nameSpaceFinder) {
+    public JavaPackageStrategy(final IModelingSession session, final JavaNameSpaceFinder nameSpaceFinder) {
         super(session);
         this.javaNameSpaceFinder = nameSpaceFinder;
     }
 
     @Override
-    public Package getCorrespondingElement(JaxbPackage jaxb_element, MObject owner, IReadOnlyRepository repository) {
+    public Package getCorrespondingElement(final JaxbPackage jaxb_element, final MObject owner, final IReadOnlyRepository repository) {
         List<Package> cpack = this.javaNameSpaceFinder.getPackageByNamespace(jaxb_element.getName(), this.session);
         
         // We should ignore "ramc" packages
@@ -52,12 +50,12 @@ public class JavaPackageStrategy extends PackageStrategy {
         if (cpack.isEmpty()) {
             return this.model.createPackage();
         }
-
+        
         // Only one package found, return it
         if (cpack.size() == 1) {
             return cpack.get(0);
         }
-
+        
         // Is one package found in the namespace of "owner"
         if (owner instanceof ModelTree) {
             for (Package p : cpack) {
@@ -65,21 +63,21 @@ public class JavaPackageStrategy extends PackageStrategy {
                     return p;
             }
         }
-
+        
         // Fallback: the repository knows how to choose...
         return repository.resolveMultipleNamespaces(cpack);
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbPackage jaxb_element, Package modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbPackage jaxb_element, final Package modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         List<MObject> ret = null;
         ModelTree treeOwner = (ModelTree) owner;
-
+        
         // A new package has no parent yet, update it.
         // (note : modelio_element may not be a child of owner at all)
         if (modelio_element.getOwner() == null) {
             modelio_element.setOwner(treeOwner);
-
+        
             // initialize the name
             String jxbname = jaxb_element.getName();
             if (jxbname != null) {
@@ -90,37 +88,36 @@ public class JavaPackageStrategy extends PackageStrategy {
                 }
             }
         }
-
+        
         try {
             modelio_element.removeTags(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.PACKAGE_JAVAEXTERN);
             ModelUtils.addStereotype(modelio_element, JavaDesignerStereotypes.JAVAPACKAGE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPACKAGE)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPACKAGE)); //$NON-NLS-1$
         }
-        
         return ret;
     }
 
     @Override
-    public void deleteSubElements(JaxbPackage jaxb_element, Package modelio_element, Collection<MObject> element_todelete, IReadOnlyRepository repository) {
+    public void deleteSubElements(final JaxbPackage jaxb_element, final Package modelio_element, final Collection<MObject> element_todelete, final IReadOnlyRepository repository) {
         // super.deleteSubElements(jaxb_element, modelio_element, element_todelete, repository);
-    	if (modelio_element == null) {
-    		return;
-    	}
-        if (modelio_element.getOwnedElement ().size() == 0 && modelio_element.getProduct ().size() == 0) {
-        	modelio_element.delete();
+        if (modelio_element == null) {
             return;
         }
-
+        if (modelio_element.getOwnedElement ().size() == 0 && modelio_element.getProduct ().size() == 0) {
+            modelio_element.delete();
+            return;
+        }
+        
         List<ModelTree> children = new ArrayList<> ();
         List<String> childrenNames = new ArrayList<> ();
         List<ModelTree> toCheckAtEnd = new ArrayList<> ();
-
+        
         // Check all java classes and datatypes
         for (ModelTree child : new ArrayList<>(modelio_element.getOwnedElement ())) {
             if (child.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVACLASS) ||
                     child.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVADATATYPE)) {
-
+        
                 // Store recorded elements, they come from the reversed model
                 if (repository.isRecordedElement (child)) {
                     children.add (child);
@@ -130,7 +127,7 @@ public class JavaPackageStrategy extends PackageStrategy {
                     // If it has the same name as a recorded element, delete it
                     String childName = child.getName ();
                     if (childrenNames.contains (childName)) {
-                    	child.delete();
+                        child.delete();
                     } else {
                         // No match found, store this element for further check:
                         // all recorded elements aren't stored in the children list
@@ -139,30 +136,30 @@ public class JavaPackageStrategy extends PackageStrategy {
                 }
             }
         }
-
+        
         // Check all remaining elements with the recorded children list
         for (ModelTree child : toCheckAtEnd) {
             String childName = child.getName ();
             if (childrenNames.contains (childName)) {
-            	child.delete();
+                child.delete();
             }
         }
     }
 
     @Override
-    public void postTreatment(JaxbPackage jaxb_element, Package modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbPackage jaxb_element, final Package modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
-
+        
         if (modelio_element == null) {
             // May happen when there are some packages named like "a.b.c"
             return;
         }
-
+        
         // Remove all JavaExtern classes having some neighbour class/interface/enum with the same name
         for (ModelTree subElement : modelio_element.getOwnedElement (Class.class)) {
             if (subElement.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVAEXTERN)) {
                 String currentName = subElement.getName ();
-
+        
                 for (ModelTree otherSubElement : modelio_element.getOwnedElement ()) {
                     if ((otherSubElement instanceof GeneralClass) &&
                             otherSubElement.getName ().equals (currentName)) {
@@ -179,15 +176,15 @@ public class JavaPackageStrategy extends PackageStrategy {
         }
     }
 
-    private void reportLinksFromExternalElement(GeneralClass newElement, Class externalElement) {
+    private void reportLinksFromExternalElement(final GeneralClass newElement, final Class externalElement) {
         for (Dependency theDep : externalElement.getImpactedDependency ()) {
             theDep.setDependsOn (newElement);
         }
-
+        
         for (ElementImport theImport : externalElement.getImporting ()) {
             theImport.setImportedElement (newElement);
         }
-
+        
         if (newElement instanceof Interface) {
             for (Generalization theGeneralization : externalElement.getSpecialization ()) {
                 this.model.createInterfaceRealization (theGeneralization.getSubType (), (Interface) newElement);
@@ -197,7 +194,7 @@ public class JavaPackageStrategy extends PackageStrategy {
                 theGeneralization.setSuperType (newElement);
             }
         }
-
+        
         for (RaisedException theThrow : externalElement.getThrowing ()) {
             theThrow.setThrownType (newElement);
         }

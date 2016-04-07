@@ -2,8 +2,12 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.model.JaxbReturnParameter;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.strategy.ReturnParameterStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.uml.statik.GeneralClass;
 import org.modelio.metamodel.uml.statik.Parameter;
 import org.modelio.metamodel.uml.statik.PassingMode;
@@ -15,25 +19,18 @@ import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.model.JaxbReturnParameter;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.strategy.ReturnParameterStrategy;
-
 public class JavaReturnParameterStrategy extends ReturnParameterStrategy {
-
-    public JavaReturnParameterStrategy(IModelingSession session) {
+    public JavaReturnParameterStrategy(final IModelingSession session) {
         super (session);
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbReturnParameter jaxb_element, Parameter modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbReturnParameter jaxb_element, final Parameter modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         // We must merge "type" tags into one tag with several parameters
         JaxbTaggedValue arrayTag = null;
         for (Object sub : new ArrayList<> (jaxb_element.getBaseTypeOrClassTypeOrNote ())) {
             if (sub instanceof JaxbTaggedValue) {
-            	JaxbTaggedValue tag = (JaxbTaggedValue) sub;
+                JaxbTaggedValue tag = (JaxbTaggedValue) sub;
                 if (IOtherProfileElements.FEATURE_TYPE.equals (tag.getTagType ())) {
                     if (arrayTag == null) {
                         arrayTag = tag;
@@ -84,9 +81,9 @@ public class JavaReturnParameterStrategy extends ReturnParameterStrategy {
             } else {
             // jaxbmult is *
             if ("01".contains(multMax)) {
-            	// mult. min. is forced to 0 to avoid reversing new parameters with a 1..* mult.
-            	// (newly created parameters have mult. min. set to 1)
-            	modelio_element.setMultiplicityMin("0");
+                // mult. min. is forced to 0 to avoid reversing new parameters with a 1..* mult.
+                // (newly created parameters have mult. min. set to 1)
+                modelio_element.setMultiplicityMin("0");
                     modelio_element.setMultiplicityMax (jaxbParameterMultiplicity);
                 }
             }
@@ -100,14 +97,14 @@ public class JavaReturnParameterStrategy extends ReturnParameterStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbReturnParameter jaxb_element) {
-    	JaxbTaggedValue firstBindTag = null;
+    private void handleMultipleTags(final JaxbReturnParameter jaxb_element) {
+        JaxbTaggedValue firstBindTag = null;
         
         List<JaxbTaggedValue> toRemove = new ArrayList<> ();
         List<Object> sub_elements = jaxb_element.getBaseTypeOrClassTypeOrNote ();
         for (Object sub_element : sub_elements) {
             if (sub_element instanceof JaxbTaggedValue) {
-            	JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
+                JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
         
                 if (currentTag.getTagType ().equals (JavaDesignerTagTypes.PARAMETER_JAVABIND)) {
                     if (firstBindTag == null) {
@@ -124,7 +121,7 @@ public class JavaReturnParameterStrategy extends ReturnParameterStrategy {
     }
 
     @Override
-    public void postTreatment(JaxbReturnParameter jaxb_element, Parameter modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbReturnParameter jaxb_element, final Parameter modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
         
         // Remove type if there is a type expr

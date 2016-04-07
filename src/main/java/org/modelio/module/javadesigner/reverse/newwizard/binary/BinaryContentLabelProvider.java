@@ -1,22 +1,19 @@
 package org.modelio.module.javadesigner.reverse.newwizard.binary;
 
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.swt.graphics.Image;
-import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
-
 import com.modelio.module.xmlreverse.model.JaxbClass;
 import com.modelio.module.xmlreverse.model.JaxbDataType;
 import com.modelio.module.xmlreverse.model.JaxbEnumeration;
 import com.modelio.module.xmlreverse.model.JaxbGroup;
 import com.modelio.module.xmlreverse.model.JaxbInterface;
 import com.modelio.module.xmlreverse.model.JaxbPackage;
-
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.swt.graphics.Image;
+import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
 
 class BinaryContentLabelProvider implements ILabelProvider {
-
     @Override
-    public Image getImage(Object element) {
+    public Image getImage(final Object element) {
         if (element instanceof JaxbClass) {
             return ImageManager.getInstance().getIcon("javaclass");
         } else if (element instanceof JaxbDataType) {
@@ -37,7 +34,7 @@ class BinaryContentLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public String getText(Object element) {
+    public String getText(final Object element) {
         String ret;
         if (element instanceof JaxbClass) {
             ret = ((JaxbClass) element).getName();
@@ -61,12 +58,11 @@ class BinaryContentLabelProvider implements ILabelProvider {
                 ret = ret.substring(index + 1);
             }
         }
-        
         return ret;
     }
 
     @Override
-    public void addListener(ILabelProviderListener arg0) {
+    public void addListener(final ILabelProviderListener arg0) {
         // Nothing to do
     }
 
@@ -76,12 +72,12 @@ class BinaryContentLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public boolean isLabelProperty(Object arg0, String arg1) {
+    public boolean isLabelProperty(final Object arg0, final String arg1) {
         return false;
     }
 
     @Override
-    public void removeListener(ILabelProviderListener arg0) {
+    public void removeListener(final ILabelProviderListener arg0) {
         // Nothing to do
     }
 

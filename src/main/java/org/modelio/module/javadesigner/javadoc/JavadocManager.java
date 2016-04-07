@@ -4,9 +4,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.IModuleUserConfiguration;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
 import org.modelio.metamodel.uml.statik.Class;
 import org.modelio.metamodel.uml.statik.Component;
@@ -31,18 +30,18 @@ public class JavadocManager {
 
     private JConsoleWithDialog console;
 
-    public JavadocManager (IModule module) {
+    public JavadocManager (final IModule module) {
         this(module, new JConsoleWithDialog(null));
     }
 
-    public JavadocManager (IModule module, JConsoleWithDialog console) {
+    public JavadocManager (final IModule module, final JConsoleWithDialog console) {
         this.module = module;
         this.console = console;
     }
 
-    public void generateDoc(List<MObject> selectedElements) {
+    public void generateDoc(final List<MObject> selectedElements) {
         // First, check that javadoc.exe is in the right place
-        IModuleUserConfiguration config = this.module.getConfiguration();
+        IModuleUserConfiguration config = this.module.getModuleContext().getConfiguration();
         String jdkPath = config.getParameterValue (JavaDesignerParameters.JDKPATH);
         File javadocFile;
         if (System.getProperty ("os.name").startsWith ("Windows")) {
@@ -61,7 +60,7 @@ public class JavadocManager {
         }
 
         // Check the module parameter to open the doc after generation
-        boolean automaticallyOpenJavaDoc = "TRUE".equalsIgnoreCase (this.module.getConfiguration ().getParameterValue (JavaDesignerParameters.AUTOMATICALLYOPENJAVADOC));
+        boolean automaticallyOpenJavaDoc = "TRUE".equalsIgnoreCase (this.module.getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.AUTOMATICALLYOPENJAVADOC));
         for (MObject element : selectedElements) {
             // Generate doc
             if (generateDoc((NameSpace) element) == 0) {
@@ -74,14 +73,14 @@ public class JavadocManager {
     }
     }
 
-    private int generateDoc(NameSpace source) {
+    private int generateDoc(final NameSpace source) {
         File targetDocFile = getJavaDocFilename (source);
 
         this.console.writeInfo("Generating javadoc for " + source.getName() + "\n\n");
 
         String ClassPathSeparator = System.getProperty ("os.name").startsWith ("Windows") ? ";" : ":";
 
-        IModuleUserConfiguration config = this.module.getConfiguration();
+        IModuleUserConfiguration config = this.module.getModuleContext().getConfiguration();
 
         String javaDocOptions = config.getParameterValue (JavaDesignerParameters.JAVADOCOPTIONS);
 
@@ -136,7 +135,7 @@ public class JavadocManager {
         String packageList = "";
 
         for (Package pack : getAllPackages(source)) {
-            packageList += " " + JavaDesignerUtils.getFullJavaName(this.module.getModelingSession(), pack);    
+            packageList += " " + JavaDesignerUtils.getFullJavaName(this.module.getModuleContext().getModelingSession(), pack);    
         }
 
         // CHM Mantis 7429
@@ -150,7 +149,7 @@ public class JavadocManager {
                             || child.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVADATATYPE)
                             || child.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAENUMERATION)
                             || child.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAINTERFACE)) {
-                        lCommand += " \"" + sourcePath + "/" + JavaDesignerUtils.getFullJavaName(this.module.getModelingSession(), child) + ".java\"" ;
+                        lCommand += " \"" + sourcePath + "/" + JavaDesignerUtils.getFullJavaName(this.module.getModuleContext().getModelingSession(), child) + ".java\"" ;
                     }
                 }
             }
@@ -162,7 +161,7 @@ public class JavadocManager {
         return manager.execute(lCommand, true);
     }
 
-    private Set<Package> getAllPackages(ModelTree source) {
+    private Set<Package> getAllPackages(final ModelTree source) {
         HashSet<Package> allElements = new HashSet<> ();
 
         // Keep only java packages
@@ -186,11 +185,10 @@ public class JavadocManager {
                 }
             }
         }
-
         return allElements;
     }
 
-    public void visualizeDoc(NameSpace source) {
+    public void visualizeDoc(final NameSpace source) {
         File targetDocFile = getJavaDocFilename (source);
 
         try {
@@ -201,9 +199,8 @@ public class JavadocManager {
         }
     }
 
-    public boolean isJavaDocExists(NameSpace element) {
+    public boolean isJavaDocExists(final NameSpace element) {
         File javaDocFile = getJavaDocFilename (element);
-
         return javaDocFile.exists();
     }
 
@@ -211,11 +208,12 @@ public class JavadocManager {
      * This operation returns the absolute JavaDoc filename of the namespace
      * @return The absolute JavaDocfilename
      */
-    private File getJavaDocFilename(NameSpace element) {
+    private File getJavaDocFilename(final NameSpace element) {
         StringBuilder result = new StringBuilder ();
         result.append (JavaDesignerUtils.getJavaDocGenerationPath (element, this.module));
         result.append (File.separatorChar);
         result.append ("index.html"); //$NON-NLS-1$
         return new File (result.toString ());
     }
+
 }

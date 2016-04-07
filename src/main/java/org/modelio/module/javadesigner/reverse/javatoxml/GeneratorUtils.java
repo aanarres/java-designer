@@ -5,20 +5,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-
 import org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model.ClassifierDef;
 import org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model.PackageDef;
 import org.modelio.module.javadesigner.reverse.javautil.XMLStringWriter;
 
 /**
- * Utility XML generation services 
- *
+ * Utility XML generation services
  */
 public class GeneratorUtils {
-
-    public static StringBuilder getNoteTag(String type, StringBuilder content) {
+    public static StringBuilder getNoteTag(final String type, final StringBuilder content) {
         StringBuilder sBuffer = new StringBuilder ();
-
+        
         sBuffer.append ("<note note-type=\""); //$NON-NLS-1$
         sBuffer.append (type);
         sBuffer.append ("\">\n"); //$NON-NLS-1$
@@ -31,13 +28,11 @@ public class GeneratorUtils {
         return sBuffer;
     }
 
-
-
-    public static void generateNoteTag(String type, StringBuilder content) throws IOException {
+    public static void generateNoteTag(final String type, final StringBuilder content) throws IOException {
         generateNoteTag(type, content.toString());
     }
 
-    public static void generateNoteTag(String type, String content) throws IOException {
+    public static void generateNoteTag(final String type, final String content) throws IOException {
         XMLBuffer.model.write ("<note note-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (type);
         XMLBuffer.model.write ("\">\n"); //$NON-NLS-1$
@@ -48,19 +43,19 @@ public class GeneratorUtils {
         XMLBuffer.model.write ("</note>\n"); //$NON-NLS-1$
     }
 
-    public static void generateStereotypeTag(String type) throws IOException {
+    public static void generateStereotypeTag(final String type) throws IOException {
         XMLBuffer.model.write ("<stereotype stereotype-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (type);
         XMLBuffer.model.write ("\"/>\n"); //$NON-NLS-1$
     }
 
-    public static void generateTaggedValueTag(String type) throws IOException {
+    public static void generateTaggedValueTag(final String type) throws IOException {
         XMLBuffer.model.write ("<tagged-value tag-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (type);
         XMLBuffer.model.write ("\"/>\n"); //$NON-NLS-1$
     }
 
-    public static void generateTaggedValueTagWithParam(String type, String value) throws IOException {
+    public static void generateTaggedValueTagWithParam(final String type, final String value) throws IOException {
         XMLBuffer.model.write ("<tagged-value tag-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (type);
         XMLBuffer.model.write ("\">\n"); //$NON-NLS-1$
@@ -75,7 +70,7 @@ public class GeneratorUtils {
         XMLBuffer.model.write ("</tagged-value>\n"); //$NON-NLS-1$
     }
 
-    public static void generateTaggedValueTagWithParams(String type, List<String> values) throws IOException {
+    public static void generateTaggedValueTagWithParams(final String type, final List<String> values) throws IOException {
         String value;
         XMLBuffer.model.write ("<tagged-value tag-type=\""); //$NON-NLS-1$
         XMLBuffer.model.write (type);
@@ -94,8 +89,7 @@ public class GeneratorUtils {
         XMLBuffer.model.write ("</tagged-value>\n"); //$NON-NLS-1$
     }
 
-
-    public static void generateDestination(String id) throws IOException {
+    public static void generateDestination(final String id) throws IOException {
         XMLBuffer.model.write ("<destination refid=\""); //$NON-NLS-1$
         XMLBuffer.model.write (id);
         XMLBuffer.model.write ("\"/>\n"); //$NON-NLS-1$
@@ -109,7 +103,6 @@ public class GeneratorUtils {
         XMLBuffer.model.write ("<report-list>\n"); //$NON-NLS-1$
         // Report is not written in this file anymore
         XMLBuffer.model.write ("</report-list>\n"); //$NON-NLS-1$
-
     }
 
     /**
@@ -117,7 +110,7 @@ public class GeneratorUtils {
      * @param externalReferences
      * @throws IOException
      */
-    public static void generateExternalReferences (final Collection<String> externalReferences) throws IOException {
+    public static void generateExternalReferences(final Collection<String> externalReferences) throws IOException {
         // append the list of external elements
         for (String id : externalReferences) {
             XMLBuffer.model.write("<external-element id=\"" + id + "\"/>\n");
@@ -129,11 +122,11 @@ public class GeneratorUtils {
      * @param externalReferences
      * @throws IOException
      */
-    public static void generateFullExternalReferences (final Collection<Entry<Object, String>> externalReferences) throws IOException {
+    public static void generateFullExternalReferences(final Collection<Entry<Object,String>> externalReferences) throws IOException {
         // append the list of external elements
         for (Entry<Object, String> reference : externalReferences) {
             XMLBuffer.model.write("<external-element id=\"" + reference.getValue() + "\"");
-            
+        
             Object key = reference.getKey();
             if (key instanceof ClassifierDef) {
                 ClassifierDef classifierDef = (ClassifierDef)key;
@@ -148,29 +141,29 @@ public class GeneratorUtils {
                     XMLBuffer.model.write ("\""); //$NON-NLS-1$
                 }
                 switch (classifierDef.getKind()) {
-                    case CLASS:
-                        XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
-                        XMLBuffer.model.write ("Class");
-                        XMLBuffer.model.write ("\""); //$NON-NLS-1$
-                        break;
-                    case DATATYPE:
-                        XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
-                        XMLBuffer.model.write ("DataType");
-                        XMLBuffer.model.write ("\""); //$NON-NLS-1$
-                        break;
-                    case ENUMERATION:
-                        XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
-                        XMLBuffer.model.write ("Enumeration");
-                        XMLBuffer.model.write ("\""); //$NON-NLS-1$
-                        break;
-                    case INTERFACE:
-                        XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
-                        XMLBuffer.model.write ("Interface");
-                        XMLBuffer.model.write ("\""); //$NON-NLS-1$
-                        break;
-                    case UNKNOWN:
+                case CLASS:
+                    XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
+                    XMLBuffer.model.write ("Class");
+                    XMLBuffer.model.write ("\""); //$NON-NLS-1$
+                    break;
+                case DATATYPE:
+                    XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
+                    XMLBuffer.model.write ("DataType");
+                    XMLBuffer.model.write ("\""); //$NON-NLS-1$
+                    break;
+                case ENUMERATION:
+                    XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
+                    XMLBuffer.model.write ("Enumeration");
+                    XMLBuffer.model.write ("\""); //$NON-NLS-1$
+                    break;
+                case INTERFACE:
+                    XMLBuffer.model.write (" metaclass=\""); //$NON-NLS-1$
+                    XMLBuffer.model.write ("Interface");
+                    XMLBuffer.model.write ("\""); //$NON-NLS-1$
+                    break;
+                case UNKNOWN:
                 default:
-                        // Nothing to do
+                    // Nothing to do
                 }
             } else if (key instanceof PackageDef) {
                 PackageDef packageDef = (PackageDef)key;
@@ -184,8 +177,9 @@ public class GeneratorUtils {
             } else {
                 System.out.println("Wrong element : " + key);
             }
-            
+        
             XMLBuffer.model.write(">\n</external-element>\n");
         }
     }
+
 }

@@ -1,16 +1,14 @@
 package org.modelio.module.javadesigner.reverse.newwizard.classpath;
 
 import java.io.File;
-
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
 
 class ClasspathLabelProvider implements ILabelProvider {
-
     @Override
-    public Image getImage(Object arg0) {
+    public Image getImage(final Object arg0) {
         if (arg0 instanceof File) {
             File f = (File)arg0;
             String name = f.getName();
@@ -27,7 +25,7 @@ class ClasspathLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public String getText(Object arg0) {
+    public String getText(final Object arg0) {
         if (arg0 instanceof File) {
             File f = (File)arg0;
             return f.getName() + "   (" + f.getAbsolutePath() + ")";
@@ -36,7 +34,7 @@ class ClasspathLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public void addListener(ILabelProviderListener arg0) {
+    public void addListener(final ILabelProviderListener arg0) {
         // Nothing to do
     }
 
@@ -46,12 +44,12 @@ class ClasspathLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public boolean isLabelProperty(Object arg0, String arg1) {
+    public boolean isLabelProperty(final Object arg0, final String arg1) {
         return false;
     }
 
     @Override
-    public void removeListener(ILabelProviderListener arg0) {
+    public void removeListener(final ILabelProviderListener arg0) {
         // Nothing to do
     }
 

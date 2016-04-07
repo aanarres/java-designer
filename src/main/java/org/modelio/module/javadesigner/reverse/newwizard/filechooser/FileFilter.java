@@ -2,20 +2,18 @@ package org.modelio.module.javadesigner.reverse.newwizard.filechooser;
 
 import java.io.File;
 import java.util.List;
-
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
 class FileFilter extends ViewerFilter {
     private List<String> extensions;
 
-
-    public FileFilter(List<String> extensions) {
+    public FileFilter(final List<String> extensions) {
         this.extensions = extensions;
     }
 
     @Override
-    public boolean select(Viewer viewer, Object parentElement, Object element) {
+    public boolean select(final Viewer viewer, final Object parentElement, final Object element) {
         if (element instanceof File) {
             File f = (File) element;
             

@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.reverse.newwizard.filechooser;
 
 import java.io.File;
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -19,11 +18,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
-import org.modelio.api.ui.UIColor;
 import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.reverse.ReverseConfig.GeneralReverseMode;
 import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
 import org.modelio.module.javadesigner.reverse.newwizard.api.IFileChooserModel;
+import org.modelio.ui.UIColor;
 
 public class FileChooserComposite extends Composite implements Listener {
     public IFileChooserModel model;
@@ -38,8 +37,7 @@ public class FileChooserComposite extends Composite implements Listener {
 
     public ComboViewer granularityCombo;
 
-
-    public FileChooserComposite(Composite parent, IFileChooserModel model) {
+    public FileChooserComposite(final Composite parent, final IFileChooserModel model) {
         super(parent, SWT.NONE);
         
         this.model = model;
@@ -105,7 +103,7 @@ public class FileChooserComposite extends Composite implements Listener {
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(final Event event) {
         if (event.widget.equals(this.fileChooserButton)) {
             DirectoryDialog dialog = new DirectoryDialog(this.getShell());
             dialog.setFilterPath(this.model.getInitialDirectory().getAbsolutePath());

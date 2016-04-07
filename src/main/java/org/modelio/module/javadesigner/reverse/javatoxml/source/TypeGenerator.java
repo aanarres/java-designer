@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.modelio.module.javadesigner.api.JavaDesignerTagTypes;
 import org.modelio.module.javadesigner.reverse.antlr.ASTTree;
 import org.modelio.module.javadesigner.reverse.antlr.JavaParser;
@@ -20,43 +19,40 @@ import org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model.T
 import org.modelio.module.javadesigner.reverse.javautil.StringUtil;
 
 class TypeGenerator {
-
     private static Map<String, String> javaWrapperMap = new HashMap<>(16, 1);
+
     private static Map<String, String> javaModelioPredefinedTypePackageMap = new HashMap<>(10, 1);
 
     /**
      * Return the XML multiplicity attribute
-     *
      * @param type
      * @param nature
      * @return
      */
-    static StringBuilder getMultiplicityAttribute(ASTTree type) {
+    static StringBuilder getMultiplicityAttribute(final ASTTree type) {
         StringBuilder retbuf = new StringBuilder();
         String multmax = TypeAstServices.getMultiplicityMax(type);
-
+        
         retbuf.append(" multiplicity=\"");
         retbuf.append(multmax);
         retbuf.append("\"");
-
         return retbuf;
     }
 
     /**
      * Generate XML tags for a whole type
-     *
      * @param type
-     * @param isAssoc : indicates if the type is generated for an assoc, in which case a qualifier might be created for GWKC with key
      * @param sModel
      * @throws XMLGeneratorException
      * @throws IOException
      * @see AttributeXMLGenerator#generateXML(ASTTree type, StructuralModel sModel)
+     * @param isAssoc : indicates if the type is generated for an assoc, in which case a qualifier might be created for GWKC with key
      */
-    static void generateXMLType(final ASTTree type, final boolean isAssoc, final Context ctx) throws XMLGeneratorException, IOException {
+    static void generateXMLType(final ASTTree type, final boolean isAssoc, final Context ctx) throws IOException, XMLGeneratorException {
         assert (type.getType() == JavaParser.TYPE) : "Internal error: unexpected input ast node type";
-
+        
         ArrayList<String> typeParams = new ArrayList<>(2);
-
+        
         // 1) is it an array ?
         int dim = TypeAstServices.getArrayDimensions(type);
         ASTTree realType = type;
@@ -73,7 +69,7 @@ class TypeGenerator {
                 return;
             }
         }
-
+        
         // 2) is it a generic ?
         List<String> bindParam = null;
         if (TypeAstServices.isGenericType(realType)) {
@@ -85,11 +81,11 @@ class TypeGenerator {
                 // It is a generic well known container (GWKC)
                 ASTTree wkcType = realType;
                 String wkcTypeName = realTypeName;
-
+        
                 // Get the bind type from the real destination in the GWKC
                 ASTTree destType = WellKnownContainerServicesWithAST.getRealDestinationType(wkcType);
                 ASTTree keyType = WellKnownContainerServicesWithAST.getQualifierType(wkcType);
-
+        
                 if (!TypeAstServices.isUMLMappable(destType)) {
                     // NON UML mappable type : the real type is the container, everything
                     // else goes to {JavaBind}
@@ -132,7 +128,7 @@ class TypeGenerator {
         if (bindParam != null) {
             GeneratorUtils.generateTaggedValueTagWithParams("JavaBind", bindParam);
         }
-
+        
         // 4) generate the tags for the real type
         if (realType == null) {
             // The real type is in {JavaBind}, generate 'null' for the base type
@@ -152,8 +148,7 @@ class TypeGenerator {
      * @throws IOException
      * @throws XMLGeneratorException
      */
-    private static void generateXMLForAssociationQualifier(final ASTTree qualType, final String qualName, final Context ctx)
-            throws IOException, XMLGeneratorException {
+    private static void generateXMLForAssociationQualifier(final ASTTree qualType, final String qualName, final Context ctx) throws IOException, XMLGeneratorException {
         XMLBuffer.model.write("<attribute name=\"");
         XMLBuffer.model.write(qualName);
         XMLBuffer.model.write("\" >");
@@ -179,7 +174,7 @@ class TypeGenerator {
      */
     static void generateType(final String typeName, final Context ctx) throws IOException, NameCollisionException {
         Type type = ctx.getTFinder().findType(typeName);
-
+        
         if (type != null) {
             if (type instanceof PrimitiveType) {
                 // Java primitive
@@ -198,9 +193,9 @@ class TypeGenerator {
                     // Other found type
                     assert type instanceof Identified;
                     XMLBuffer.model.write("<class-type>"); //$NON-NLS-1$
-
+        
                     GeneratorUtils.generateDestination(ctx.getIdManager().declareReferenceIdentifier((Identified)type));
-
+        
                     XMLBuffer.model.write("</class-type>\n"); //$NON-NLS-1$
                     TypeGenerator.generateCondJavaFullName(typeName);
                 }
@@ -213,12 +208,10 @@ class TypeGenerator {
 
     /**
      * Generate XML {JavaFullName} tag if typeName is a full name
-     *
-     * @param typeName
-     *            the type name to check for full name
      * @throws IOException
+     * @param typeName the type name to check for full name
      */
-    static void generateCondJavaFullName(String typeName) throws IOException {
+    static void generateCondJavaFullName(final String typeName) throws IOException {
         if (typeName.contains(".")) {
             GeneratorUtils.generateTaggedValueTag(JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME);
         }
@@ -226,12 +219,10 @@ class TypeGenerator {
 
     /**
      * Generate XML base-type tag.
-     *
-     * @param baseType
-     *            The name of the base type as it should appear in the xml tag
      * @throws IOException
+     * @param baseType The name of the base type as it should appear in the xml tag
      */
-    static void generateBaseType(String baseType) throws IOException {
+    static void generateBaseType(final String baseType) throws IOException {
         XMLBuffer.model.write("<base-type>"); //$NON-NLS-1$
         XMLBuffer.model.write(baseType);
         XMLBuffer.model.write("</base-type>\n"); //$NON-NLS-1$
@@ -239,25 +230,21 @@ class TypeGenerator {
 
     /**
      * return the Java primitive type associated with a wrapper type
-     *
-     * @param str
-     *            The wrapper type. it could be a simple name or a fully
-     *            qualified name (Integer or java.lang.Integer)
+     * @param str The wrapper type. it could be a simple name or a fully
+     * qualified name (Integer or java.lang.Integer)
      * @return The corresponding primitive type (int for Integer)
      */
-    private static String getJavaTypeFromWrapper(String str) {
+    private static String getJavaTypeFromWrapper(final String str) {
         return javaWrapperMap.get(str);
     }
 
     /**
      * Indicates if a string is a Java wrapper. Handles both short names
      * ("Integer") and full qualified names ("java.lang.Integer")
-     *
-     * @param str
-     *            string to check against Java wrappers
+     * @param str string to check against Java wrappers
      * @return True if str is a Java wrapper
      */
-    static boolean isJavaWrapper(String str) {
+    static boolean isJavaWrapper(final String str) {
         for (String jwrap : javaWrapperMap.keySet()) {
             if (jwrap.equals(str)) {
                 return true;
@@ -270,57 +257,49 @@ class TypeGenerator {
      * Is 'str' a Java type of a Modelio predefined type. Those types are :
      * boolean, int, float, long, short, double, byte, char, String and Date,
      * including the full name version of String and Date (ie java.lang.String)
-     *
-     * @param str
-     *            The string to check
+     * @param str The string to check
      * @return True if str is a type of a Modelio predefined type.
      */
-    static boolean isJavaModelioPredefinedType(String str) {
+    static boolean isJavaModelioPredefinedType(final String str) {
         return isJavaPrimitiveType(str) || isJavaNonPrimitiveModelioPredefinedType(str);
     }
 
     /**
      * Is 'str' a Java primitive type. Java primitive types are : boolean, int,
      * float, long, short, double, byte and char.
-     *
-     * @param str
-     *            The string to check
+     * @param str The string to check
      * @return True if str is a Java primitive type.
      */
-    static boolean isJavaPrimitiveType(String str) {
+    static boolean isJavaPrimitiveType(final String str) {
         return str.equals("boolean") || str.equals("int") || str.equals("float") || str.equals("long")
-                || str.equals("short") || str.equals("double") || str.equals("byte") || str.equals("char");
+                                || str.equals("short") || str.equals("double") || str.equals("byte") || str.equals("char");
     }
 
     /**
      * Is 'str' a Modelio predefined type which is not a Java primitive type.
      * Those types are : String and Date including the full name version (ie
      * java.lang.String)
-     *
-     * @param str
-     *            The string to check
+     * @param str The string to check
      * @return True if str is a type of a Modelio predefined type which is not a
-     *         Java primitive type.
+     * Java primitive type.
      */
-    static boolean isJavaNonPrimitiveModelioPredefinedType(String str) {
+    static boolean isJavaNonPrimitiveModelioPredefinedType(final String str) {
         return str.equals("String") || str.equals("Date") || str.equals("java.lang.String") || str.equals("java.util.Date");
     }
 
     /**
      * Return the Java package of a non primitive Java type that is a Modelio
      * predefined type or a wrapper type
-     *
-     * @param str
-     *            The type. Can be either a simple type or a full name type
+     * @param str The type. Can be either a simple type or a full name type
      * @return The package of
      */
-    static String getPackageOfAModelioPredefinedType(String str) {
+    static String getPackageOfAModelioPredefinedType(final String str) {
         String shortname = StringUtil.shortenFullName(str);
         return javaModelioPredefinedTypePackageMap.get(shortname);
     }
 
 
-    static {
+static {
         javaWrapperMap.put("Integer", "int");
         javaWrapperMap.put("Boolean", "boolean");
         javaWrapperMap.put("Float", "float");

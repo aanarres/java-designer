@@ -3,7 +3,7 @@ package org.modelio.module.javadesigner.commands.ant;
 import java.util.List;
 
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 import org.modelio.metamodel.uml.statik.Artifact;
 import org.modelio.module.javadesigner.ant.AntGenerator;
@@ -20,7 +20,7 @@ public class GenerateAntFile extends DefaultModuleCommandHandler {
      * depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -40,7 +40,7 @@ public class GenerateAntFile extends DefaultModuleCommandHandler {
     }
 
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
         JConsoleWithDialog console = new JConsoleWithDialog (InfoDialogManager.getExecuteAntTargetDialog ());
         
         AntGenerator antGenerator = new AntGenerator(module, console);
@@ -55,7 +55,7 @@ public class GenerateAntFile extends DefaultModuleCommandHandler {
      * specific constraints that are specific to the module.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }

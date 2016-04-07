@@ -2,13 +2,19 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.model.JaxbDataType;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.strategy.DataTypeStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelTree;
 import org.modelio.metamodel.uml.infrastructure.Note;
 import org.modelio.metamodel.uml.statik.DataType;
+import org.modelio.metamodel.uml.statik.Interface;
+import org.modelio.metamodel.uml.statik.VisibilityMode;
 import org.modelio.module.javadesigner.api.IJavaDesignerPeerModule;
 import org.modelio.module.javadesigner.api.JavaDesignerNoteTypes;
 import org.modelio.module.javadesigner.api.JavaDesignerStereotypes;
@@ -22,45 +28,43 @@ import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.model.JaxbDataType;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.strategy.DataTypeStrategy;
-
 public class JavaDataTypeStrategy extends DataTypeStrategy {
     public ReverseStrategyConfiguration reverseConfig;
 
-
-    public JavaDataTypeStrategy(IModelingSession session, ReverseStrategyConfiguration reverseConfig) {
+    public JavaDataTypeStrategy(final IModelingSession session, final ReverseStrategyConfiguration reverseConfig) {
         super (session);
         this.reverseConfig = reverseConfig;
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbDataType jaxb_element, DataType modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbDataType jaxb_element, final DataType modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         String oldName = modelio_element.getName ();
         boolean hasJavaName = modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME);
-
+        
         ModelTree oldOwner = modelio_element.getOwner ();
-
+        
         List<MObject> ret = super.updateProperties (jaxb_element, modelio_element, owner, repository);
-
+        
         try {
             ModelUtils.addStereotype(modelio_element, JavaDesignerStereotypes.JAVADATATYPE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVADATATYPE)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVADATATYPE)); //$NON-NLS-1$
         }
-
+        
         if (oldOwner != null) {
             ModelTree newOwner = modelio_element.getOwner ();
             if (JavaDesignerUtils.getFullJavaName (this.session, oldOwner).equals (JavaDesignerUtils.getFullJavaName (this.session, newOwner))) {
                 modelio_element.setOwner (oldOwner);
             }
         }
-
+        
+        if (modelio_element.getOwner () instanceof Interface) {
+            // Inner elements of an Interface should always be public
+            modelio_element.setVisibility (VisibilityMode.PUBLIC);
+        }
+        
         handleMultipleTags (jaxb_element, modelio_element, repository);
-
+        
         String jaxbName = jaxb_element.getName ();
         if (jaxbName != null) {
             if (jaxbName.equalsIgnoreCase ("Boolean") ||
@@ -79,18 +83,18 @@ public class JavaDataTypeStrategy extends DataTypeStrategy {
                 modelio_element.setName (jaxbName);
             }
         }
-
+        
         if (hasJavaName) {
             try {
                 modelio_element.setName (oldName);
-
+        
                 ModelUtils.setFirstTagParameter (this.session, modelio_element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME, jaxbName);
                 if (ret == null) {
                     ret = new ArrayList<> ();
                 }
                 ret.add (modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME));
             } catch (ExtensionNotFoundException | ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
         return ret;
@@ -99,16 +103,16 @@ public class JavaDataTypeStrategy extends DataTypeStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbDataType jaxb_element, DataType modelio_element, IReadOnlyRepository repository) {
+    private void handleMultipleTags(final JaxbDataType jaxb_element, final DataType modelio_element, final IReadOnlyRepository repository) {
         JaxbTaggedValue firstImportTag = null;
         JaxbTaggedValue firstImplementTag = null;
-
+        
         List<JaxbTaggedValue> toRemove = new ArrayList<> ();
         List<Object> sub_elements = jaxb_element.getOperationOrTemplateBindingOrTemplateParameter ();
         for (Object sub_element : sub_elements) {
             if (sub_element instanceof JaxbTaggedValue) {
                 JaxbTaggedValue currentTag = (JaxbTaggedValue) sub_element;
-
+        
                 if (currentTag.getTagType ().equals (JavaDesignerTagTypes.DATATYPE_JAVAIMPORT)) {
                     if (firstImportTag == null) {
                         firstImportTag = currentTag;
@@ -134,14 +138,14 @@ public class JavaDataTypeStrategy extends DataTypeStrategy {
                 }
             }
         }
-
+        
         sub_elements.removeAll (toRemove);
     }
 
     @Override
-    public void postTreatment(JaxbDataType jaxb_element, DataType modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbDataType jaxb_element, final DataType modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
-
+        
         IReportWriter report = repository.getReportWriter ();
         List<String> javaextends = modelio_element.getTagValues(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.DATATYPE_JAVAEXTENDS);
         if (javaextends != null) {
@@ -150,22 +154,22 @@ public class JavaDataTypeStrategy extends DataTypeStrategy {
                         Messages.getString("reverse.Extends_clause_warning.title", je), modelio_element, Messages.getString("reverse.Extends_clause_warning.title", je)); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-
+        
         try {
             computeJavaDoc (modelio_element, repository);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
         }
     }
 
-    private void computeJavaDoc(DataType modelio_element, IReadOnlyRepository repository) throws ExtensionNotFoundException {
+    private void computeJavaDoc(final DataType modelio_element, final IReadOnlyRepository repository) throws ExtensionNotFoundException {
         String noteType;
         if (!this.reverseConfig.DESCRIPTIONASJAVADOC) {
             noteType = JavaDesignerNoteTypes.CLASS_JAVADOC;
         } else {
             noteType = IOtherProfileElements.MODELELEMENT_DESCRIPTION;
         }
-
+        
         for (Note note : ModelUtils.getAllNotes (modelio_element, noteType)) {
             String tempContent = note.getContent ();
             tempContent = NoteReverseUtils.getInstance ().reverseJavadoc (this.session, tempContent, modelio_element, repository);

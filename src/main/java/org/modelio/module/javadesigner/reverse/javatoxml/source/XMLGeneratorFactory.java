@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.reverse.javatoxml.source;
 
 import java.util.HashMap;
-
 import org.modelio.module.javadesigner.reverse.antlr.ASTTree;
 import org.modelio.module.javadesigner.reverse.antlr.JavaParser;
 import org.modelio.module.javadesigner.reverse.javatoxml.XMLGeneratorException;
@@ -9,9 +8,9 @@ import org.modelio.module.javadesigner.reverse.javatoxml.XMLGeneratorException;
 public class XMLGeneratorFactory {
     private HashMap<String, XMLGenerator> generators = new HashMap<> ();
 
-    public XMLGenerator getXMLGenerator(ASTTree ast, Context context) throws XMLGeneratorException {
+    public XMLGenerator getXMLGenerator(final ASTTree ast, final Context context) throws XMLGeneratorException {
         XMLGenerator xmlGenerator = null;
-
+        
         switch (ast.getType ()) {
         case JavaParser.COMMENTS:
             if (context == Context.HEADER) {
@@ -47,7 +46,7 @@ public class XMLGeneratorFactory {
                 }
             }
             return xmlGenerator;
-
+        
         case JavaParser.PACKAGE_DEF:
             xmlGenerator = this.generators.get ("CompilationUnitXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -55,7 +54,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("CompilationUnitXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.IMPORT:
             xmlGenerator = this.generators.get ("ImportXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -63,7 +62,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ImportXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.CLASS_DEF:
             xmlGenerator = this.generators.get ("ClassXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -71,7 +70,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ClassXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.INTERFACE_DEF:
             xmlGenerator = this.generators.get ("InterfaceXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -79,7 +78,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("InterfaceXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.ENUM_DEF:
             xmlGenerator = this.generators.get ("EnumXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -87,7 +86,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("EnumXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.ANNOTATION_DEF:
             xmlGenerator = this.generators.get ("AnnotationDefinitionXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -95,7 +94,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("AnnotationDefinitionXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.EXTENDS_CLAUSE:
             xmlGenerator = this.generators.get ("ExtendsXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -103,7 +102,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ExtendsXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.IMPLEMENTS_CLAUSE:
             xmlGenerator = this.generators.get ("ImplementsXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -111,7 +110,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ImplementsXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.OBJBLOCK:
             if (context == Context.ENUM) {
                 xmlGenerator = this.generators.get ("EnumMemberXMLGenerator"); //$NON-NLS-1$
@@ -127,7 +126,7 @@ public class XMLGeneratorFactory {
                 }
             }
             return xmlGenerator;
-
+        
         case JavaParser.VARIABLE_DEF:
             xmlGenerator = this.generators.get ("AttributeXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -135,16 +134,16 @@ public class XMLGeneratorFactory {
                 this.generators.put ("AttributeXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.ANNOTATION_MEMBER_DEF:
             xmlGenerator = this.generators.get ("AnnotationMemberXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
                 xmlGenerator = new AnnotationMemberXMLGenerator ();
                 this.generators.put ("AnnotationMemberXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
-
+        
             return xmlGenerator;
-
+        
         case JavaParser.METHOD_DEF:
             xmlGenerator = this.generators.get("OperationXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -152,7 +151,7 @@ public class XMLGeneratorFactory {
                 this.generators.put("OperationXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.STATIC_INIT:
             xmlGenerator = this.generators.get ("StaticXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -160,7 +159,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("StaticXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.INSTANCE_INIT:
             xmlGenerator = this.generators.get ("InstanceXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -168,7 +167,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("InstanceXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.TYPE:
             if (context == Context.OPERATION) {
                 xmlGenerator = this.generators.get ("ReturnParameterXMLGenerator"); //$NON-NLS-1$
@@ -178,7 +177,7 @@ public class XMLGeneratorFactory {
                 }
             }
             return xmlGenerator;
-
+        
         case JavaParser.ASSIGN:
             xmlGenerator = this.generators.get ("AssignXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -186,7 +185,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("AssignXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.PARAMETERS:
             xmlGenerator = this.generators.get ("ParameterXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -194,7 +193,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ParameterXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.THROWS:
             xmlGenerator = this.generators.get ("ThrowsXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -202,7 +201,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ThrowsXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.SLIST:
             if (context == Context.OPERATION) {
                 xmlGenerator = this.generators.get ("OperationBodyXMLGenerator"); //$NON-NLS-1$
@@ -212,7 +211,7 @@ public class XMLGeneratorFactory {
                 }
             }
             return xmlGenerator;
-
+        
         case JavaParser.RETURN:
             xmlGenerator = this.generators.get ("ReturnStatementXMLGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -220,7 +219,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("ReturnStatementXMLGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         case JavaParser.FORMAL_TYPE_PARAMS:
             if (context == Context.OPERATION) {
                 xmlGenerator = this.generators.get ("OperationTemplateParameterGenerator"); //$NON-NLS-1$
@@ -234,10 +233,10 @@ public class XMLGeneratorFactory {
                     xmlGenerator = new ClassTemplateParameterXMLGenerator ();
                     this.generators.put ("ClassTemplateParameterGenerator", xmlGenerator); //$NON-NLS-1$
                 }
-
+        
             }
             return xmlGenerator;
-
+        
         case JavaParser.ENUM_CONST:
             xmlGenerator = this.generators.get ("EnumerationConstGenerator"); //$NON-NLS-1$
             if (xmlGenerator == null) {
@@ -245,7 +244,7 @@ public class XMLGeneratorFactory {
                 this.generators.put ("EnumerationConstGenerator", xmlGenerator); //$NON-NLS-1$
             }
             return xmlGenerator;
-
+        
         default:
             throw new BadNodeTypeException (ast);
         }
@@ -265,4 +264,5 @@ public class XMLGeneratorFactory {
         PARAMETER,
         ENUM;
     }
+
 }

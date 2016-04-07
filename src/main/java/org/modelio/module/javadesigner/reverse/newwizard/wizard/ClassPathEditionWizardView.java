@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.reverse.newwizard.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TraverseEvent;
@@ -21,6 +20,8 @@ import org.modelio.module.javadesigner.reverse.newwizard.api.IExternalJarsModel;
 import org.modelio.module.javadesigner.reverse.newwizard.externaljars.ExternalJarEditorComposite;
 
 public class ClassPathEditionWizardView extends ModelioDialog {
+     List<String> titles = new ArrayList<>();
+
     public Button okButton;
 
     public Button cancel;
@@ -29,22 +30,19 @@ public class ClassPathEditionWizardView extends ModelioDialog {
 
     public IExternalJarsModel externalJarsClasspathModel;
 
-    List<String> titles = new ArrayList<>();
-
-
-    public ClassPathEditionWizardView(Shell parentShell, IExternalJarsModel externalJarsClasspathModel) {
+    public ClassPathEditionWizardView(final Shell parentShell, final IExternalJarsModel externalJarsClasspathModel) {
         super(parentShell);
         this.externalJarsClasspathModel = externalJarsClasspathModel;
     }
 
     @Override
-    public void addButtonsInButtonBar(Composite parent) {
+    public void addButtonsInButtonBar(final Composite parent) {
         this.okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         this.cancel = createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     @Override
-    public Control createContentArea(Composite parent) {
+    public Control createContentArea(final Composite parent) {
         // Avoid box closing when pressing enter
         parent.addTraverseListener(new TraverseListener() {
             @Override

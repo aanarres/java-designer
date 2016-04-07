@@ -1,10 +1,9 @@
 package org.modelio.module.javadesigner.reverse.retrieve;
 
-import org.modelio.api.model.IModelingSession;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 
 public interface IRetrieveData {
-
-    void inject(IModelingSession session, ModelElement elementToRetrieve) throws Exception;
+    void inject(final IModelingSession session, final ModelElement elementToRetrieve) throws Exception;
 
 }

@@ -1,6 +1,6 @@
 package org.modelio.module.javadesigner.reverse;
 
-import org.modelio.api.module.IModuleUserConfiguration;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
 import org.modelio.module.javadesigner.reverse.ReverseConfig.GeneralReverseMode;
 
@@ -25,17 +25,17 @@ public class ReverseStrategyConfiguration {
 
     public boolean GENERATEJAVADOC;
 
-    private IModuleUserConfiguration javaConfiguration;
-
     public String ENCODING;
 
     public String COPYRIGHTFILE;
 
     public boolean GENERATEFINALPARAMETERS;
-    
+
     public GeneralReverseMode reverseMode = GeneralReverseMode.COMPLETE_REVERSE;
 
-    public ReverseStrategyConfiguration(IModuleUserConfiguration moduleConfiguration) {
+    private IModuleUserConfiguration javaConfiguration;
+
+    public ReverseStrategyConfiguration(final IModuleUserConfiguration moduleConfiguration) {
         this.javaConfiguration = moduleConfiguration;
         
         this.DESCRIPTIONASJAVADOC = getBooleanParameterValue (JavaDesignerParameters.DESCRIPTIONASJAVADOC);
@@ -80,19 +80,19 @@ public class ReverseStrategyConfiguration {
             case "UTF_8":
             case "UTF-8":
             default:
-                    this.ENCODING = "UTF-8";
-                    break;
+                this.ENCODING = "UTF-8";
+                break;
             }
         } catch (IllegalArgumentException e) {
             this.ENCODING = "UTF-8";
         }
     }
 
-    private String getStringParameterValue(String key) {
+    private String getStringParameterValue(final String key) {
         return this.javaConfiguration.getParameterValue (key);
     }
 
-    private boolean getBooleanParameterValue(String key) {
+    private boolean getBooleanParameterValue(final String key) {
         String value = this.javaConfiguration.getParameterValue (key);
         return "TRUE".equalsIgnoreCase (value);
     }

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.modelio.module.javadesigner.dialog.JConsoleWithDialog;
@@ -13,11 +12,11 @@ import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 public class ProcessManager {
     protected JConsoleWithDialog console;
 
-    public ProcessManager (JConsoleWithDialog console) {
+    public ProcessManager(final JConsoleWithDialog console) {
         this.console = console;
     }
 
-    public int execute(String initialCommand, boolean wait) {
+    public int execute(final String initialCommand, final boolean wait) {
         Runtime runtime = Runtime.getRuntime();
         try {
             String command;
@@ -27,9 +26,9 @@ public class ProcessManager {
             } else {
                 command = initialCommand;
             }
-
+        
             final Process process = runtime.exec(command);
-
+        
             /* 
              * Anomalie #19: Forward characters from console dialog to running process.
              */
@@ -44,19 +43,19 @@ public class ProcessManager {
                         }
                         os.close();
                     } catch (Exception ioe) {
-                        JavaDesignerModule.logService.error(ioe);
+                        JavaDesignerModule.getInstance().getModuleContext().getLogService().error(ioe);
                     }
                 }
             };
             readOutputThread.start();
-
+        
             // Console use process instance to terminate process on when dialog is closed.
             addProcessToClose(process, readOutputThread);
-
+        
             /* 
              * Anomalie #19: END
              */
-
+        
             new Thread () {
                 @Override
                 public void run() {
@@ -67,12 +66,12 @@ public class ProcessManager {
                         }
                         reader.close();
                     } catch (IOException ioe) {
-                        JavaDesignerModule.logService.error(ioe);
+                        JavaDesignerModule.getInstance().getModuleContext().getLogService().error(ioe);
                     }
                     ProcessManager.this.console.writeInfo("\nExecution done\n\n");
                 }
             }.start();
-
+        
             new Thread () {
                 @Override
                 public void run() {
@@ -84,16 +83,16 @@ public class ProcessManager {
                         }
                         reader.close();
                     } catch (IOException ioe) {
-                        JavaDesignerModule.logService.error(ioe);
+                        JavaDesignerModule.getInstance().getModuleContext().getLogService().error(ioe);
                     }
                 }
             }.start();
-
+        
             if (wait) {
                 process.waitFor();
                 return process.exitValue();
             }
-
+        
             // Asynchronous execution, assume everything is ok...
             return 0;
         } catch (IOException e) {
@@ -104,7 +103,6 @@ public class ProcessManager {
             return -1;
         }
     }
-
 
     /**
      * Add a dispose listener to the console to destroy a Process and its output reader.
@@ -122,7 +120,7 @@ public class ProcessManager {
                 public void widgetDisposed(DisposeEvent de) {                
                     if( process != null) {
                         process.destroy();
-
+        
                         // Force all threads waiting on the lineQueue to exit
                         if (readOutputThread.isAlive()) {
                             readOutputThread.interrupt();
@@ -132,4 +130,5 @@ public class ProcessManager {
             });
         }
     }
+
 }

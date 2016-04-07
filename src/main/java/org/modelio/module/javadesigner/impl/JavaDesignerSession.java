@@ -3,12 +3,15 @@ package org.modelio.module.javadesigner.impl;
 import java.io.File;
 import java.util.Map;
 
-import org.modelio.api.model.change.IModelChangeHandler;
-import org.modelio.api.model.change.IModelChangeListener;
-import org.modelio.api.model.change.IStatusChangeHandler;
-import org.modelio.api.module.DefaultModuleSession;
-import org.modelio.api.module.IModuleUserConfiguration;
-import org.modelio.api.module.ModuleException;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.event.IModelChangeHandler;
+import org.modelio.api.modelio.model.event.IModelChangeListener;
+import org.modelio.api.modelio.model.event.IStatusChangeHandler;
+import org.modelio.api.module.context.IModuleContext;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
+import org.modelio.api.module.lifecycle.DefaultModuleLifeCycleHandler;
+import org.modelio.api.module.lifecycle.IModuleLifeCycleHandler;
+import org.modelio.api.module.lifecycle.ModuleException;
 import org.modelio.module.javadesigner.api.ISessionWithHandler;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
 import org.modelio.module.javadesigner.custom.CustomFileException;
@@ -18,19 +21,19 @@ import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vbasic.version.Version;
 
-public class JavaDesignerSession extends DefaultModuleSession implements ISessionWithHandler {
+public class JavaDesignerSession extends DefaultModuleLifeCycleHandler implements ISessionWithHandler, IModuleLifeCycleHandler {
     protected IModelChangeHandler modelChangeHandler = null;
 
     protected IStatusChangeHandler statusChangeHandler = null;
 
     protected IModelChangeListener modelChangeListener = null;
 
-    public JavaDesignerSession(JavaDesignerModule module) {
+    public JavaDesignerSession(final JavaDesignerModule module) {
         super (module);
     }
 
-    public static boolean install(String objingPath, String mdaplugsPath) throws ModuleException {
-        return DefaultModuleSession.install (objingPath, mdaplugsPath);
+    public static boolean install(final String objingPath, final String mdaplugsPath) throws ModuleException {
+        return DefaultModuleLifeCycleHandler.install (objingPath, mdaplugsPath);
     }
 
     @Override
@@ -40,20 +43,16 @@ public class JavaDesignerSession extends DefaultModuleSession implements ISessio
                 File.separator + "custom" + //$NON-NLS-1$
                 File.separator + "javaCustomizationFile.xml"; //$NON-NLS-1$
 
-        IModuleUserConfiguration configuration = this.module.getConfiguration ();
+        IModuleUserConfiguration configuration = this.module.getModuleContext().getConfiguration ();
         configuration.setParameterValue (JavaDesignerParameters.ACCESSIBLECLASSES, jdkPath +
                 File.separator +
                 "jre" + File.separator + "lib" + File.separator + "rt.jar"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         configuration.setParameterValue (JavaDesignerParameters.ACCESSORSGENERATION, JavaDesignerParameters.AccessorsGenerationMode.Smart.toString ());
-        configuration.setParameterValue (JavaDesignerParameters.AUTOGENERATE, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.AUTOMATICALLYOPENJAVADOC, "true"); //$NON-NLS-1$
-        configuration.setParameterValue (JavaDesignerParameters.AUTOREVERSE, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.COMPILATIONOPTIONS, ""); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.COMPILATIONPATH, "$(Project)/bin"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.CUSTOMIZATIONFILE, customFile);
         configuration.setParameterValue (JavaDesignerParameters.DESCRIPTIONASJAVADOC, "false"); //$NON-NLS-1$
-        configuration.setParameterValue (JavaDesignerParameters.DIAGRAMCREATIONONREVERSE, "false"); //$NON-NLS-1$
-        configuration.setParameterValue (JavaDesignerParameters.ECLIPSEPROJECT, ""); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.ERRORONFIRSTWARNING, "true"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.GENERATEFINALPARAMETERS, "true"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.GENERATEINVARIANTS, "false"); //$NON-NLS-1$
@@ -87,7 +86,6 @@ public class JavaDesignerSession extends DefaultModuleSession implements ISessio
         configuration.setParameterValue (JavaDesignerParameters.READONLYELEMENTNOTGENERATED, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.RETRIEVEDEFAULTBEHAVIOUR, JavaDesignerParameters.RetrieveMode.Ask.toString ());
         configuration.setParameterValue (JavaDesignerParameters.RUNPARAMETERS, ""); //$NON-NLS-1$
-        configuration.setParameterValue (JavaDesignerParameters.SOURCEFILESPATH, ""); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.USEEXTERNALEDITION, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.USEJAVAH, "true"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.ENCODING, "UTF-8"); //$NON-NLS-1$
@@ -99,29 +97,30 @@ public class JavaDesignerSession extends DefaultModuleSession implements ISessio
 
     @Override
     public boolean start() throws ModuleException {
+        IModuleContext context = this.module.getModuleContext();
+        IModelingSession session = context.getModelingSession();
+        
         // Remove the metamodelVersion
         Version version = this.module.getVersion ();
-        String completeVersion = version.toString ();
+        String fullVersion = version.toString();
 
         // Display the copyright
-        JavaDesignerModule.logService.info ("Modelio/" + this.module.getName () + " " + completeVersion + " - Copyright 2008-2015 Modeliosoft"); //$NON-NLS-1$ //$NON-NLS-2$  //$NON-NLS-3$
+        JavaDesignerModule.getInstance().getModuleContext().getLogService().info("Modelio/" + this.module.getName() + " " + fullVersion + " - Copyright 2008-2015 Modeliosoft"); //$NON-NLS-1$ //$NON-NLS-2$  //$NON-NLS-3$
 
         /*
          * Notifications
          */
-        this.statusChangeHandler = new StatusChangeHandler (this.module);
-        this.module.getModelingSession ().addStatusHandler (this.statusChangeHandler);
+        this.statusChangeHandler = new StatusChangeHandler();
+        session.addStatusHandler (this.statusChangeHandler);
 
-        this.modelChangeHandler = new ModelChangeHandler (this.module);
-        this.module.getModelingSession ().addModelHandler (this.modelChangeHandler);
+        this.modelChangeHandler = new ModelChangeHandler ();
+        session.addModelHandler (this.modelChangeHandler);
 
-        // TODO add file manager to handle deleted/moved files
-        // this.modelChangeListener = new ModelChangeListener (new JavaFileManager((Module) this.module));
-        this.modelChangeListener = new ModelChangeListener (null);
-        this.module.getModelingSession ().addModelListener (this.modelChangeListener);
+        this.modelChangeListener = new ModelChangeListener();
+        session.addModelListener(this.modelChangeListener);
 
         // Set the main module parameters if they are empty
-        IModuleUserConfiguration configuration = this.module.getConfiguration ();
+        IModuleUserConfiguration configuration = context.getConfiguration();
 
         String jdkPath = null;
 
@@ -191,41 +190,32 @@ public class JavaDesignerSession extends DefaultModuleSession implements ISessio
             configuration.setParameterValue (JavaDesignerParameters.CUSTOMIZATIONFILE, customFilePath);
         }
 
-        String encoding = configuration.getParameterValue (JavaDesignerParameters.ENCODING); //$NON-NLS-1$
-        if (encoding == null || encoding.equals ("") || encoding.contains ("_")) {
+        String encoding = configuration.getParameterValue(JavaDesignerParameters.ENCODING);
+        if(encoding == null || encoding.isEmpty() || encoding.contains("_")) {
             configuration.setParameterValue (JavaDesignerParameters.ENCODING, "UTF-8"); //$NON-NLS-1$
         }
 
         // Load the customization file
-        File customFile = new File (customFilePath);
-
-        if (!customFile.exists()) {
-            customFile = new File (this.module.getConfiguration ().getModuleResourcesPath () + File.separator + customFilePath);
-        }
-
-        // Get the schema file
-        File schemaFile = new File (this.module.getConfiguration ().getModuleResourcesPath () +
-                File.separator + "res" + //$NON-NLS-1$
-                File.separator + "custom" + //$NON-NLS-1$
-                File.separator + "customFile.xsd"); //$NON-NLS-1$
         try {
-            JavaTypeManager.getInstance ().loadCustomizationFile (customFile, schemaFile);
-        } catch (CustomFileException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaTypeManager.getInstance().loadCustomizationFile(this.module, customFilePath);
+        } catch(CustomFileException e) {
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
 
         // Init image cache
-        String modulePath = this.module.getConfiguration().getModuleResourcesPath().toAbsolutePath().toString();
+        String modulePath = configuration.getModuleResourcesPath().toAbsolutePath().toString();
         ImageManager.setModulePath(modulePath);
-
         return super.start ();
     }
 
     @Override
     public void stop() throws ModuleException {
-        this.module.getModelingSession ().removeStatusHandler (this.statusChangeHandler);
-        this.module.getModelingSession ().removeModelHandler (this.modelChangeHandler);
-        this.module.getModelingSession ().removeModelListener (this.modelChangeListener);
+        IModuleContext context = this.module.getModuleContext();
+        IModelingSession session = context.getModelingSession();
+        
+        session.removeStatusHandler (this.statusChangeHandler);
+        session.removeModelHandler (this.modelChangeHandler);
+        session.removeModelListener (this.modelChangeListener);
         EditorManager.getInstance ().closeEditors ();
 
         super.stop ();
@@ -237,11 +227,11 @@ public class JavaDesignerSession extends DefaultModuleSession implements ISessio
     }
 
     @Override
-    public void upgrade(Version oldVersion, Map<String, String> oldParameters) throws ModuleException {
+    public void upgrade(final Version oldVersion, final Map<String, String> oldParameters) throws ModuleException {
         try {
                 super.upgrade (oldVersion, oldParameters);
         } catch (Exception e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
     }
 

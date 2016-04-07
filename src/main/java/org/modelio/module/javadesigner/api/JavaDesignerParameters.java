@@ -6,11 +6,7 @@ public interface JavaDesignerParameters {
 
     public static final String ACCESSORSGENERATION = "AccessorsGeneration";
 
-    public static final String AUTOGENERATE = "AutoGenerate";
-
     public static final String AUTOMATICALLYOPENJAVADOC = "AutomaticallyOpenJavadoc";
-
-    public static final String AUTOREVERSE = "AutoReverse";
 
     public static final String COMPILATIONOPTIONS = "CompilationOptions";
 
@@ -19,10 +15,6 @@ public interface JavaDesignerParameters {
     public static final String CUSTOMIZATIONFILE = "CustomizationFile";
 
     public static final String DESCRIPTIONASJAVADOC = "DescriptionAsJavadoc";
-
-    public static final String DIAGRAMCREATIONONREVERSE = "DiagramCreationOnReverse";
-
-    public static final String ECLIPSEPROJECT = "EclipseProject";
 
     public static final String ENCODING = "Encoding";
 
@@ -39,7 +31,7 @@ public interface JavaDesignerParameters {
     public static final String GENDOCPATH = "GenDocPath";
 
     public static final String GENERATEDEFAULTRETURN = "GenerateDefaultReturn";
-    
+
     public static final String GENERATEFINALPARAMETERS = "GenerateFinalParameters";
 
     public static final String GENERATEINVARIANTS = "GenerateInvariants";
@@ -90,8 +82,6 @@ public interface JavaDesignerParameters {
 
     public static final String RUNPARAMETERS = "RunParameters";
 
-    public static final String SOURCEFILESPATH = "SourceFilesPath";
-
     public static final String USEEXTERNALEDITION = "UseExternalEdition";
 
     public static final String USEJAVAH = "UseJavah";
@@ -101,27 +91,27 @@ public interface JavaDesignerParameters {
     public static final String COMPONENTSUBPATH = "ComponentSubPath";
 
     public static final String JAVACOMPATIBILITY = "JavaCompatibility";
-    
-    public enum AccessorsGenerationMode {
+
+    enum AccessorsGenerationMode {
         Always,
         Smart,
         Never;
     }
 
-    public enum InterfaceImplementationMode {
+    enum InterfaceImplementationMode {
         Ask,
         Always,
         Never;
     }
 
-    public enum AccessorVisibility {
+    enum AccessorVisibility {
         Public,
         Protected,
         Friendly,
         Private;
     }
 
-    public enum AccessMode {
+    enum AccessMode {
         Read,
         Write,
         ReadWrite,
@@ -129,7 +119,7 @@ public interface JavaDesignerParameters {
         Default;
     }
 
-    public enum DefaultVisibility {
+    enum DefaultVisibility {
         Public,
         Protected,
         Friendly,
@@ -137,19 +127,30 @@ public interface JavaDesignerParameters {
         Default;
     }
 
-    public enum RetrieveMode {
+    enum RetrieveMode {
         Ask,
         Retrieve,
         Keep;
+
+        public static RetrieveMode fromString(String value) {
+            if (value.contentEquals (JavaDesignerParameters.RetrieveMode.Retrieve.toString ())) {
+                return RetrieveMode.Retrieve;
+            } else if (value.contentEquals (JavaDesignerParameters.RetrieveMode.Keep.toString ())) {
+                return RetrieveMode.Keep;
+            } else {
+                return RetrieveMode.Ask;
+            }
+        }
+
     }
 
-    public enum GenerationMode {
+    enum GenerationMode {
         RoundTrip,
         ModelDriven,
         Release;
     }
 
-    public enum Encodings {
+    enum Encodings {
         ISO_8859_1,
         US_ASCII,
         UTF_8,
@@ -158,8 +159,9 @@ public interface JavaDesignerParameters {
         UTF_16;
     }
 
-    public enum CompatibilityLevel {
+    enum CompatibilityLevel {
         Java7,
         Java8;
     }
+
 }

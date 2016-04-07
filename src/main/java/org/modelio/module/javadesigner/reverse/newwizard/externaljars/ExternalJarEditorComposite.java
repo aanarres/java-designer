@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.reverse.newwizard.externaljars;
 
 import java.io.File;
 import java.util.List;
-
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -35,8 +34,7 @@ public class ExternalJarEditorComposite extends Composite implements Listener {
 
     private IExternalJarsModel model;
 
-
-    public ExternalJarEditorComposite(Composite parent, IExternalJarsModel model) {
+    public ExternalJarEditorComposite(final Composite parent, final IExternalJarsModel model) {
         super(parent, SWT.NONE);
         this.model = model;
         this.createContent();
@@ -95,7 +93,7 @@ public class ExternalJarEditorComposite extends Composite implements Listener {
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(final Event event) {
         TreeSelection selection = (TreeSelection) this.treeViewer
                 .getSelection();
         if (event.widget == this.dropButton) {
@@ -168,7 +166,7 @@ public class ExternalJarEditorComposite extends Composite implements Listener {
         this.treeViewer.setInput(this.model.getClasspath());
     }
 
-    private boolean moveElementDown(File elt) {
+    private boolean moveElementDown(final File elt) {
         List<File> classpath = this.model.getClasspath();
         
         int index = classpath.indexOf(elt);
@@ -181,7 +179,7 @@ public class ExternalJarEditorComposite extends Composite implements Listener {
         return false;
     }
 
-    private boolean moveElementUp(File elt) {
+    private boolean moveElementUp(final File elt) {
         List<File> classpath = this.model.getClasspath();
         
         int index = classpath.indexOf(elt);
@@ -194,18 +192,18 @@ public class ExternalJarEditorComposite extends Composite implements Listener {
         return false;
     }
 
-    private void remove(File elt) {
+    private void remove(final File elt) {
         this.model.getClasspath().remove(elt);
     }
 
-    private void add(File elt) {
+    private void add(final File elt) {
         List<File> classpath = this.model.getClasspath();
         if (!classpath.contains(elt)) {
             classpath.add(elt);
         }
     }
 
-    public boolean existsInProjectContent(File elt) {
+    public boolean existsInProjectContent(final File elt) {
         return this.model.getClasspath().contains(elt);
     }
 

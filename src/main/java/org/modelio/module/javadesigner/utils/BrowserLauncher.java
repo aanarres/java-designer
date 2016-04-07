@@ -4,8 +4,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 
 public class BrowserLauncher {
-
-    public static void openURL(File fileToOpen) throws Exception {
+    public static void openURL(final File fileToOpen) throws Exception {
         // Error check
         if (!fileToOpen.exists ()) {
             throw new Exception ("JavaDoc File Not Found");
@@ -47,7 +46,7 @@ public class BrowserLauncher {
         }
     }
 
-    public static void openExternalEditor(String editor, File fileToOpen) throws Exception {
+    public static void openExternalEditor(final String editor, final File fileToOpen) throws Exception {
         if (editor == null) {
             throw new Exception ("Editor Not Found");
         }

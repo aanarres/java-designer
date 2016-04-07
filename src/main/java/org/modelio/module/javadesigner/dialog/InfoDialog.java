@@ -27,8 +27,7 @@ class InfoDialog {
 
     protected Image shellIcon;
 
-
-    public InfoDialog(Shell parent, String label, String title) {
+    public InfoDialog(final Shell parent, final String label, final String title) {
         this.createContents (parent, label, title);
     }
 
@@ -42,14 +41,14 @@ class InfoDialog {
     /**
      * Create contents of the window
      */
-    private void createContents(Shell parent, String label, String title) {
+    private void createContents(final Shell parent, final String label, final String title) {
         this.shell = new Shell (parent, SWT.TITLE | SWT.BORDER | SWT.CLOSE |
                                 SWT.RESIZE );
         this.shell.setLayout (new FormLayout ());
         this.shell.setText (title);
-
+        
         Composite buttonComposite = this.createButtons ();
-
+        
         /* Anomalie #19: 
          * Description: Text component should be writable.
          */
@@ -62,12 +61,12 @@ class InfoDialog {
         fd_label.right = new FormAttachment (100, -5);
         fd_label.left = new FormAttachment (0, 5);
         this.text.setLayoutData (fd_label);
-
+        
         try {
             this.shellIcon = new Image (null, this.getClass ().getResourceAsStream ("modelio.bmp"));
             this.shell.setImage (this.shellIcon);
         } catch (Exception e) {
-            JavaDesignerModule.logService.error (e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error (e.getMessage ());
         }
         this.shell.pack ();
         this.shell.setSize (this.shell.getSize ().x + 30, this.shell.getSize ().y);
@@ -83,10 +82,10 @@ class InfoDialog {
         fd_composite_1.bottom = new FormAttachment (100, -5);
         fd_composite_1.right = new FormAttachment (100, -5);
         composite.setLayoutData (fd_composite_1);
-
+        
         final Composite composite_2 = new Composite (composite, SWT.NONE);
         composite_2.setLayout (new FillLayout ());
-
+        
         final Button okButton = new Button (composite_2, SWT.NONE);
         okButton.addSelectionListener (new SelectionAdapter () {
             @Override
@@ -115,7 +114,7 @@ class InfoDialog {
         this.shell.setLocation (x, y);
     }
 
-    /* Anomalie #19: 
+/* Anomalie #19: 
      * Description: getText returns reference to Text widget.
      *               THIS SHOULD BE CHECKED AGAINST OTHER CLASSES!
      */
@@ -123,33 +122,33 @@ class InfoDialog {
         return this.text;
     }
 
-    /* Anomalie #19: 
+/* Anomalie #19: 
      * Description: getTextString returns the text reference from Text widget.     
      */
     public String getTextString() {
         return this.text.getText ();
     }
 
-    public void setText(String newText) {
+    public void setText(final String newText) {
         this.text.setText (newText);
     }
 
     public void addText(final String newText, final Color color) {
         final Display display = Display.getDefault();
         display.asyncExec(new Runnable() {
-
+        
             @Override
             public void run() {
                 if (!InfoDialog.this.shell.isVisible()) {
                     open();
                 }
-
+        
                 if (color != null) {
                     StyleRange range = new StyleRange();
                     range.start = InfoDialog.this.text.getText().length();
                     range.length = newText.length();
                     range.foreground = color;
-
+        
                     InfoDialog.this.text.append(newText);
                     InfoDialog.this.text.setStyleRange(range);
                 } else {
@@ -158,7 +157,7 @@ class InfoDialog {
                 // Always show the last line when adding text
                 InfoDialog.this.text.setTopIndex(InfoDialog.this.text.getLineCount() - 1);
             }
-
+        
         });
     }
 

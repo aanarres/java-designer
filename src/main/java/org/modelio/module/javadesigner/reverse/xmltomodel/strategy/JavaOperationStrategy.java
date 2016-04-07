@@ -2,14 +2,18 @@ package org.modelio.module.javadesigner.reverse.xmltomodel.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.model.JaxbOperation;
+import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
+import com.modelio.module.xmlreverse.strategy.OperationStrategy;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.Constraint;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
 import org.modelio.metamodel.uml.infrastructure.Note;
+import org.modelio.metamodel.uml.infrastructure.Stereotype;
 import org.modelio.metamodel.uml.statik.AssociationEnd;
 import org.modelio.metamodel.uml.statik.Attribute;
 import org.modelio.metamodel.uml.statik.Classifier;
@@ -26,28 +30,27 @@ import org.modelio.module.javadesigner.custom.JavaTypeManager;
 import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.reverse.ReverseStrategyConfiguration;
+import org.modelio.module.javadesigner.reverse.xmltomodel.JavaModelElementDeleteStrategy;
 import org.modelio.module.javadesigner.reverse.xmltomodel.NoteReverseUtils;
 import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.model.JaxbOperation;
-import com.modelio.module.xmlreverse.model.JaxbTaggedValue;
-import com.modelio.module.xmlreverse.strategy.OperationStrategy;
 
 public class JavaOperationStrategy extends OperationStrategy {
     public ReverseStrategyConfiguration reverseConfig;
 
+    private JavaModelElementDeleteStrategy deleteStrategy;
 
-    public JavaOperationStrategy(IModelingSession session, ReverseStrategyConfiguration reverseConfig) {
+    public JavaOperationStrategy(final IModelingSession session, final ReverseStrategyConfiguration reverseConfig, final JavaModelElementDeleteStrategy deleteStrategy) {
         super (session);
         this.reverseConfig = reverseConfig;
+        this.deleteStrategy = deleteStrategy;
     }
 
     @Override
-    public List<MObject> updateProperties(JaxbOperation jaxb_element, Operation modelio_element, MObject owner, IReadOnlyRepository repository) {
+    public List<MObject> updateProperties(final JaxbOperation jaxb_element, final Operation modelio_element, final MObject owner, final IReadOnlyRepository repository) {
         String oldName = modelio_element.getName ();
         boolean hasJavaName = modelio_element.isTagged(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME);
 
@@ -72,6 +75,13 @@ public class JavaOperationStrategy extends OperationStrategy {
                 ret = new ArrayList<> ();
             }
             ret.add (link);
+            for (Stereotype s : modelio_element.getExtension()) {
+                if (s.getName().equals(JavaDesignerStereotypes.JAVAGETTER)
+                        || s.getName().equals(JavaDesignerStereotypes.JAVASETTER)) {
+                    this.deleteStrategy.putJavaStereotypeUsage(modelio_element, s);
+                    break;
+                }
+            }
             if (owner instanceof Interface) {
                 ret.add (link.getDependsOn());
             }
@@ -87,9 +97,9 @@ public class JavaOperationStrategy extends OperationStrategy {
                 }
                 ret.add (modelio_element.getTag (IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.CLASS_JAVANAME));
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             } catch (ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
         return ret;
@@ -98,7 +108,7 @@ public class JavaOperationStrategy extends OperationStrategy {
     /**
      * TODO this should be done in the ANTLR -> XML part...
      */
-    private void handleMultipleTags(JaxbOperation jaxb_element) {
+    private void handleMultipleTags(final JaxbOperation jaxb_element) {
         JaxbTaggedValue firstTemplateParameterTag = null;
         JaxbTaggedValue firstThrownTag = null;
 
@@ -130,7 +140,7 @@ public class JavaOperationStrategy extends OperationStrategy {
     }
 
     @Override
-    public void postTreatment(JaxbOperation jaxb_element, Operation modelio_element, IReadOnlyRepository repository) {
+    public void postTreatment(final JaxbOperation jaxb_element, final Operation modelio_element, final IReadOnlyRepository repository) {
         super.postTreatment (jaxb_element, modelio_element, repository);
 
         if (this.reverseConfig.GENERATEINVARIANTS &&
@@ -144,7 +154,7 @@ public class JavaOperationStrategy extends OperationStrategy {
             try {
                 computeJavaDoc (modelio_element, repository);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.SEEJAVADOC)); //$NON-NLS-1$
             }
 
             // Check if this is a constructor or a destructor
@@ -164,7 +174,7 @@ public class JavaOperationStrategy extends OperationStrategy {
                         ModelUtils.addStereotype(modelio_element, stereotypeName);
                     }
                 } catch (ExtensionNotFoundException e) {
-                    JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", stereotypeName)); //$NON-NLS-1$
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", stereotypeName)); //$NON-NLS-1$
                 }
             }
 
@@ -188,9 +198,9 @@ public class JavaOperationStrategy extends OperationStrategy {
                             try {
                                 ModelUtils.setFirstTagParameter(this.session, attribute, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAATTRIBUTEPROPERTY_JAVAGETTERVISIBILITY, modelio_element.getVisibility().name());
                             } catch (ExtensionNotFoundException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             } catch (ElementNotUniqueException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             }
                         }
                     }
@@ -209,9 +219,9 @@ public class JavaOperationStrategy extends OperationStrategy {
                             try {
                                 ModelUtils.setFirstTagParameter(this.session, associationEnd, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAASSOCIATIONENDPROPERTY_JAVAGETTERVISIBILITY, modelio_element.getVisibility().name());
                             } catch (ExtensionNotFoundException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             } catch (ElementNotUniqueException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             }
                         }
                     }
@@ -235,9 +245,9 @@ public class JavaOperationStrategy extends OperationStrategy {
                             try {
                                 ModelUtils.setFirstTagParameter(this.session, attribute, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAATTRIBUTEPROPERTY_JAVASETTERVISIBILITY, modelio_element.getVisibility().name());
                             } catch (ExtensionNotFoundException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             } catch (ElementNotUniqueException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             }
                         }
                     }
@@ -256,9 +266,9 @@ public class JavaOperationStrategy extends OperationStrategy {
                             try {
                                 ModelUtils.setFirstTagParameter(this.session, associationEnd, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JAVAASSOCIATIONENDPROPERTY_JAVASETTERVISIBILITY, modelio_element.getVisibility().name());
                             } catch (ExtensionNotFoundException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             } catch (ElementNotUniqueException e) {
-                                JavaDesignerModule.logService.error(e.getMessage());
+                                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage());
                             }
                         }
                     }
@@ -270,7 +280,7 @@ public class JavaOperationStrategy extends OperationStrategy {
         }
     }
 
-    private void computeJavaDoc(Operation modelio_element, IReadOnlyRepository repository) throws ExtensionNotFoundException {
+    private void computeJavaDoc(final Operation modelio_element, final IReadOnlyRepository repository) throws ExtensionNotFoundException {
         String noteType;
         String moduleName;
         if (!this.reverseConfig.DESCRIPTIONASJAVADOC) {
@@ -292,7 +302,7 @@ public class JavaOperationStrategy extends OperationStrategy {
         }
     }
 
-    private void computeConstraints(Operation modelio_element) {
+    private void computeConstraints(final Operation modelio_element) {
         for (Note note : ModelUtils.getAllNotes (modelio_element, JavaDesignerNoteTypes.OPERATION_JAVACODE)) {
             String bodyCode = note.getContent ();
 
@@ -311,7 +321,7 @@ public class JavaOperationStrategy extends OperationStrategy {
         }
     }
 
-    private String filterPreConditions(Operation modelio_element, String bodyCode) {
+    private String filterPreConditions(final Operation modelio_element, final String bodyCode) {
         String startMarker = "// Begin of pre conditions";
         String endMarker = "// End of pre conditions";
 
@@ -334,7 +344,7 @@ public class JavaOperationStrategy extends OperationStrategy {
                 try {
                     ModelUtils.addStereotype(preConditionConstraint, JavaDesignerStereotypes.JAVAPRECONDITION);
                 } catch (ExtensionNotFoundException e) {
-                    JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPRECONDITION)); //$NON-NLS-1$
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPRECONDITION)); //$NON-NLS-1$
                 }
 
                 return operationCode;
@@ -343,7 +353,7 @@ public class JavaOperationStrategy extends OperationStrategy {
         return bodyCode;
     }
 
-    private String filterInvariantsCall(String code) {
+    private String filterInvariantsCall(final String code) {
         String ret;
         String toRemove = this.reverseConfig.INVARIANTSNAME + "();";
         int index = code.indexOf (toRemove);
@@ -363,7 +373,7 @@ public class JavaOperationStrategy extends OperationStrategy {
         return ret;
     }
 
-    private void computeInvariantMethod(Operation modelio_element) {
+    private void computeInvariantMethod(final Operation modelio_element) {
         Classifier ownerClass = modelio_element.getOwner ();
 
         // JavaCode note is reversed in the JavaInvariants constraint
@@ -376,7 +386,7 @@ public class JavaOperationStrategy extends OperationStrategy {
             try {
                 ModelUtils.addStereotype(preConditionConstraint, JavaDesignerStereotypes.JAVAINVARIANT);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAINVARIANT)); //$NON-NLS-1$
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAINVARIANT)); //$NON-NLS-1$
             }
         }
 
@@ -391,12 +401,12 @@ public class JavaOperationStrategy extends OperationStrategy {
             try {
                 ModelUtils.addStereotype(preConditionConstraint, JavaDesignerStereotypes.JAVADOCINVARIANT);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVADOCINVARIANT)); //$NON-NLS-1$
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVADOCINVARIANT)); //$NON-NLS-1$
             }
         }
     }
 
-    private String filterPostConditions(Operation modelio_element, String bodyCode) {
+    private String filterPostConditions(final Operation modelio_element, final String bodyCode) {
         String startMarker = "// Begin of post conditions";
         String endMarker = "// End of post conditions";
 
@@ -418,7 +428,7 @@ public class JavaOperationStrategy extends OperationStrategy {
                 try {
                     ModelUtils.addStereotype(postConditionConstraint, JavaDesignerStereotypes.JAVAPOSTCONDITION);
                 } catch (ExtensionNotFoundException e) {
-                    JavaDesignerModule.logService.error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPOSTCONDITION)); //$NON-NLS-1$
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.StereotypeNotFound", JavaDesignerStereotypes.JAVAPOSTCONDITION)); //$NON-NLS-1$
                 }
 
                 return operationCode;
@@ -432,7 +442,7 @@ public class JavaOperationStrategy extends OperationStrategy {
      * @param modelio_element The operation to check.
      * @return The dependency linking the accessor to its attribute, or null if the element isn't an accessor.
      */
-    private Dependency handleAccessorLink(Operation modelio_element) {
+    private Dependency handleAccessorLink(final Operation modelio_element) {
         boolean isGetter = false;
         boolean isSetter = false;
         if (modelio_element.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)) {
@@ -515,7 +525,7 @@ public class JavaOperationStrategy extends OperationStrategy {
     }
 
     @Override
-    public Operation getCorrespondingElement(JaxbOperation jaxb_element, MObject owner, IReadOnlyRepository repository) {
+    public Operation getCorrespondingElement(final JaxbOperation jaxb_element, final MObject owner, final IReadOnlyRepository repository) {
         if(owner instanceof Classifier){
             Classifier treeOwner = (Classifier) owner;
             for(Feature sub_tree : treeOwner.getOwnedOperation()){

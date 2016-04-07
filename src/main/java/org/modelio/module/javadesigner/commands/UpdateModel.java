@@ -1,33 +1,28 @@
 package org.modelio.module.javadesigner.commands;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.uml.statik.NameSpace;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
 import org.modelio.module.javadesigner.editor.EditorManager;
 import org.modelio.module.javadesigner.report.ReportManager;
 import org.modelio.module.javadesigner.report.ReportModel;
-import org.modelio.module.javadesigner.reverse.ReverseMode;
 import org.modelio.module.javadesigner.reverse.Reversor;
-import org.modelio.module.javadesigner.reverse.ui.ReverseException;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class UpdateModel extends DefaultModuleCommandHandler {
     private Set<NameSpace> elementsToUpdate = new HashSet<> ();
 
-
     /**
      * This methods authorizes a command to be displayed in a defined context. The commands are displayed, by default,
      * depending on the kind of metaclass on which the command has been launched.
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -45,7 +40,7 @@ public class UpdateModel extends DefaultModuleCommandHandler {
     }
 
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
         try {
             JavaDesignerUtils.initCurrentGenRoot (this.elementsToUpdate);
         } catch (InterruptedException e) {
@@ -55,15 +50,7 @@ public class UpdateModel extends DefaultModuleCommandHandler {
         ReportModel report = ReportManager.getNewReport ();
         
         Reversor reversor = new Reversor (module, report);
-        // No confirm box
-        // Date file are checked. Elements are reverse only if the file is more
-        // recent
-        try {
-        	Collection<NameSpace> baseElements = JavaDesignerUtils.getAllComponentsToTreat (this.elementsToUpdate, module);
-            reversor.update (JavaDesignerUtils.getAllComponentsToTreat (baseElements, module), ReverseMode.Retrieve, EditorManager.getInstance ());
-        } catch (ReverseException e) {
-            // The Reverse was canceled
-        }
+        reversor.update (JavaDesignerUtils.getAllComponentsToTreat (this.elementsToUpdate, module), EditorManager.getInstance ());
         
         ReportManager.showGenerationReport (report);
         
@@ -76,12 +63,13 @@ public class UpdateModel extends DefaultModuleCommandHandler {
      * specific constraints that are specific to the MDAC.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }
+        
         // Release mode deactivates model update...
-        String GENERATIONMODE = module.getConfiguration().getParameterValue(JavaDesignerParameters.GENERATIONMODE);
+        String GENERATIONMODE = module.getModuleContext().getConfiguration().getParameterValue(JavaDesignerParameters.GENERATIONMODE);
         if (GENERATIONMODE.equals (JavaDesignerParameters.GenerationMode.Release.toString ())) {
             return false;
         }

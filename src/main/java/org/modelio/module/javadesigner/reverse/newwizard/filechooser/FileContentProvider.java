@@ -4,13 +4,11 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 class FileContentProvider implements ITreeContentProvider {
-    private final Map<File , File> parentMap = new HashMap<>();
-
+    private final Map<File, File> parentMap = new HashMap<>();
 
     @Override
     public void dispose() {
@@ -18,7 +16,7 @@ class FileContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public Object[] getChildren(Object obj) {
+    public Object[] getChildren(final Object obj) {
         if (obj instanceof Object[]) {
             return (Object[]) obj;
         } else if (obj instanceof Collection<?>) {
@@ -39,12 +37,12 @@ class FileContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public Object[] getElements(Object obj) {
+    public Object[] getElements(final Object obj) {
         return this.getChildren (obj);
     }
 
     @Override
-    public Object getParent(Object obj) {
+    public Object getParent(final Object obj) {
         if (obj instanceof File) {
             File f = (File) obj;
             return this.parentMap.get(f);
@@ -53,7 +51,7 @@ class FileContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public boolean hasChildren(Object obj) {
+    public boolean hasChildren(final Object obj) {
         if (obj instanceof Object[]) {
             return ((Object[]) obj).length > 0;
         } else if (obj instanceof Collection<?>) {
@@ -68,7 +66,7 @@ class FileContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public void inputChanged(Viewer viewer, Object obj, Object obj1) {
+    public void inputChanged(final Viewer viewer, final Object obj, final Object obj1) {
         this.parentMap.clear();
     }
 

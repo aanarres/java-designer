@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.reverse.newwizard.classpath;
 
 import java.io.File;
-
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -20,8 +19,7 @@ public class ClasspathEditorComposite extends Composite {
 
     protected IClasspathModel model;
 
-
-    public ClasspathEditorComposite(Composite parent, IClasspathModel model) {
+    public ClasspathEditorComposite(final Composite parent, final IClasspathModel model) {
         super(parent, SWT.NONE);
         this.model = model;
         this.createContent();

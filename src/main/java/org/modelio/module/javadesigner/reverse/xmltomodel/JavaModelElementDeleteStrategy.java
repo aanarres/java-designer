@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
+import com.modelio.module.xmlreverse.IReadOnlyRepository;
+import com.modelio.module.xmlreverse.utils.ModelElementDeleteStrategy;
 import org.modelio.metamodel.uml.infrastructure.Constraint;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
@@ -17,9 +18,6 @@ import org.modelio.metamodel.uml.infrastructure.TagType;
 import org.modelio.metamodel.uml.infrastructure.TaggedValue;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
-
-import com.modelio.module.xmlreverse.IReadOnlyRepository;
-import com.modelio.module.xmlreverse.utils.ModelElementDeleteStrategy;
 
 public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
     private Set<String> tagList;
@@ -38,7 +36,7 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
     }
 
     @Override
-    public void deleteSubElements(ModelElement modelio_element, Collection<MObject> element_todelete, IReadOnlyRepository repository) {
+    public void deleteSubElements(final ModelElement modelio_element, final Collection<MObject> element_todelete, final IReadOnlyRepository repository) {
         Collection<MObject> todelete = new HashSet<> ();
         for (Stereotype stereo : new ArrayList<>(modelio_element.getExtension())) {
             if (isJavaStereotype (stereo)) {
@@ -48,11 +46,11 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
                 }
             }
         }
-
+        
         if (element_todelete.isEmpty() && todelete.isEmpty()) {
             return;
         }
-
+        
         for (MObject elt : element_todelete) {
             if (!elt.isDeleted()) {
                 if (elt instanceof TaggedValue) {
@@ -78,7 +76,7 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
                     // Keep dependencies
                 } else if (elt instanceof ModelElement) {
                     ModelElement modelelt = (ModelElement) elt;
-
+        
                     // Ignore no code elements
                     if (!JavaDesignerUtils.isNoCode (modelelt)) {
                         todelete.add (modelelt);
@@ -88,11 +86,11 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
                 }
             }
         }
-
+        
         super.deleteSubElements (modelio_element, todelete, repository);
     }
 
-    private boolean isJavaStereotype(Stereotype stereo) {
+    private boolean isJavaStereotype(final Stereotype stereo) {
         return this.stereotypeList.contains (stereo.getName ()) || JavaDesignerUtils.isAnnotationStereotype(stereo);
     }
 
@@ -118,13 +116,13 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
         this.stereotypeList.add ("SeeJavadoc");
         this.stereotypeList.add ("JavaAttributeProperty");
         this.stereotypeList.add ("JavaAssociationEndProperty");
-
+        
         // Stereotypes from modeler module
         this.stereotypeList.add ("create");
         this.stereotypeList.add ("destroy");
     }
 
-    private boolean isJavaConstraint(Constraint constraint) {
+    private boolean isJavaConstraint(final Constraint constraint) {
         for (Stereotype stereo : constraint.getExtension ()) {
             if (isJavaStereotype (stereo)) {
                 return true;
@@ -133,7 +131,7 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
         return false;
     }
 
-    private boolean isJavaNote(Note note) {
+    private boolean isJavaNote(final Note note) {
         NoteType def = note.getModel ();
         if (def != null) {
             return this.noteList.contains (def.getName ());
@@ -141,7 +139,7 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
         return false;
     }
 
-    private boolean isJavaTag(TaggedValue tag) {
+    private boolean isJavaTag(final TaggedValue tag) {
         TagType def = tag.getDefinition ();
         if (def != null) {
             return this.tagList.contains (def.getName ()) || (JavaDesignerUtils.isAnnotationStereotype(def.getOwnerStereotype()));
@@ -283,28 +281,28 @@ public class JavaModelElementDeleteStrategy extends ModelElementDeleteStrategy {
         this.tagList.add ("_toDelete");
         this.tagList.add ("JavaSetterVisibility");
         this.tagList.add ("JavaGetterVisibility");
-
+        
         // Tag from modeler module
         this.tagList.add ("type");
     }
 
-    public void addJavaNoteType(String noteName) {
+    public void addJavaNoteType(final String noteName) {
         this.noteList.add (noteName);
     }
 
-    public void addJavaTagType(String tagName) {
+    public void addJavaTagType(final String tagName) {
         this.tagList.add (tagName);
     }
 
-    public void addJavaStereotype(String stereotypeName) {
+    public void addJavaStereotype(final String stereotypeName) {
         this.stereotypeList.add (stereotypeName);
     }
 
-    public void addJavaConstraint(String constraintName) {
+    public void addJavaConstraint(final String constraintName) {
         this.stereotypeList.add (constraintName);
     }
 
-    public void putJavaStereotypeUsage(ModelElement element, Stereotype stereotype) {
+    public void putJavaStereotypeUsage(final ModelElement element, final Stereotype stereotype) {
         Set<Stereotype> list = this.stereotypeUsages.get(element);
         if (list == null) {
             list = new HashSet<>();

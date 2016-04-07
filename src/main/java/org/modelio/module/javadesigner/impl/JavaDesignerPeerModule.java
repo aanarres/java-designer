@@ -6,9 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.modelio.api.module.IModuleAPIConfiguration;
-import org.modelio.api.module.IModuleUserConfiguration;
+import org.modelio.api.module.context.configuration.IModuleAPIConfiguration;
+import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.statik.Artifact;
@@ -30,28 +29,26 @@ import org.modelio.module.javadesigner.generator.Generator;
 import org.modelio.module.javadesigner.javadoc.JavadocManager;
 import org.modelio.module.javadesigner.report.ReportManager;
 import org.modelio.module.javadesigner.report.ReportModel;
-import org.modelio.module.javadesigner.reverse.ReverseMode;
 import org.modelio.module.javadesigner.reverse.Reversor;
-import org.modelio.module.javadesigner.reverse.ui.ReverseException;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vbasic.version.Version;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     protected JavaDesignerModule module;
+
     protected IModuleAPIConfiguration peerConfiguration;
 
-
-    public JavaDesignerPeerModule(JavaDesignerModule module, IModuleAPIConfiguration peerConfiguration) {
+    public JavaDesignerPeerModule(final JavaDesignerModule module, final IModuleAPIConfiguration peerConfiguration) {
         this.module = module;
         this.peerConfiguration = peerConfiguration;
     }
 
-	@Override
-	public IModuleAPIConfiguration getConfiguration() {
-		return this.peerConfiguration;
-	}
-	
+    @Override
+    public IModuleAPIConfiguration getConfiguration() {
+        return this.peerConfiguration;
+    }
+
     @Override
     public String getDescription() {
         return this.module.getDescription ();
@@ -68,14 +65,14 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public void generate(NameSpace element, boolean withGUI) {
+    public void generate(final NameSpace element, final boolean withGUI) {
         HashSet<NameSpace> elements = new HashSet<> ();
         elements.add (element);
         this.generate (elements, withGUI);
     }
 
     @Override
-    public void generate(Collection<NameSpace> elements, boolean withGUI) {
+    public void generate(final Collection<NameSpace> elements, final boolean withGUI) {
         try {
             JavaDesignerUtils.initCurrentGenRoot (elements);
         } catch (InterruptedException e) {
@@ -97,7 +94,7 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public void generateAntFile(Artifact artifact, boolean withGUI) {
+    public void generateAntFile(final Artifact artifact, final boolean withGUI) {
         AntGenerator antGenerator;
         if (withGUI) {
             antGenerator = new AntGenerator(this.module, new JConsoleWithDialog (InfoDialogManager.getExecuteAntTargetDialog ()));
@@ -109,7 +106,7 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public String executeTarget(Artifact artifact, String target, boolean withGUI) {
+    public String executeTarget(final Artifact artifact, final String target, final boolean withGUI) {
         AntExecutor antGenerator;
         if (withGUI) {
             antGenerator = new AntExecutor(this.module, new JConsoleWithDialog (InfoDialogManager.getExecuteAntTargetDialog ()));
@@ -117,12 +114,11 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
             antGenerator = new AntExecutor(this.module);
         }
         antGenerator.executeTarget(artifact, target);
-        
         return "";
     }
 
     @Override
-    public void updateModel(Collection<NameSpace> elements, boolean withGUI) {
+    public void updateModel(final Collection<NameSpace> elements, final boolean withGUI) {
         try {
             JavaDesignerUtils.initCurrentGenRoot (elements);
         } catch (InterruptedException e) {
@@ -141,11 +137,7 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
             }
         }
         
-        try {
-            reversor.update (JavaDesignerUtils.getAllComponentsToTreat (elementsToUpdate, this.module), ReverseMode.Retrieve, EditorManager.getInstance ());
-        } catch (ReverseException e) {
-            // The Reverse was canceled
-        }
+        reversor.update (JavaDesignerUtils.getAllComponentsToTreat (elementsToUpdate, this.module), EditorManager.getInstance ());
         
         if (withGUI) {
             ReportManager.showGenerationReport (report);
@@ -157,51 +149,51 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public File getFilename(NameSpace element) {
+    public File getFilename(final NameSpace element) {
         return JavaDesignerUtils.getFilename (element, this.module);
     }
 
     @Override
-    public String executeTarget(Artifact artifact, String target) {
+    public String executeTarget(final Artifact artifact, final String target) {
         return executeTarget (artifact, target, true);
     }
 
     @Override
-    public void generate(NameSpace element) {
+    public void generate(final NameSpace element) {
         generate (element, true);
     }
 
     @Override
-    public void generate(Collection<NameSpace> elements) {
+    public void generate(final Collection<NameSpace> elements) {
         generate (elements, true);
     }
 
     @Override
-    public void generateAntFile(Artifact artifact) {
+    public void generateAntFile(final Artifact artifact) {
         generateAntFile (artifact, true);
     }
 
     @Override
-    public void updateModel(Collection<NameSpace> elements) {
+    public void updateModel(final Collection<NameSpace> elements) {
         updateModel (elements, true);
     }
 
     @Override
-    public boolean deleteAccessors(Classifier theClassifier) {
+    public boolean deleteAccessors(final Classifier theClassifier) {
         IModuleUserConfiguration javaConfig = this.module.getConfiguration ();
         
-        AccessorManager accessorManager = new AccessorManager (this.module.getModelingSession());
+        AccessorManager accessorManager = new AccessorManager (this.module.getModuleContext().getModelingSession());
         accessorManager.init (javaConfig);
         accessorManager.deleteAccessors(theClassifier);
         return true;
     }
 
     @Override
-    public boolean updateAccessors(Attribute theAttribute, boolean createNewAccessors) throws CustomException, ExtensionNotFoundException, ElementNotUniqueException {
+    public boolean updateAccessors(final Attribute theAttribute, final boolean createNewAccessors) throws CustomException, ElementNotUniqueException, ExtensionNotFoundException {
         if (!theAttribute.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY)) {
             IModuleUserConfiguration javaConfig = this.module.getConfiguration ();
         
-            AccessorManager accessorManager = new AccessorManager (this.module.getModelingSession());
+            AccessorManager accessorManager = new AccessorManager (this.module.getModuleContext().getModelingSession());
             accessorManager.init (javaConfig);
             accessorManager.updateAccessors (theAttribute, createNewAccessors);
             return true;
@@ -211,11 +203,11 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public boolean updateAccessors(AssociationEnd theAssociationEnd, boolean createNewAccessors) throws CustomException, ExtensionNotFoundException, ElementNotUniqueException {
+    public boolean updateAccessors(final AssociationEnd theAssociationEnd, final boolean createNewAccessors) throws CustomException, ElementNotUniqueException, ExtensionNotFoundException {
         if (!theAssociationEnd.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY)) {
             IModuleUserConfiguration javaConfig = this.module.getConfiguration ();
         
-            AccessorManager accessorManager = new AccessorManager (this.module.getModelingSession());
+            AccessorManager accessorManager = new AccessorManager (this.module.getModuleContext().getModelingSession());
             accessorManager.init (javaConfig);
             accessorManager.updateAccessors (theAssociationEnd, createNewAccessors);
             return true;
@@ -225,16 +217,17 @@ public class JavaDesignerPeerModule implements IJavaDesignerPeerModule {
     }
 
     @Override
-    public void generateJavaDoc(Package element, boolean withGUI) {
+    public void generateJavaDoc(final Package element, final boolean withGUI) {
         JavadocManager javadocManager;
         if (withGUI) {
             javadocManager = new JavadocManager(this.module, new JConsoleWithDialog (InfoDialogManager.getJavaDocDialog ()));
         } else {
             javadocManager = new JavadocManager(this.module);
         }
-
+        
         List<MObject> selectedElements = new ArrayList<>();
         selectedElements.add(element);
         javadocManager.generateDoc(selectedElements);
     }
+
 }

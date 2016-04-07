@@ -1,7 +1,7 @@
 package org.modelio.module.javadesigner.reverse.newwizard.binary;
 
 import java.util.List;
-
+import com.modelio.module.xmlreverse.model.IVisitorElement;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -9,16 +9,12 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 
-import com.modelio.module.xmlreverse.model.IVisitorElement;
-
 class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
     private CheckboxTreeViewer tree;
 
     private List<IVisitorElement> result;
 
-
-
-    TreeviewerListener(CheckboxTreeViewer tree, List<IVisitorElement> result) {
+    TreeviewerListener(final CheckboxTreeViewer tree, final List<IVisitorElement> result) {
         this.tree = tree;
         this.result = result;
     }
@@ -28,41 +24,41 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
     }
 
     @Override
-    public void checkStateChanged(CheckStateChangedEvent event) {
+    public void checkStateChanged(final CheckStateChangedEvent event) {
         Object element = event.getElement();
         final boolean isChecked = this.tree.getChecked(element);
         if (!isChecked) {
             this.tree.setGrayed(element, false);
         }
         final boolean isGrayed = this.tree.getGrayed(element);
-
+        
         updateChildrenElements(element, isGrayed, isChecked);
-
+        
         final ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
         Object parent = provider.getParent(element);
         if (parent != null) {
             doCheckStateChanged(parent);
         }
-
+        
         saveIVisitorElementsToImport();
     }
 
     @Override
-    public void treeCollapsed(TreeExpansionEvent event) {
+    public void treeCollapsed(final TreeExpansionEvent event) {
         // Nothing to do
     }
 
     @Override
-    public void treeExpanded(TreeExpansionEvent event) {
+    public void treeExpanded(final TreeExpansionEvent event) {
         final Object element = (event.getElement());
         final boolean checked = this.tree.getChecked(element);
         final boolean grayed = this.tree.getGrayed(element);
-
+        
         final ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
-
+        
         if (checked && !grayed) {
             final Object[] children = provider.getChildren(element);
-
+        
             if (children != null) {
                 for (Object child : children) {
                     this.tree.setGrayed(child, false);
@@ -73,9 +69,9 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
         }
     }
 
-    protected void doCheckStateChanged(Object element) {
+    protected void doCheckStateChanged(final Object element) {
         final ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
-
+        
         // Check children
         final Object[] children = provider.getChildren(element);
         boolean hasCheck = false;
@@ -92,7 +88,7 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
                     hasUnCheck = true;
                 }
             }
-
+        
             if (hasCheck) {
                 if (hasUnCheck) {
                     this.tree.setChecked(element, true);
@@ -106,20 +102,20 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
                 this.tree.setGrayed(element, false);
             }
         }
-
+        
         Object parent = provider.getParent(element);
         if (parent != null) {
             doCheckStateChanged(parent);
         }
     }
 
-    private void updateChildrenElements(Object element, boolean grayed, boolean checked) {
+    private void updateChildrenElements(final Object element, final boolean grayed, final boolean checked) {
         boolean expanded = this.tree.getExpandedState(element);
-
+        
         if (expanded) {
             ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
             Object[] children = provider.getChildren(element);
-
+        
             for (Object child : children) {
                 this.tree.setGrayed(child, grayed);
                 this.tree.setChecked(child, checked);
@@ -130,21 +126,21 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
 
     private void saveIVisitorElementsToImport() {
         this.result.clear();
-
+        
         collectElementsToImport();
     }
 
     private void collectElementsToImport() {
         Object[] elts = this.tree.getCheckedElements();
-
+        
         // Add all selected IVisitorElements
         for (Object elt : elts) {
             if (elt instanceof IVisitorElement) {
-                this.result.add((IVisitorElement) elt);                
+                this.result.add((IVisitorElement) elt);
                 collectChildrenElements(elt);
             }
         }
-
+        
         // Remove grayed ones
         elts = this.tree.getGrayedElements();
         for (Object elt : elts) {
@@ -152,13 +148,14 @@ class TreeviewerListener implements ICheckStateListener, ITreeViewerListener {
         }
     }
 
-    private void collectChildrenElements(Object element) {
+    private void collectChildrenElements(final Object element) {
         ITreeContentProvider provider = (ITreeContentProvider) this.tree.getContentProvider();
         Object[] children = provider.getChildren(element);
-
+        
         for (Object child : children) {
             this.result.add((IVisitorElement) child);
             collectChildrenElements(child);
         }
     }
+
 }

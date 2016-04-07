@@ -19,7 +19,7 @@ import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 public class JavaElementStereotypeCreator extends DefaultModelVisitor {
     private static final JavaElementStereotypeCreator INSTANCE = new JavaElementStereotypeCreator ();
 
-    public static boolean addJavaStereotype(ModelElement element) {
+    public static boolean addJavaStereotype(final ModelElement element) {
         if (element != null) {
             Object ret = element.accept (INSTANCE);
         
@@ -30,87 +30,87 @@ public class JavaElementStereotypeCreator extends DefaultModelVisitor {
     }
 
     @Override
-    public Object visitArtifact(Artifact theArtifact) {
+    public Object visitArtifact(final Artifact theArtifact) {
         try {
-        	ModelUtils.addStereotype (theArtifact, JavaDesignerStereotypes.JARFILE);
+            ModelUtils.addStereotype (theArtifact, JavaDesignerStereotypes.JARFILE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitClass(Class theClass) {
+    public Object visitClass(final Class theClass) {
         try {
-        	ModelUtils.addStereotype (theClass, JavaDesignerStereotypes.JAVACLASS);
+            ModelUtils.addStereotype (theClass, JavaDesignerStereotypes.JAVACLASS);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitComponent(Component theComponent) {
+    public Object visitComponent(final Component theComponent) {
         try {
-        	ModelUtils.addStereotype (theComponent, JavaDesignerStereotypes.JAVACOMPONENT);
+            ModelUtils.addStereotype (theComponent, JavaDesignerStereotypes.JAVACOMPONENT);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitDataType(DataType theDataType) {
+    public Object visitDataType(final DataType theDataType) {
         try {
-        	ModelUtils.addStereotype (theDataType, JavaDesignerStereotypes.JAVADATATYPE);
+            ModelUtils.addStereotype (theDataType, JavaDesignerStereotypes.JAVADATATYPE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitEnumeration(Enumeration theEnumeration) {
+    public Object visitEnumeration(final Enumeration theEnumeration) {
         try {
-        	ModelUtils.addStereotype (theEnumeration, JavaDesignerStereotypes.JAVAENUMERATION);
+            ModelUtils.addStereotype (theEnumeration, JavaDesignerStereotypes.JAVAENUMERATION);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitInterface(Interface theInterface) {
+    public Object visitInterface(final Interface theInterface) {
         try {
-        	ModelUtils.addStereotype (theInterface, JavaDesignerStereotypes.JAVAINTERFACE);
+            ModelUtils.addStereotype (theInterface, JavaDesignerStereotypes.JAVAINTERFACE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitPackage(Package thePackage) {
+    public Object visitPackage(final Package thePackage) {
         try {
-        	ModelUtils.addStereotype (thePackage, JavaDesignerStereotypes.JAVAPACKAGE);
+            ModelUtils.addStereotype (thePackage, JavaDesignerStereotypes.JAVAPACKAGE);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e.getMessage ());
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e.getMessage ());
         }
         return true;
     }
 
     @Override
-    public Object visitModuleComponent(ModuleComponent theModule) {
+    public Object visitModuleComponent(final ModuleComponent theModule) {
         return false;
     }
 
     @Override
-    public Object visitProfile(Profile theProfile) {
+    public Object visitProfile(final Profile theProfile) {
         return false;
     }
 
     @Override
-    public Object visitElement(Element theElement) {
+    public Object visitElement(final Element theElement) {
         return false;
     }
 

@@ -2,7 +2,6 @@ package org.modelio.module.javadesigner.propertypage;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.modelio.api.module.IModule;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
@@ -18,17 +17,17 @@ import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.ModelUtils;
 
 public abstract class PropertyModel {
-    protected final String COLLECTION = "Collection";//$NON-NLS-1$
+    protected final String COLLECTION = "Collection"; // $NON-NLS-1$
 
-    protected final String ARRAY = "Array";//$NON-NLS-1$
+    protected final String ARRAY = "Array"; // $NON-NLS-1$
 
-    protected final String STATIC = "Static";//$NON-NLS-1$
+    protected final String STATIC = "Static"; // $NON-NLS-1$
 
-    protected final String KEY = "Key";//$NON-NLS-1$
+    protected final String KEY = "Key"; // $NON-NLS-1$
 
-    protected final String GETTER = "Getter";//$NON-NLS-1$
+    protected final String GETTER = "Getter"; // $NON-NLS-1$
 
-    protected final String SETTER = "Setter";//$NON-NLS-1$
+    protected final String SETTER = "Setter"; // $NON-NLS-1$
 
     protected final String[] collections = { "", //$NON-NLS-1$
             this.ARRAY,
@@ -57,28 +56,27 @@ public abstract class PropertyModel {
             "LinkedBlockingQueue as Queue", //$NON-NLS-1$
             "PriorityBlockingQueue as Queue", //$NON-NLS-1$
             "SynchronousQueue as Queue",//$NON-NLS-1$
-    "ArrayDeque as Deque"};//$NON-NLS-1$
-
-    private IModule module = null;
+    "ArrayDeque as Deque"}; // $NON-NLS-1$
 
     protected final String[] propertyVisibility = {"Public", "Protected", "Friendly", "Private", "Default"};
 
+    private IModule module = null;
 
-    public PropertyModel(IModule module) {
+    public PropertyModel(final IModule module) {
         this.module = module;
     }
 
-    protected boolean changePropertyBooleanTaggedValue(ModelElement element, String moduleName, String tagName, boolean state) {
+    protected boolean changePropertyBooleanTaggedValue(final ModelElement element, final String moduleName, final String tagName, final boolean state) {
         try {
-            ModelUtils.setTaggedValue (this.module.getModelingSession(), element, moduleName, tagName, state);
+            ModelUtils.setTaggedValue (this.module.getModuleContext().getModelingSession(), element, moduleName, tagName, state);
             return true;
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", tagName)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", tagName)); //$NON-NLS-1$
             return false;
         }
     }
 
-    protected void changePropertyStatic(Feature feature, boolean value) {
+    protected void changePropertyStatic(final Feature feature, final boolean value) {
         feature.setIsClass (value);
         if (value) {
             feature.setIsAbstract (false);
@@ -94,23 +92,23 @@ public abstract class PropertyModel {
      * @param value String containing the property value
      * @return <code>true</code> if a tagged value had been modified.
      */
-    protected boolean changePropertyStringTaggedValue(ModelElement element, String moduleName, String propertyName, String value) {
+    protected boolean changePropertyStringTaggedValue(final ModelElement element, final String moduleName, final String propertyName, final String value) {
         boolean result = true;
-
+        
         try {
-            ModelUtils.setFirstTagParameter (this.module.getModelingSession(), element, moduleName, propertyName, value);
+            ModelUtils.setFirstTagParameter (this.module.getModuleContext().getModelingSession(), element, moduleName, propertyName, value);
         } catch (ExtensionNotFoundException|ElementNotUniqueException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
             result = false;
         }
         return result;
     }
 
-    protected boolean changeStereotype(ModelElement element, String moduleName, String stereotypeName, boolean add) {
+    protected boolean changeStereotype(final ModelElement element, final String moduleName, final String stereotypeName, final boolean add) {
         boolean result = true;
         boolean hasAlreadyThisStereotype = element.isStereotyped (moduleName, stereotypeName);
-
-        Stereotype stereotype = getModule().getModelingSession ().getMetamodelExtensions ().getStereotype (moduleName, stereotypeName, element.getMClass ());
+        
+        Stereotype stereotype = getModule().getModuleContext().getModelingSession ().getMetamodelExtensions ().getStereotype (moduleName, stereotypeName, element.getMClass ());
         if (add) {
             if (!hasAlreadyThisStereotype) {
                 // Create the tagged value
@@ -121,7 +119,6 @@ public abstract class PropertyModel {
                 element.getExtension().remove(stereotype);
             }
         }
-
         return result;
     }
 
@@ -130,16 +127,16 @@ public abstract class PropertyModel {
      * @param element The ModelElement on which the collection is defined.
      * @return The collection
      */
-    protected String getCollection(ModelElement element) {
+    protected String getCollection(final ModelElement element) {
         String result = ""; //$NON-NLS-1$
         String collectionInterface = ModelUtils.getFirstTagParameter (element, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE);
         String collectionImplementation = ModelUtils.getFirstTagParameter (element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE);
-
+        
         if (collectionInterface.contentEquals ("") && collectionImplementation.contentEquals ("")) { //$NON-NLS-1$ //$NON-NLS-2$
             result = ""; //$NON-NLS-1$
         } else {
             StringBuilder myString;
-
+        
             // For compatibility with old type package, the first character is
             // set in upper case
             if (!collectionInterface.contentEquals ("")) { //$NON-NLS-1$
@@ -147,18 +144,18 @@ public abstract class PropertyModel {
                 myString.replace (0, 1, myString.substring (0, 1).toUpperCase ());
                 collectionInterface = myString.toString ();
             }
-
+        
             if (!collectionImplementation.contentEquals ("")) { //$NON-NLS-1$
                 myString = new StringBuilder (collectionImplementation);
                 myString.replace (0, 1, myString.substring (0, 1).toUpperCase ());
                 collectionImplementation = myString.toString ();
             }
-
+        
             // Does the collection defined by the properties exist in the
             // collections?
             String completeType = collectionImplementation +
                     " as " + collectionInterface; //$NON-NLS-1$
-
+        
             int nb = this.collections.length;
             for (int i = 0 ; (i < nb) && (result.equals ("")) ; i++) { //$NON-NLS-1$
                 String collection = this.collections[i];
@@ -166,13 +163,13 @@ public abstract class PropertyModel {
                     result = collection;
                 }
             }
-
+        
             if (result.contentEquals ("")) { //$NON-NLS-1$
                 if (collectionInterface.contentEquals (this.ARRAY)) {
                     result = this.ARRAY;
                 }
             }
-
+        
             if (result.contentEquals ("")) { //$NON-NLS-1$
                 result = Messages.getString ("Gui.Property.Personalized"); //$NON-NLS-1$
             }
@@ -189,9 +186,9 @@ public abstract class PropertyModel {
      * @param element on which the Key is required
      * @return The second parameter of the "type" tagged value
      */
-    protected String getKey(ModelElement element) {
+    protected String getKey(final ModelElement element) {
         String result = ""; //$NON-NLS-1$
-
+        
         List<String> parameters = ModelUtils.getTagParameters (element, IOtherProfileElements.FEATURE_TYPE);
         if (parameters != null) {
             if (parameters.size () >= 2) {
@@ -210,7 +207,7 @@ public abstract class PropertyModel {
      * @param row : The row in the property table
      * @return The property name
      */
-    protected String getProperty(int row) {
+    protected String getProperty(final int row) {
         return getProperties ().get (row - 1);
     }
 
@@ -219,19 +216,19 @@ public abstract class PropertyModel {
      * @param element The ModelElement on which the collection is defined.
      * @param value The new collection
      */
-    protected void setCollection(ModelElement element, String value) {
+    protected void setCollection(final ModelElement element, final String value) {
         try {
             String interfaceValue = ""; //$NON-NLS-1$
             String implementationValue = ""; //$NON-NLS-1$
             String[] type;
-
+        
             if (value.contentEquals (this.ARRAY)) {
                 interfaceValue = this.ARRAY;
             } else if (value.contentEquals (Messages.getString ("Gui.Property.Personalized"))) {
                 return;
             } else {
                 type = value.split (" "); //$NON-NLS-1$
-
+        
                 // "ArrayList as List"
                 // type --> ArrayList
                 // JavaImplementationList --> List
@@ -240,21 +237,21 @@ public abstract class PropertyModel {
                     interfaceValue = type[2];
                 }
             }
-
+        
             // Update the "type" and "JavaImplementationType" property
             try {
-                ModelUtils.setTagParameterAt (this.module.getModelingSession(), element, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, interfaceValue, 1);
+                ModelUtils.setTagParameterAt (this.module.getModuleContext().getModelingSession(), element, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, interfaceValue, 1);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", IOtherProfileElements.FEATURE_TYPE)); //$NON-NLS-1$
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", IOtherProfileElements.FEATURE_TYPE)); //$NON-NLS-1$
             }
-
+        
             try {
-                ModelUtils.setFirstTagParameter (this.module.getModelingSession(), element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE, implementationValue);
+                ModelUtils.setFirstTagParameter (this.module.getModuleContext().getModelingSession(), element, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE, implementationValue);
             } catch (ExtensionNotFoundException|ElementNotUniqueException e) {
-                JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE)); //$NON-NLS-1$
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE)); //$NON-NLS-1$
             }
         } catch (RuntimeException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
     }
 
@@ -263,57 +260,57 @@ public abstract class PropertyModel {
      * @param element on which the Key is set
      * @param value of the Key
      */
-    protected void setKey(ModelElement element, String value) {
+    protected void setKey(final ModelElement element, final String value) {
         try {
-            ModelUtils.setTagParameterAt (this.module.getModelingSession(), element, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, value, 2);
+            ModelUtils.setTagParameterAt (this.module.getModuleContext().getModelingSession(), element, IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, value, 2);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", IOtherProfileElements.FEATURE_TYPE)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", IOtherProfileElements.FEATURE_TYPE)); //$NON-NLS-1$
         }
     }
 
-    protected boolean addPropertyValue(ModelElement element, String moduleName, String propertyName, String value) {
+    protected boolean addPropertyValue(final ModelElement element, final String moduleName, final String propertyName, final String value) {
         boolean result = true;
-
+        
         try {
             List<String> values = element.getTagValues (moduleName, propertyName);
             if (values == null) {
                 values = new ArrayList<> ();
             }
-
+        
             if (!values.contains (value)) {
                 values.add (value);
             }
-
+        
             element.putTagValues (moduleName, propertyName, values);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
             result = false;
         }
         return result;
     }
 
-    protected boolean removePropertyValue(ModelElement element, String moduleName, String propertyName, String value) {
+    protected boolean removePropertyValue(final ModelElement element, final String moduleName, final String propertyName, final String value) {
         boolean result = true;
-
+        
         try {
             List<String> values = element.getTagValues (moduleName, propertyName);
             if (values == null) {
                 values = new ArrayList<> ();
             }
-
+        
             if (values.contains (value)) {
                 values.remove (value);
             }
-
+        
             element.putTagValues (moduleName, propertyName, values);
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString ("Error.TagTypeNotFoundWithName", propertyName)); //$NON-NLS-1$
             result = false;
         }
         return result;
     }
 
-    protected String getPropertyVisibilityLabel(String visibility) {
+    protected String getPropertyVisibilityLabel(final String visibility) {
         if (visibility.equalsIgnoreCase(VisibilityMode.PUBLIC.name())) {
             return "Public";
         } else if (visibility.equalsIgnoreCase(VisibilityMode.PRIVATE.name())) {
@@ -327,7 +324,7 @@ public abstract class PropertyModel {
         }
     }
 
-    protected String getPropertyVisibilityValue(String visibility) {
+    protected String getPropertyVisibilityValue(final String visibility) {
         if (visibility.equalsIgnoreCase("Public")) {
             return VisibilityMode.PUBLIC.name();
         } else if (visibility.equalsIgnoreCase("Private")) {

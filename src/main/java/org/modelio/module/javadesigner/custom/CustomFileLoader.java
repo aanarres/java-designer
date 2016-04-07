@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.custom;
 
 import java.util.HashMap;
-
 import org.modelio.metamodel.uml.statik.VisibilityMode;
 import org.modelio.module.javadesigner.custom.JavaTypeManager.JavaBaseElements;
 import org.modelio.module.javadesigner.custom.JavaTypeManager.JavaMultiplicity;
@@ -20,9 +19,9 @@ class CustomFileLoader extends DefaultHandler {
 
     private boolean isInterfaceContainer;
 
-    private HashMap<String , JavaCustomType> modelTypes;
+    private HashMap<String, JavaCustomType> modelTypes;
 
-    private HashMap<JavaBaseElements , JavaElements> javaElements;
+    private HashMap<JavaBaseElements, JavaElements> javaElements;
 
     private StringBuilder buffer;
 
@@ -34,13 +33,12 @@ class CustomFileLoader extends DefaultHandler {
 
     private DoubleMap<VisibilityMode,VisibilityMode> propertyVisibilityMap = new DoubleMap<>();
 
-
     public CustomFileLoader() {
         super ();
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
         // Check the first XML tags
         if (qName.equals ("ModelTypes")) {
             this.modelTypeMode = true;
@@ -65,7 +63,7 @@ class CustomFileLoader extends DefaultHandler {
             } else if (qName.equals ("import")) {
                 this.currentType.setJavaImport (attributes.getValue ("name"));
             } else {
-                // JavaDesignerModule.logService.info("(ModelTypeMode) Not handled element: " +
+                // JavaDesignerModule.getInstance().getModuleContext().getLogService().info("(ModelTypeMode) Not handled element: " +
                 // qName);
             }
         } else { // Below <Elements>
@@ -111,15 +109,15 @@ class CustomFileLoader extends DefaultHandler {
             } else if (qName.equals ("Visibility")) {
                 PropertyVisibility modelVisibility = PropertyVisibility.valueOf(attributes.getValue ("model"));
                 PropertyVisibility codeVisibility = PropertyVisibility.valueOf(attributes.getValue ("code"));
-                
+        
                 this.propertyVisibilityMap.put(getObVisibility(modelVisibility), getObVisibility(codeVisibility));
             } else {
-                JavaDesignerModule.logService.error("(ElementsMode) Not handled element: " + qName);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error("(ElementsMode) Not handled element: " + qName);
             }
         }
     }
 
-    private JavaElement getJavaElementForMultiplicity(String value) {
+    private JavaElement getJavaElementForMultiplicity(final String value) {
         JavaMultiplicity multiplicity = JavaMultiplicity.valueOf (value);
         JavaElement ret = this.currentElements.getJavaElementForMultiplicity (multiplicity);
         if (ret == null) {
@@ -133,7 +131,7 @@ class CustomFileLoader extends DefaultHandler {
      * Get the element from the map or create it if necessary.
      * @param baseElement The base element to find.
      */
-    private JavaElements getJavaElementsFromBaseElement(JavaBaseElements baseElement) {
+    private JavaElements getJavaElementsFromBaseElement(final JavaBaseElements baseElement) {
         JavaElements newJavaElement = this.javaElements.get (baseElement);
         
         if (newJavaElement == null) {
@@ -143,7 +141,7 @@ class CustomFileLoader extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(final String uri, final String localName, final String qName) throws SAXException {
         if (this.modelTypeMode) { // Below <ModelTypes>
             if (qName.equals ("ModelType")) {
                 this.modelTypes.put (this.currentType.getId (), this.currentType);
@@ -187,7 +185,7 @@ class CustomFileLoader extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
         // Ignore characters if no buffer is available
         if (this.buffer != null) {
             String lecture = new String (ch, start, length);
@@ -204,17 +202,17 @@ class CustomFileLoader extends DefaultHandler {
 
     @Override
     public void endDocument() throws SAXException {
-        // JavaDesignerModule.logService.info("\n*** Default model types ***\n");
+        // JavaDesignerModule.getInstance().getModuleContext().getLogService().info("\n*** Default model types ***\n");
         // for(Entry <String, JavaCustomType> modelType :
         // this.modelTypes.entrySet()){
-        // JavaDesignerModule.logService.info(modelType.getKey() + " -> " +
+        // JavaDesignerModule.getInstance().getModuleContext().getLogService().info(modelType.getKey() + " -> " +
         // modelType.getValue());
         // }
-        //        
-        // JavaDesignerModule.logService.info("\n*** Default java elements ***\n");
+        //
+        // JavaDesignerModule.getInstance().getModuleContext().getLogService().info("\n*** Default java elements ***\n");
         // for(Entry <JavaBaseElements, JavaElements> javaElement :
         // this.javaElements.entrySet()){
-        // JavaDesignerModule.logService.info(javaElement.getValue());
+        // JavaDesignerModule.getInstance().getModuleContext().getLogService().info(javaElement.getValue());
         // }
     }
 
@@ -230,11 +228,11 @@ class CustomFileLoader extends DefaultHandler {
      * Treat validation errors as fatal
      */
     @Override
-    public void error(SAXParseException e) throws SAXParseException {
+    public void error(final SAXParseException e) throws SAXParseException {
         throw e;
     }
 
-    private VisibilityMode getObVisibility(PropertyVisibility visibility) {
+    private VisibilityMode getObVisibility(final PropertyVisibility visibility) {
         switch (visibility) {
         case Package:
             return VisibilityMode.PACKAGEVISIBILITY;

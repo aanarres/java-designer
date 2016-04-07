@@ -5,10 +5,8 @@ package org.modelio.module.javadesigner.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.IUmlModel;
-import org.modelio.api.modelio.Modelio;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.IUmlModel;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
@@ -35,10 +33,10 @@ public class ModelUtils {
      * @param tagName String containing the tagged value name
      * @return The parameter values
      */
-    public static List<String> getTagParameters(ModelElement element, String tagName) {
+    public static List<String> getTagParameters(final ModelElement element, final String tagName) {
         List<TaggedValue> tags = element.getTag ();
         ArrayList<String> parameters = null;
-
+        
         for (TaggedValue tag : tags) {
             TagType definition = tag.getDefinition ();
             if (definition != null) {
@@ -61,7 +59,7 @@ public class ModelUtils {
      * @param tagName String containing the tagged value name
      * @return The value of the first tag parameter
      */
-    public static String getFirstTagParameter(ModelElement element, String moduleName, String tagName) {
+    public static String getFirstTagParameter(final ModelElement element, final String moduleName, final String tagName) {
         TaggedValue tag = element.getTag (moduleName, tagName);
         String value = ""; //$NON-NLS-1$
         if (tag != null) {
@@ -75,9 +73,9 @@ public class ModelUtils {
         return value;
     }
 
-    public static TaggedValue setTaggedValue(IModelingSession session, ModelElement element, String moduleName, String tagName, boolean add) throws ExtensionNotFoundException {
+    public static TaggedValue setTaggedValue(final IModelingSession session, final ModelElement element, final String moduleName, final String tagName, final boolean add) throws ExtensionNotFoundException {
         IUmlModel model = session.getModel ();
-
+        
         TaggedValue tag = element.getTag (moduleName, tagName);
         if (!add) {
             if (tag != null) {
@@ -96,16 +94,16 @@ public class ModelUtils {
      * This operation sets the first parameter of the first tagged value with the &lt;tagName&gt; name on the
      * &lt;element&gt; ModelElement.<br/>
      * The tagged value and the parameter are created if they don't exist.
+     * @throws ElementNotUniqueException
      * @param element ModelElement on which the tagged value is created or updated.
      * @param tagName String containing the tagged value name
      * @param value String containing the value to store on the parameter
-     * @throws ElementNotUniqueException
      */
-    public static TaggedValue setFirstTagParameter(IModelingSession session, ModelElement element, String moduleName, String tagName, String value) throws ExtensionNotFoundException, ElementNotUniqueException {
+    public static TaggedValue setFirstTagParameter(final IModelingSession session, final ModelElement element, final String moduleName, final String tagName, final String value) throws ElementNotUniqueException, ExtensionNotFoundException {
         IUmlModel model = session.getModel ();
-
+        
         TaggedValue tag = element.getTag (moduleName, tagName);
-
+        
         if (value.contentEquals ("")) { //$NON-NLS-1$
             if (tag != null) {
                 tag.delete ();
@@ -115,7 +113,7 @@ public class ModelUtils {
                 // Create the tagged value
                 tag = model.createTaggedValue (moduleName, tagName, element);
             }
-
+        
             List<TagParameter> tagParameters = tag.getActual ();
             // Update or creation of the first parameter
             if (tagParameters.size () == 0) {
@@ -123,7 +121,7 @@ public class ModelUtils {
             } else {
                 tagParameters.get (0).setValue (value);
             }
-
+        
             // Remove the old parameters
             int i;
             int nb = tagParameters.size ();
@@ -141,7 +139,7 @@ public class ModelUtils {
      * @param tagName String containing the tagged value name
      * @return List of all the TaggedValue
      */
-    public static List<TaggedValue> getAllTaggedValues(ModelElement element, String tagName) {
+    public static List<TaggedValue> getAllTaggedValues(final ModelElement element, final String tagName) {
         List<TaggedValue> retTags = new ArrayList<> ();
         int i;
         List<TaggedValue> tags = element.getTag ();
@@ -161,7 +159,7 @@ public class ModelUtils {
      * @param noteName String containing the note name
      * @return List of all the TaggedValue
      */
-    public static List<Note> getAllNotes(ModelElement element, String noteName) {
+    public static List<Note> getAllNotes(final ModelElement element, final String noteName) {
         ArrayList<Note> retNotes = new ArrayList<> ();
         int i;
         List<Note> notes = element.getDescriptor ();
@@ -175,18 +173,18 @@ public class ModelUtils {
         return retNotes;
     }
 
-    public static void setTagParameterAt(IModelingSession session, ModelElement element, String moduleName, String tagName, String value, int index) throws ExtensionNotFoundException {
+    public static void setTagParameterAt(final IModelingSession session, final ModelElement element, final String moduleName, final String tagName, final String value, final int index) throws ExtensionNotFoundException {
         IUmlModel model = session.getModel ();
-
+        
         TaggedValue tag = element.getTag (moduleName, tagName);
-
+        
         if (tag == null) {
             // Create the tagged value
             tag = model.createTaggedValue (moduleName, tagName, element);
         }
-
+        
         List<TagParameter> parameters = new ArrayList<>(tag.getActual ());
-
+        
         if (value.contentEquals ("")) { //$NON-NLS-1$
             // The parameter at index is removed
             if (parameters.size () == index) {
@@ -212,21 +210,17 @@ public class ModelUtils {
      * @param tagName String containing the tagged value name
      * @param value String containing the value to find in the parameters
      */
-    public static boolean hasTagParameter(ModelElement element, String tagName, String value) {
+    public static boolean hasTagParameter(final ModelElement element, final String tagName, final String value) {
         List<String> parameters = getTagParameters (element, tagName);
         return (parameters != null && parameters.contains (value));
     }
-
-
-
-
 
     /**
      * Add a value to the tagged value 'name' to 'elt'. If 'value' is not empty it is added
      * to the parameters list of the tagged value. 'value' is already in the
      * parameter list, it is not duplicated.
      */
-    public static void addTaggedValue(ModelElement elt, String moduleName, String name, String value) {
+    public static void addTaggedValue(final ModelElement elt, final String moduleName, final String name, final String value) {
         TagPair pair = findTaggedValue(elt, name, value);
         if (pair == null) {
             // tagged value doesn't exist : create it
@@ -234,7 +228,7 @@ public class ModelUtils {
         } else if (pair.tp == null) {
             // tagged value exists but none of its parameter has 'values' : add
             // the parameter
-            IUmlModel model = Modelio.getInstance().getModelingSession().getModel();
+            IUmlModel model = JavaDesignerModule.getInstance().getModuleContext().getModelingSession().getModel();
             model.createTagParameter(value, pair.tv);
         }
     }
@@ -244,7 +238,7 @@ public class ModelUtils {
      * to the parameters list of the tagged value. 'value' is already in the
      * parameter list, it is not duplicated.
      */
-    public static void removeTaggedValue(ModelElement elt, String name, final String value) {
+    public static void removeTaggedValue(final ModelElement elt, final String name, final String value) {
         TagPair tag = findTaggedValue(elt, name, value);
         if (tag != null) {
             if (value.isEmpty()) {
@@ -257,38 +251,20 @@ public class ModelUtils {
         }
     }
 
-    private static void doAddTaggedValue(ModelElement elt, String moduleName, String name, String value) {
+    private static void doAddTaggedValue(final ModelElement elt, final String moduleName, final String name, final String value) {
         if (elt == null) {
             return;
         }
-
+        
         try {
-            IUmlModel model = Modelio.getInstance().getModelingSession().getModel();
+            IUmlModel model = JavaDesignerModule.getInstance().getModuleContext().getModelingSession().getModel();
             TaggedValue taggedValue = model.createTaggedValue(moduleName, name, elt);
             if (!value.isEmpty()) {
                 model.createTagParameter(value, taggedValue);
             }
         } catch (ExtensionNotFoundException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
-    }
-
-    private static class TagPair {
-        public TaggedValue tv;
-
-        public TagParameter tp;
-
-
-        public TagPair(final TaggedValue ptv) {
-            this.tv = ptv;
-            this.tp = null;
-        }
-
-        public TagPair(final TaggedValue ptv, final TagParameter ptp) {
-            this.tv = ptv;
-            this.tp = ptp;
-        }
-
     }
 
     private static void removeTagParameter(final TagPair tag) {
@@ -299,7 +275,7 @@ public class ModelUtils {
         }
     }
 
-    private static TagPair findTaggedValue(ModelElement elt, String name, String values) {
+    private static TagPair findTaggedValue(final ModelElement elt, final String name, final String values) {
         for (TaggedValue tv : elt.getTag()) {
             TagType type = tv.getDefinition();
             if (type != null && type.getName().equals(name)) {
@@ -318,13 +294,13 @@ public class ModelUtils {
         return null;
     }
 
-    public static void addStereotype(ModelElement element, String stereotypeName) throws ExtensionNotFoundException{
+    public static void addStereotype(final ModelElement element, final String stereotypeName) throws ExtensionNotFoundException {
         if (!element.isStereotyped (IJavaDesignerPeerModule.MODULE_NAME, stereotypeName)) {
-            Stereotype stereotype = Modelio.getInstance().getModelingSession().getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, stereotypeName, element.getMClass ());
+            Stereotype stereotype = JavaDesignerModule.getInstance().getModuleContext().getModelingSession().getMetamodelExtensions ().getStereotype (IJavaDesignerPeerModule.MODULE_NAME, stereotypeName, element.getMClass ());
             if (stereotype == null) {
-                stereotype = Modelio.getInstance().getModelingSession().getMetamodelExtensions ().getStereotype (IOtherProfileElements.MODULE_NAME, stereotypeName, element.getMClass ());
+                stereotype = JavaDesignerModule.getInstance().getModuleContext().getModelingSession().getMetamodelExtensions ().getStereotype (IOtherProfileElements.MODULE_NAME, stereotypeName, element.getMClass ());
             }
-
+        
             if (stereotype != null) {
                 element.getExtension().add(stereotype);
             } else {
@@ -333,7 +309,7 @@ public class ModelUtils {
         }
     }
 
-    public static String getLocalProperty(ModelElement element, String propertyName) {
+    public static String getLocalProperty(final ModelElement element, final String propertyName) {
         LocalPropertyTable localProperties = element.getLocalProperties();
         if (localProperties != null) {
             String value = localProperties.getProperty(propertyName);
@@ -344,18 +320,18 @@ public class ModelUtils {
         return "";
     }
 
-    public static void setLocalProperty(IModelingSession session, ModelElement element, String propertyName, String value) {
+    public static void setLocalProperty(final IModelingSession session, final ModelElement element, final String propertyName, final String value) {
         LocalPropertyTable localProperties = element.getLocalProperties();
         if (localProperties == null) {
             // Init the local property table
             localProperties = session.getModel().createLocalPropertyTable();
             element.setLocalProperties(localProperties);
         }
-
+        
         localProperties.setProperty(propertyName, value);
     }
 
-    public static boolean isLibrary(MObject element) {
+    public static boolean isLibrary(final MObject element) {
         MStatus status = element.getStatus();
         // Model components are libraries
         if (status.isRamc()) {
@@ -367,6 +343,23 @@ public class ModelUtils {
         }
         // Read only elements that are cms are not libraries
         return !status.isCmsManaged();
+    }
+
+    private static class TagPair {
+        public TaggedValue tv;
+
+        public TagParameter tp;
+
+        public TagPair(final TaggedValue ptv) {
+            this.tv = ptv;
+            this.tp = null;
+        }
+
+        public TagPair(final TaggedValue ptv, final TagParameter ptp) {
+            this.tv = ptv;
+            this.tp = ptp;
+        }
 
     }
+
 }

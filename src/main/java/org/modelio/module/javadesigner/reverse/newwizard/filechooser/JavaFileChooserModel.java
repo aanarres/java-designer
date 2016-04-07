@@ -5,34 +5,32 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.modelio.module.javadesigner.reverse.ReverseConfig;
+import com.modelio.module.xmlreverse.model.IVisitorElement;
+import com.modelio.module.xmlreverse.model.JaxbReversedData;
 import org.modelio.module.javadesigner.reverse.ReverseConfig.GeneralReverseMode;
+import org.modelio.module.javadesigner.reverse.ReverseConfig;
 import org.modelio.module.javadesigner.reverse.javautil.io.JavaFileFinder;
 import org.modelio.module.javadesigner.reverse.newwizard.api.IFileChooserModel;
 import org.modelio.module.javadesigner.reverse.newwizard.binary.JarContentPreview;
 
-import com.modelio.module.xmlreverse.model.IVisitorElement;
-import com.modelio.module.xmlreverse.model.JaxbReversedData;
-
 public class JavaFileChooserModel implements IFileChooserModel {
+    private List<String> extensions;
+
+    private GeneralReverseMode granularity;
+
     private List<File> filesToImport;
 
     private File initialDirectory;
 
-    private GeneralReverseMode granularity;
-
-    private List<String> extensions;
-
     private List<IVisitorElement> result;
+
+    private JaxbReversedData cachedModel;
+
+    private ReverseConfig config;
 
     private Set<File> cachedFiles;
 
-    private JaxbReversedData cachedModel;
-    
-    private ReverseConfig config;
-    
-    public JavaFileChooserModel(File initialDirectory, List<String> extensions, ReverseConfig config) {
+    public JavaFileChooserModel(final File initialDirectory, final List<String> extensions, final ReverseConfig config) {
         this.initialDirectory = initialDirectory;
         this.filesToImport = new ArrayList<>();
         this.granularity = GeneralReverseMode.COMPLETE_REVERSE;
@@ -58,12 +56,12 @@ public class JavaFileChooserModel implements IFileChooserModel {
     }
 
     @Override
-    public void setFilesToImport(List<File> filesToImport) {
+    public void setFilesToImport(final List<File> filesToImport) {
         this.filesToImport = filesToImport;
     }
 
     @Override
-    public void setInitialDirectory(File initialDirectory) {
+    public void setInitialDirectory(final File initialDirectory) {
         this.initialDirectory = initialDirectory;
     }
 
@@ -73,7 +71,7 @@ public class JavaFileChooserModel implements IFileChooserModel {
     }
 
     @Override
-    public void setGranularity(GeneralReverseMode value) {
+    public void setGranularity(final GeneralReverseMode value) {
         this.granularity = value;
     }
 
@@ -81,7 +79,7 @@ public class JavaFileChooserModel implements IFileChooserModel {
     public JaxbReversedData getAssemblyContentModel() {
         JarContentPreview previewer = new JarContentPreview();
         Set<File> files = new HashSet<>();
-
+        
         // Get all files recursively
         for (File f : getFilesToImport()) {
             if (f.isDirectory()) {
@@ -94,10 +92,9 @@ public class JavaFileChooserModel implements IFileChooserModel {
         if (this.cachedModel == null || !files.equals(this.cachedFiles)) {
             this.cachedFiles.clear();
             this.cachedFiles.addAll(files);
-
+        
             this.cachedModel = previewer.computePreview(files, this.config);
         }
-
         return this.cachedModel;
     }
 
@@ -116,7 +113,6 @@ public class JavaFileChooserModel implements IFileChooserModel {
             extensionsList.append(", ");
         }
         extensionsList.delete(extensionsList.length() - 2, extensionsList.length());
-        
         return extensionsList.toString();
     }
 
@@ -133,7 +129,7 @@ public class JavaFileChooserModel implements IFileChooserModel {
                 }
             }
         }
-
         return ret;
     }
+
 }

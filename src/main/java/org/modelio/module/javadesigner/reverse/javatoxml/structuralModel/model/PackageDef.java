@@ -1,7 +1,6 @@
 package org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model;
 
 
-
 /**
  * A package in the structural model
  * 
@@ -9,8 +8,8 @@ package org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model;
  * @see org.modelio.module.javadesigner.reverse.javatoxml.structuralModel.model.StructuralTree
  */
 public class PackageDef extends StructuralTree {
-
-    public PackageDef(String name) {
+    public PackageDef(final String name) {
         super (name);
     }
+
 }

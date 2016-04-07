@@ -2,13 +2,10 @@ package org.modelio.module.javadesigner.reverse.xmltomodel;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.modelio.api.model.IMetamodelExtensions;
-import org.modelio.api.model.IModelingSession;
-import org.modelio.api.model.IUMLTypes;
-import org.modelio.api.model.IUmlModel;
-import org.modelio.api.modelio.Modelio;
-import org.modelio.metamodel.Metamodel;
+import org.modelio.api.modelio.model.IMetamodelExtensions;
+import org.modelio.api.modelio.model.IModelingSession;
+import org.modelio.api.modelio.model.IUMLTypes;
+import org.modelio.api.modelio.model.IUmlModel;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.Constraint;
 import org.modelio.metamodel.uml.infrastructure.Dependency;
@@ -36,6 +33,7 @@ import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
+import org.modelio.vcore.smkernel.mapi.MMetamodel;
 import org.modelio.vcore.smkernel.mapi.MObject;
 
 public class JavaFeatureReverseUtils {
@@ -45,9 +43,12 @@ public class JavaFeatureReverseUtils {
 
     private IUmlModel model;
 
+    private MMetamodel metamodel;
+
     private JavaFeatureReverseUtils() {
-        this.session = Modelio.getInstance().getModelingSession();
+        this.session = JavaDesignerModule.getInstance().getModuleContext().getModelingSession();
         this.model = this.session.getModel();
+        this.metamodel = JavaDesignerModule.getInstance().getModuleContext().getModelioServices().getMetamodelService().getMetamodel();
     }
 
     public static JavaFeatureReverseUtils getInstance() {
@@ -57,14 +58,14 @@ public class JavaFeatureReverseUtils {
         return INSTANCE;
     }
 
-    public boolean isAtomicType(MObject type) {
+    public boolean isAtomicType(final MObject type) {
         IUMLTypes utypes = this.model.getUmlTypes();
         return (utypes.getBOOLEAN().equals(type) || utypes.getBYTE().equals(type) || utypes.getCHAR().equals(type)
-                || utypes.getDOUBLE().equals(type) || utypes.getFLOAT().equals(type)
-                || utypes.getINTEGER().equals(type) || utypes.getLONG().equals(type) || utypes.getSHORT().equals(type));
+                                                        || utypes.getDOUBLE().equals(type) || utypes.getFLOAT().equals(type)
+                                                        || utypes.getINTEGER().equals(type) || utypes.getLONG().equals(type) || utypes.getSHORT().equals(type));
     }
 
-    public boolean isPrimitive(MObject type) {
+    public boolean isPrimitive(final MObject type) {
         if (type instanceof DataType) {
             return true;
         } else if (type instanceof Enumeration) {
@@ -80,7 +81,7 @@ public class JavaFeatureReverseUtils {
         return false;
     }
 
-    public void insertBefore(AssociationEnd originalPlace, Attribute toReplace) {
+    public void insertBefore(final AssociationEnd originalPlace, final Attribute toReplace) {
         boolean originalFound = false;
         Classifier owner = originalPlace.getSource();
         for (AssociationEnd current : owner.getOwnedEnd()) {
@@ -89,7 +90,7 @@ public class JavaFeatureReverseUtils {
                 toReplace.setOwner(null);
                 toReplace.setOwner(owner);
             }
-
+        
             if (originalFound) {
                 current.setSource(null);
                 current.setSource(owner);
@@ -97,7 +98,7 @@ public class JavaFeatureReverseUtils {
         }
     }
 
-    public void insertBefore(Attribute originalPlace, AssociationEnd toReplace) {
+    public void insertBefore(final Attribute originalPlace, final AssociationEnd toReplace) {
         boolean originalFound = false;
         Classifier owner = originalPlace.getOwner();
         for (Attribute current : owner.getOwnedAttribute()) {
@@ -106,7 +107,7 @@ public class JavaFeatureReverseUtils {
                 toReplace.setSource(null);
                 toReplace.setSource(owner);
             }
-
+        
             if (originalFound) {
                 current.setOwner(null);
                 current.setOwner(owner);
@@ -114,7 +115,7 @@ public class JavaFeatureReverseUtils {
         }
     }
 
-    public Attribute convertAssociationEndToAttribute(AssociationEnd modelio_element, MObject type) {
+    public Attribute convertAssociationEndToAttribute(final AssociationEnd modelio_element, final MObject type) {
         Attribute newAttribute = this.model.createAttribute();
         // Set owner
         insertBefore(modelio_element, newAttribute);
@@ -123,68 +124,67 @@ public class JavaFeatureReverseUtils {
         return newAttribute;
     }
 
-    public AssociationEnd convertAttributeToAssociationEnd(Attribute modelio_element, Classifier type) {
+    public AssociationEnd convertAttributeToAssociationEnd(final Attribute modelio_element, final Classifier type) {
         Association assoc = this.model.createAssociation();
-
+        
         AssociationEnd end1 = this.model.createAssociationEnd();
         end1.setAssociation(assoc);
-
+        
         AssociationEnd end2 = this.model.createAssociationEnd();
         end2.setAssociation(assoc);
-
+        
         // Set opposite relations
         end1.setOpposite(end2);
         end2.setOpposite(end1);
-
+        
         // Set owner
         insertBefore(modelio_element, end2);
-
+        
         doCopyAttributeToAssociationEnd(modelio_element, end2);
-
+        
         // Set type
         end2.setTarget(type, true);
-
         return end2;
     }
 
-    public void copyAttributeToAssociationEnd(Attribute modelio_element, AssociationEnd newAssociationEnd, Classifier type) {
+    public void copyAttributeToAssociationEnd(final Attribute modelio_element, final AssociationEnd newAssociationEnd, final Classifier type) {
         // if the associationEnd has been moved (with its objid) from one class
         // to another, attach it to the reversed class
         if (!modelio_element.getOwner().equals(newAssociationEnd.getSource())) {
             newAssociationEnd.setSource(modelio_element.getOwner());
         }
-
+        
         doCopyAttributeToAssociationEnd(modelio_element, newAssociationEnd);
-
+        
         // update the type of the association
         newAssociationEnd.setTarget(type, true);
     }
 
-    private void doCopyAttributeToAssociationEnd(Attribute modelio_element, AssociationEnd newAssociationEnd) {
+    private void doCopyAttributeToAssociationEnd(final Attribute modelio_element, final AssociationEnd newAssociationEnd) {
         // Initial value
         if (!modelio_element.getValue().isEmpty()) {
             try {
                 newAssociationEnd.putNoteContent(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE, modelio_element.getValue());
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
-
+        
         // Copy properties
         copyProperties(modelio_element, newAssociationEnd);
-
+        
         // Copy notes
         copyNotes(modelio_element, newAssociationEnd);
-
+        
         // Copy tag parameters
         copyTaggedValues(modelio_element, newAssociationEnd);
-
+        
         // Copy stereotypes
         copyStereotype(modelio_element, newAssociationEnd);
-
+        
         // Move constraints as all of them are defined on parent metaclasses...
         copyContraints(modelio_element, newAssociationEnd);
-
+        
         // Update getter/setter links
         for (Dependency dep : modelio_element.getImpactedDependency()) {
             if (dep.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)
@@ -194,7 +194,7 @@ public class JavaFeatureReverseUtils {
         }
     }
 
-    private void copyProperties(Attribute modelio_element, AssociationEnd newAssociationEnd) {
+    private void copyProperties(final Attribute modelio_element, final AssociationEnd newAssociationEnd) {
         newAssociationEnd.setName(modelio_element.getName());
         newAssociationEnd.setVisibility(modelio_element.getVisibility());
         newAssociationEnd.setIsClass(modelio_element.isIsClass());
@@ -205,7 +205,7 @@ public class JavaFeatureReverseUtils {
         newAssociationEnd.setMultiplicityMax(modelio_element.getMultiplicityMax());
     }
 
-    private void copyProperties(AssociationEnd modelio_element, Attribute newAttribute) {
+    private void copyProperties(final AssociationEnd modelio_element, final Attribute newAttribute) {
         newAttribute.setName(modelio_element.getName());
         newAttribute.setVisibility(modelio_element.getVisibility());
         newAttribute.setIsClass(modelio_element.isIsClass());
@@ -216,13 +216,14 @@ public class JavaFeatureReverseUtils {
         newAttribute.setMultiplicityMax(modelio_element.getMultiplicityMax());
     }
 
-    private void copyContraints(ModelElement source, ModelElement destination) {
+    private void copyContraints(final ModelElement source, final ModelElement destination) {
         for (Constraint oldConstraint : source.getConstraintDefinition()) {
             destination.getConstraintDefinition().add(oldConstraint);
         }
     }
 
-    private void copyNotes(ModelElement source, ModelElement destination) {
+    @SuppressWarnings("null")
+    private void copyNotes(final ModelElement source, final ModelElement destination) {
         for (Note oldNote : source.getDescriptor()) {
             NoteType noteType = oldNote.getModel();
             if (noteType != null) {
@@ -232,18 +233,19 @@ public class JavaFeatureReverseUtils {
                     } else if ((source instanceof AssociationEnd)) {
                         noteType = convertNoteTypeFromAssociation(noteType);
                     }
-
+        
                     if (noteType != null) {
                         destination.putNoteContent(noteType.getModule().getName(), noteType.getName(), oldNote.getContent());
                     }
                 } catch (ExtensionNotFoundException e) {
-                    JavaDesignerModule.logService.error(Messages.getString("Error.NoteTypeNotFound", noteType != null ? noteType.getName() : "")); //$NON-NLS-1$
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString("Error.NoteTypeNotFound", noteType != null ? noteType.getName() : "")); //$NON-NLS-1$
                 }
             }
         }
     }
 
-    private void copyTaggedValues(ModelElement source, ModelElement destination) {
+    @SuppressWarnings("null")
+    private void copyTaggedValues(final ModelElement source, final ModelElement destination) {
         // remove Java related tagged value on dest first
         for (TaggedValue tag : new ArrayList<>(destination.getTag())) {
             TagType tagType = tag.getDefinition();
@@ -256,7 +258,7 @@ public class JavaFeatureReverseUtils {
                 }
             }
         }
-
+        
         // copy source tag to destination
         for (TaggedValue oldTag : new ArrayList<>(source.getTag())) {
             TagType tagType = oldTag.getDefinition();
@@ -267,142 +269,142 @@ public class JavaFeatureReverseUtils {
                     } else if ((source instanceof AssociationEnd)) {
                         tagType = convertTagTypeFromAssociation(tagType);
                     }
-
+        
                     if (tagType != null) {
-                        TaggedValue newTag = org.modelio.module.javadesigner.utils.ModelUtils.setTaggedValue(Modelio.getInstance().getModelingSession(), destination, tagType.getModule().getName(), tagType.getName(), true);
-
+                        TaggedValue newTag = org.modelio.module.javadesigner.utils.ModelUtils.setTaggedValue(this.session, destination, tagType.getModule().getName(), tagType.getName(), true);
+        
                         // Move tag parameters
                         for (TagParameter tagParameter : oldTag.getActual()) {
                             this.model.createTagParameter(tagParameter.getValue(), newTag);
                         }
                     }
                 } catch (ExtensionNotFoundException e) {
-                    JavaDesignerModule.logService.error(Messages.getString("Error.tagTypeNotFound", tagType != null ? tagType.getName() : null)); //$NON-NLS-1$
+                    JavaDesignerModule.getInstance().getModuleContext().getLogService().error(Messages.getString("Error.tagTypeNotFound", tagType != null ? tagType.getName() : null)); //$NON-NLS-1$
                 }
             }
         }
     }
 
-    private NoteType convertNoteTypeFromAssociation(NoteType associationEndNoteType) {
+    private NoteType convertNoteTypeFromAssociation(final NoteType associationEndNoteType) {
         IMetamodelExtensions metamodelExtensions = this.session.getMetamodelExtensions();
         if (associationEndNoteType.equals(JavaDesignerNoteTypes.FEATURE_JAVADOC)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVADOC, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVADOC, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndNoteType.equals(IOtherProfileElements.MODELELEMENT_DESCRIPTION)) {
-            return metamodelExtensions.getNoteType(IOtherProfileElements.MODELELEMENT_DESCRIPTION, IOtherProfileElements.MODELELEMENT_DESCRIPTION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IOtherProfileElements.MODELELEMENT_DESCRIPTION, IOtherProfileElements.MODELELEMENT_DESCRIPTION, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndNoteType.equals(JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUECOMMENT)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ATTRIBUTE_JAVAINITVALUECOMMENT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ATTRIBUTE_JAVAINITVALUECOMMENT, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndNoteType.equals(JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE)) {
             return null;
         } else if (associationEndNoteType.equals(JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION, this.metamodel.getMClass(Attribute.class));
         }
         return associationEndNoteType;
     }
 
-    private TagType convertTagTypeFromAssociation(TagType associationEndTagType) {
+    private TagType convertTagTypeFromAssociation(final TagType associationEndTagType) {
         IMetamodelExtensions metamodelExtensions = this.session.getMetamodelExtensions();
         if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAARRAYDIMENSION)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAARRAYDIMENSION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAARRAYDIMENSION, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVABIND, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVABIND, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFINAL)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFULLNAME)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAIMPLEMENTATIONTYPE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAIMPLEMENTATIONTYPE, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAPUBLIC)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAPUBLIC, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAPUBLIC, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVATRANSIENT)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.ASSOCIATIONEND_JAVAVOLATILE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANAME)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, this.metamodel.getMClass(Attribute.class));
         } else if (associationEndTagType.equals(IOtherProfileElements.MODELELEMENT_NOCODE)) {
-            return metamodelExtensions.getTagType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_NOCODE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_NOCODE, this.metamodel.getMClass(Attribute.class));
         }
         return associationEndTagType;
     }
 
-    private NoteType convertNoteTypeFromAttribute(NoteType attributeNoteType) {
+    private NoteType convertNoteTypeFromAttribute(final NoteType attributeNoteType) {
         IMetamodelExtensions metamodelExtensions = this.session.getMetamodelExtensions();
         if (attributeNoteType.equals(JavaDesignerNoteTypes.FEATURE_JAVADOC)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVADOC, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVADOC, this.metamodel.getMClass(Attribute.class));
         } else if (attributeNoteType.equals(IOtherProfileElements.MODELELEMENT_DESCRIPTION)) {
-            return metamodelExtensions.getNoteType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_DESCRIPTION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_DESCRIPTION, this.metamodel.getMClass(Attribute.class));
         } else if (attributeNoteType.equals(JavaDesignerNoteTypes.ATTRIBUTE_JAVAINITVALUECOMMENT)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUECOMMENT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUECOMMENT, this.metamodel.getMClass(Attribute.class));
         } else if (attributeNoteType.equals(JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION)) {
-            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getNoteType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.FEATURE_JAVAANNOTATION, this.metamodel.getMClass(Attribute.class));
         }
         return attributeNoteType;
     }
 
-    private TagType convertTagTypeFromAttribute(TagType attributeTagType) {
+    private TagType convertTagTypeFromAttribute(final TagType attributeTagType) {
         IMetamodelExtensions metamodelExtensions = this.session.getMetamodelExtensions();
         if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAARRAYDIMENSION)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAARRAYDIMENSION, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAARRAYDIMENSION, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVABIND)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVABIND, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAFINAL)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFINAL, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFINAL, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAFULLNAME)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFULLNAME, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAFULLNAME, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAIMPLEMENTATIONTYPE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAIMPLEMENTATIONTYPE, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAPUBLIC)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAPUBLIC, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAPUBLIC, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVATRANSIENT)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATRANSIENT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATRANSIENT, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVATYPEEXPR)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVATYPEEXPR, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.ATTRIBUTE_JAVAVOLATILE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAVOLATILE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.ASSOCIATIONEND_JAVAVOLATILE, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANAME)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANAME, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINITVALUE, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.FEATURE_JAVANOINVARIANT, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE)) {
-            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.MODELELEMENT_JAVANOCODE, this.metamodel.getMClass(Attribute.class));
         } else if (attributeTagType.equals(IOtherProfileElements.MODELELEMENT_NOCODE)) {
-            return metamodelExtensions.getTagType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_NOCODE, Metamodel.getMClass(Attribute.class));
+            return metamodelExtensions.getTagType(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.MODELELEMENT_NOCODE, this.metamodel.getMClass(Attribute.class));
         }
         return attributeTagType;
     }
 
-    private void copyStereotype(AssociationEnd source, Attribute destination) {
+    private void copyStereotype(final AssociationEnd source, final Attribute destination) {
         if (source.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY)) {
             boolean hasAlreadyThisStereotype = destination.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY);
-
+        
             if (!hasAlreadyThisStereotype) {
                 // Add the stereotype
-                destination.getExtension().add(Modelio.getInstance().getModelingSession().getMetamodelExtensions().getStereotype(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY, destination.getMClass()));
+                destination.getExtension().add(this.session.getMetamodelExtensions().getStereotype(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY, destination.getMClass()));
             }
         }
     }
 
-    private void copyStereotype(Attribute source, AssociationEnd destination) {
+    private void copyStereotype(final Attribute source, final AssociationEnd destination) {
         if (source.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAATTRIBUTEPROPERTY)) {
             boolean hasAlreadyThisStereotype = destination.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY);
             if (!hasAlreadyThisStereotype) {
                 // Add the stereotype
-                destination.getExtension().add(Modelio.getInstance().getModelingSession().getMetamodelExtensions().getStereotype(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY, destination.getMClass()));
+                destination.getExtension().add(this.session.getMetamodelExtensions().getStereotype(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAASSOCIATIONENDPROPERTY, destination.getMClass()));
             }
         }
     }
 
-    public void copyAssociationEndToAttribute(AssociationEnd modelio_element, Attribute att, MObject type) {
+    public void copyAssociationEndToAttribute(final AssociationEnd modelio_element, final Attribute att, final MObject type) {
         // if the attribute has been moved (with its objid) from one class to
         // another, attach it to the reversed class
         if (!modelio_element.getSource().equals(att.getOwner())) {
@@ -411,35 +413,35 @@ public class JavaFeatureReverseUtils {
         doCopyAssociationEndToAttribute(modelio_element, att, type);
     }
 
-    private void doCopyAssociationEndToAttribute(AssociationEnd modelio_element, Attribute att, MObject type) {
+    private void doCopyAssociationEndToAttribute(final AssociationEnd modelio_element, final Attribute att, final MObject type) {
         // SetType
         if (type != null && type instanceof GeneralClass) {
             att.setType((GeneralClass) type);
         }
-
+        
         // Initial value
         Note initialValue = modelio_element.getNote(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerNoteTypes.ASSOCIATIONEND_JAVAINITVALUE);
         if (initialValue != null) {
             att.setValue(initialValue.getContent());
         }
-
+        
         // Copy properties
         copyProperties(modelio_element, att);
-
+        
         // Copy notes
         copyNotes(modelio_element, att);
-
+        
         // Copy tag parameters
         copyTaggedValues(modelio_element, att);
-
+        
         // Copy stereotypes
         copyStereotype(modelio_element, att);
-
+        
         // Move constraints as all of them are defined on parent metaclasses...
         copyContraints(modelio_element, att);
-
+        
         JavaTypeManager typeManager = JavaTypeManager.getInstance();
-
+        
         List<String> types = att.getTagValues(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE);
         if (types != null) {
             for (Attribute qualifier : modelio_element.getQualifier()) {
@@ -453,14 +455,14 @@ public class JavaFeatureReverseUtils {
                     }
                 }
             }
-
+        
             try {
                 att.putTagValues(IOtherProfileElements.MODULE_NAME, IOtherProfileElements.FEATURE_TYPE, types);
             } catch (ExtensionNotFoundException e) {
-                JavaDesignerModule.logService.error(e);
+                JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
             }
         }
-
+        
         // Update getter/setter links
         for (Dependency dep : modelio_element.getImpactedDependency()) {
             if (dep.isStereotyped(IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerStereotypes.JAVAGETTER)

@@ -1,6 +1,8 @@
 package org.modelio.module.javadesigner.reverse.retrieve;
 
-import org.modelio.api.model.IModelingSession;
+import com.modelio.module.xmlreverse.IReportWriter;
+import com.modelio.module.xmlreverse.Repository;
+import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.metamodel.factory.ElementNotUniqueException;
 import org.modelio.metamodel.factory.ExtensionNotFoundException;
 import org.modelio.metamodel.uml.infrastructure.ModelElement;
@@ -12,15 +14,11 @@ import org.modelio.module.javadesigner.api.JavaDesignerNoteTypes;
 import org.modelio.module.javadesigner.reverse.xmltomodel.NoteReverseUtils;
 import org.modelio.module.javadesigner.utils.IOtherProfileElements;
 
-import com.modelio.module.xmlreverse.IReportWriter;
-import com.modelio.module.xmlreverse.Repository;
-
 public class NewNote extends NoteData {
     private String parentId = null;
 
-
     @Override
-    public void inject(IModelingSession session, ModelElement elementToRetrieve) throws ExtensionNotFoundException, ElementNotUniqueException {
+    public void inject(final IModelingSession session, final ModelElement elementToRetrieve) throws ElementNotUniqueException, ExtensionNotFoundException {
         ModelElement parentElement = session.findElementById(ModelElement.class, this.parentId);
         
         if (parentElement != null && !this.noteContent.isEmpty()) {
@@ -55,7 +53,7 @@ public class NewNote extends NoteData {
         }
     }
 
-    public NewNote(String noteType, String noteContent, String parentId, IReportWriter report) {
+    public NewNote(final String noteType, final String noteContent, final String parentId, final IReportWriter report) {
         super(noteType, noteContent, report);
         this.parentId = parentId;
     }
@@ -64,7 +62,7 @@ public class NewNote extends NoteData {
         return this.parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(final String parentId) {
         this.parentId = parentId;
     }
 

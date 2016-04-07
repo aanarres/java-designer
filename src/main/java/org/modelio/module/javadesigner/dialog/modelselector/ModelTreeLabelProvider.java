@@ -15,7 +15,6 @@ public class ModelTreeLabelProvider implements ILabelProvider {
 
     private Image buildTargetImage;
 
-
     public ModelTreeLabelProvider() {
         try {
             this.javaImage = new Image (null, ModelTreeLabelProvider.class.getResourceAsStream ("java.png"));
@@ -28,7 +27,7 @@ public class ModelTreeLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public void addListener(ILabelProviderListener arg0) {
+    public void addListener(final ILabelProviderListener arg0) {
         // No listener
     }
 
@@ -43,7 +42,7 @@ public class ModelTreeLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public Image getImage(Object p_Object) {
+    public Image getImage(final Object p_Object) {
         if (p_Object instanceof Artifact) {
             return this.buildTargetImage;
         } else if (p_Object instanceof String) {
@@ -53,7 +52,7 @@ public class ModelTreeLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public String getText(Object p_Object) {
+    public String getText(final Object p_Object) {
         if (p_Object instanceof Artifact) {
             return Messages.getString ("Gui.buildTargets.treeItem", ((ModelElement) p_Object).getName (), ModelUtils.getFirstTagParameter ((ModelElement) p_Object, IJavaDesignerPeerModule.MODULE_NAME, JavaDesignerTagTypes.JARFILE_JAVASOURCESPATH));
         } else if (p_Object instanceof String) {
@@ -63,13 +62,13 @@ public class ModelTreeLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public boolean isLabelProperty(Object arg0, String arg1) {
+    public boolean isLabelProperty(final Object arg0, final String arg1) {
         // Nothing to do
         return false;
     }
 
     @Override
-    public void removeListener(ILabelProviderListener arg0) {
+    public void removeListener(final ILabelProviderListener arg0) {
         // No listener
     }
 

@@ -9,10 +9,10 @@ public abstract class StructuralTree extends StructuralElement {
     private Map<String, StructuralTree> owned;
 
     private StructuralTree owner;
-    
+
     private static Map<String, StructuralTree> emptyOwned = new TreeMap<>();
-    
-    public StructuralTree(String name) {
+
+    public StructuralTree(final String name) {
         this.name = name;
     }
 
@@ -37,29 +37,30 @@ public abstract class StructuralTree extends StructuralElement {
     public final Map<String, StructuralTree> getOwned() {
         return (this.owned != null)? this.owned : emptyOwned;
     }
-    
+
     public void addOwned(final StructuralTree child) {
-    	if (this.owned == null) {
-    		this.owned = new TreeMap<>();
-    	}
-    	this.owned.put(child.getName(), child);
-    	child.setOwner(this);
+        if (this.owned == null) {
+            this.owned = new TreeMap<>();
+        }
+        this.owned.put(child.getName(), child);
+        child.setOwner(this);
     }
 
     public StructuralTree getOwner() {
         return this.owner;
     }
 
-    public void setOwner(StructuralTree def) {
+    public void setOwner(final StructuralTree def) {
         this.owner = def;
     }
-    
-	@Override
+
+    @Override
     public String toString() {
-    	return getFullQualifiedName();
+        return getFullQualifiedName();
     }
-	
-	public StructuralTree getOwned(final String aShortName) {
-		return (this.owned == null)? null : this.owned.get(aShortName);
-	}
+
+    public StructuralTree getOwned(final String aShortName) {
+        return (this.owned == null)? null : this.owned.get(aShortName);
+    }
+
 }

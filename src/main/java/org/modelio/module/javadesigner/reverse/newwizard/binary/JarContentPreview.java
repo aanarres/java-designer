@@ -11,25 +11,23 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
+import com.modelio.module.xmlreverse.model.JaxbReversedData;
+import com.modelio.module.xmlreverse.model.serialization.ModelUnmarshaller;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.module.javadesigner.reverse.RTReverseProgressBar;
 import org.modelio.module.javadesigner.reverse.ReverseConfig;
-import org.modelio.module.javadesigner.reverse.ui.ElementStatus;
 import org.modelio.module.javadesigner.reverse.ui.ElementStatus.ElementType;
 import org.modelio.module.javadesigner.reverse.ui.ElementStatus.ReverseStatus;
-
-import com.modelio.module.xmlreverse.model.JaxbReversedData;
-import com.modelio.module.xmlreverse.model.serialization.ModelUnmarshaller;
+import org.modelio.module.javadesigner.reverse.ui.ElementStatus;
 
 public class JarContentPreview {
     /**
-     * Computes a jaxb XML model from a list of jars. 
+     * Computes a jaxb XML model from a list of jars.
      * @param assemblyFilesToReverse the jars to preview content.
      * @param config the reverse configuration.
      * @return The jaxb model corresponding to the jars content.
      */
-    public JaxbReversedData computePreview(Set<File> assemblyFilesToReverse, ReverseConfig config) {
+    public JaxbReversedData computePreview(final Set<File> assemblyFilesToReverse, final ReverseConfig config) {
         if (assemblyFilesToReverse.size() > 0) {
             // Fill the files to reverse with the jars content
             config.setFilesToReverse (new Hashtable<String, ElementStatus>());
@@ -43,7 +41,7 @@ public class JarContentPreview {
                     }
                 }
             }
-
+        
             // Before the binary reverse, we have to add the jars to reverse to the classpath
             List<File> classpath = config.getClasspath();
             
@@ -56,7 +54,7 @@ public class JarContentPreview {
             // Do the reverse
             RTReverseProgressBar reverser = new RTReverseProgressBar(null, config);
             reverser.launchReverseFromJar();
-
+        
             // Reset classpath to its old value
             config.setClasspath(oldClasspath);
             
@@ -65,26 +63,25 @@ public class JarContentPreview {
             if (outputFile != null && outputFile.exists()) {
                 ModelUnmarshaller unmarshaller = new ModelUnmarshaller(config.getReport());
                 JaxbReversedData reversdata =  (JaxbReversedData)unmarshaller.load(outputFile, config.getStrategyConfiguration ().ENCODING);
-
+        
                 if (reversdata != null) {
                     return reversdata;
                 }
             }
         }
-
         return null;
     }
-    
-    private TreeSet<String> createJarTree(File rootFile) {
+
+    private TreeSet<String> createJarTree(final File rootFile) {
         try (ZipFile zipFile = new ZipFile (rootFile)) {
             return sortFileEntries (zipFile.entries ());
         } catch (IOException e) {
-            JavaDesignerModule.logService.error(e);
+            JavaDesignerModule.getInstance().getModuleContext().getLogService().error(e);
         }
         return null;
     }
-    
-    private TreeSet<String> sortFileEntries(Enumeration<? extends ZipEntry> enumeration) {
+
+    private TreeSet<String> sortFileEntries(final Enumeration<? extends ZipEntry> enumeration) {
         Comparator<String> stringCmp = new Comparator<String> () {
             @Override
             public int compare (String o1, String o2) {
@@ -118,5 +115,5 @@ public class JarContentPreview {
         }
         return set;
     }
-}
 
+}

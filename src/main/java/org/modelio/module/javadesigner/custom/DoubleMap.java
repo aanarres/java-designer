@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DoubleMap<K, V> implements Map<K, V> {
+public class DoubleMap<K, V> implements Map<K,V> {
     /**
      * Main delegated map.
      * Has a 1 -> 1 relationship between key and value.
@@ -20,7 +20,6 @@ public class DoubleMap<K, V> implements Map<K, V> {
      * Has a 1 -> * relationship between the value and the key.
      */
     private Map<V, List<K>> reverseDelegated;
-
 
     /**
      * Creates a new instance with hashmaps.
@@ -37,23 +36,23 @@ public class DoubleMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(final Object key) {
         return this.delegated.containsKey(key);
     }
 
     @Override
-    public boolean containsValue(Object value) {
+    public boolean containsValue(final Object value) {
         // Should be faster this way.
         return this.reverseDelegated.containsKey(value);
     }
 
     @Override
-    public Set<Map.Entry<K, V>> entrySet() {
+    public Set<java.util.Map.Entry<K,V>> entrySet() {
         return this.delegated.entrySet();
     }
 
     @Override
-    public V get(Object key) {
+    public V get(final Object key) {
         return this.delegated.get(key);
     }
 
@@ -68,7 +67,7 @@ public class DoubleMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public V put(K key, V value) {
+    public V put(final K key, final V value) {
         V oldValue = this.delegated.put(key, value);
         if (oldValue != null) {
           List<K> keyList = this.reverseDelegated.get(oldValue);
@@ -90,7 +89,7 @@ public class DoubleMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public void putAll(Map<? extends K, ? extends V> t) {
+    public void putAll(final Map<? extends K,? extends V> t) {
         for (K key : t.keySet()) {
           V value = t.get(key);
           put(key, value);
@@ -98,7 +97,7 @@ public class DoubleMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public V remove(Object key) {
+    public V remove(final Object key) {
         V value = this.delegated.remove(key);
         if (value != null) {
           this.reverseDelegated.remove(value);
@@ -121,7 +120,7 @@ public class DoubleMap<K, V> implements Map<K, V> {
      * @param value The queried value.
      * @return A non-modifiable list of keys, maybe <code>null</code>.
      */
-    public List<K> keysForValue(V value) {
+    public List<K> keysForValue(final V value) {
         List<K> result = this.reverseDelegated.get(value);
         if (result != null) {
           result = Collections.unmodifiableList(result);

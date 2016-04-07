@@ -4,9 +4,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.modelio.api.module.IModule;
-import org.modelio.api.module.commands.DefaultModuleCommandHandler;
+import org.modelio.api.module.command.DefaultModuleCommandHandler;
 import org.modelio.metamodel.uml.statik.Artifact;
 import org.modelio.metamodel.uml.statik.Component;
 import org.modelio.metamodel.uml.statik.NameSpace;
@@ -17,9 +16,7 @@ import org.modelio.module.javadesigner.editor.EditorManager;
 import org.modelio.module.javadesigner.i18n.Messages;
 import org.modelio.module.javadesigner.report.ReportManager;
 import org.modelio.module.javadesigner.report.ReportModel;
-import org.modelio.module.javadesigner.reverse.ReverseMode;
 import org.modelio.module.javadesigner.reverse.Reversor;
-import org.modelio.module.javadesigner.reverse.ui.ReverseException;
 import org.modelio.module.javadesigner.utils.BrowserLauncher;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vcore.smkernel.mapi.MObject;
@@ -32,7 +29,7 @@ public class Edit extends DefaultModuleCommandHandler {
      * No command for Component (inherits from Class)
      */
     @Override
-    public boolean accept(List<MObject> selectedElements, IModule module) {
+    public boolean accept(final List<MObject> selectedElements, final IModule module) {
         if (!super.accept(selectedElements, module)) {
             return false;
         }
@@ -53,7 +50,7 @@ public class Edit extends DefaultModuleCommandHandler {
             }
         }
         
-        boolean useExternalEdition = "true".equalsIgnoreCase (module.getConfiguration ().getParameterValue (JavaDesignerParameters.USEEXTERNALEDITION));
+        boolean useExternalEdition = "true".equalsIgnoreCase (module.getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.USEEXTERNALEDITION));
         if (useExternalEdition) {
             return (selectedElements.size () == 1);
         } else {
@@ -62,8 +59,8 @@ public class Edit extends DefaultModuleCommandHandler {
     }
 
     @Override
-    public void actionPerformed(List<MObject> selectedElements, IModule module) {
-        boolean useExternalEdition = "true".equalsIgnoreCase (module.getConfiguration ().getParameterValue (JavaDesignerParameters.USEEXTERNALEDITION));
+    public void actionPerformed(final List<MObject> selectedElements, final IModule module) {
+        boolean useExternalEdition = "true".equalsIgnoreCase (module.getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.USEEXTERNALEDITION));
         
         try {
             JavaDesignerUtils.initCurrentGenRoot (this.elementsToEdit);
@@ -72,7 +69,7 @@ public class Edit extends DefaultModuleCommandHandler {
         }
         
         if (useExternalEdition) {
-            String editor = module.getConfiguration ().getParameterValue (JavaDesignerParameters.EXTERNALEDITORCOMMANDLINE);
+            String editor = module.getModuleContext().getConfiguration ().getParameterValue (JavaDesignerParameters.EXTERNALEDITORCOMMANDLINE);
         
             if (editor != null && !editor.isEmpty ()) {
                 for (NameSpace element : this.elementsToEdit) {
@@ -89,11 +86,7 @@ public class Edit extends DefaultModuleCommandHandler {
                 // Launch the reverse when edition ends
                 Reversor reversor = new Reversor (module, report);
         
-                try {
-                    reversor.update (this.elementsToEdit, ReverseMode.Retrieve, EditorManager.getInstance ());
-                } catch (ReverseException e) {
-                    // The reverse was canceled
-                }
+                reversor.update (this.elementsToEdit, EditorManager.getInstance ());
         
                 ReportManager.showGenerationReport (report);
             } else {
@@ -101,7 +94,6 @@ public class Edit extends DefaultModuleCommandHandler {
                 DialogManager.openError (Messages.getString ("Error.ExternalEditionTitle"), message);
             }
         } else {
-            // TODO Internal editor + Plugin -> open the Eclipse editor
             for (NameSpace element : this.elementsToEdit) {
                 EditorManager.getInstance ().open (element, module);
             }
@@ -116,7 +108,7 @@ public class Edit extends DefaultModuleCommandHandler {
      * specific constraints that are specific to the MDAC.
      */
     @Override
-    public boolean isActiveFor(List<MObject> selectedElements, IModule module) {
+    public boolean isActiveFor(final List<MObject> selectedElements, final IModule module) {
         if (!super.isActiveFor(selectedElements, module)) {
             return false;
         }
