@@ -10,7 +10,6 @@ import org.modelio.api.modelio.model.event.IStatusChangeHandler;
 import org.modelio.api.module.context.IModuleContext;
 import org.modelio.api.module.context.configuration.IModuleUserConfiguration;
 import org.modelio.api.module.lifecycle.DefaultModuleLifeCycleHandler;
-import org.modelio.api.module.lifecycle.IModuleLifeCycleHandler;
 import org.modelio.api.module.lifecycle.ModuleException;
 import org.modelio.module.javadesigner.api.ISessionWithHandler;
 import org.modelio.module.javadesigner.api.JavaDesignerParameters;
@@ -21,7 +20,7 @@ import org.modelio.module.javadesigner.reverse.newwizard.ImageManager;
 import org.modelio.module.javadesigner.utils.JavaDesignerUtils;
 import org.modelio.vbasic.version.Version;
 
-public class JavaDesignerSession extends DefaultModuleLifeCycleHandler implements ISessionWithHandler, IModuleLifeCycleHandler {
+public class JavaDesignerSession extends DefaultModuleLifeCycleHandler implements ISessionWithHandler {
     protected IModelChangeHandler modelChangeHandler = null;
 
     protected IStatusChangeHandler statusChangeHandler = null;
@@ -74,7 +73,6 @@ public class JavaDesignerSession extends DefaultModuleLifeCycleHandler implement
         configuration.setParameterValue (JavaDesignerParameters.JAVADOCOPTIONS, "-private"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.JAVAHGENERATIONPATH, "$(Project)/src"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.JDKPATH, jdkPath);
-        configuration.setParameterValue (JavaDesignerParameters.LOCKGENERATEDFILES, "true"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.PACKAGEJARINRAMC, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.PACKAGESRCINRAMC, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.PRIVATEACCESSORVISIBILITY, JavaDesignerParameters.AccessorVisibility.Public.toString ());
@@ -83,7 +81,6 @@ public class JavaDesignerSession extends DefaultModuleLifeCycleHandler implement
         configuration.setParameterValue (JavaDesignerParameters.PROTECTEDMODIFIERVISIBILITY, JavaDesignerParameters.AccessorVisibility.Public.toString ());
         configuration.setParameterValue (JavaDesignerParameters.PUBLICACCESSORVISIBILITY, "Public"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.PUBLICMODIFIERVISIBILITY, "Public"); //$NON-NLS-1$
-        configuration.setParameterValue (JavaDesignerParameters.READONLYELEMENTNOTGENERATED, "false"); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.RETRIEVEDEFAULTBEHAVIOUR, JavaDesignerParameters.RetrieveMode.Ask.toString ());
         configuration.setParameterValue (JavaDesignerParameters.RUNPARAMETERS, ""); //$NON-NLS-1$
         configuration.setParameterValue (JavaDesignerParameters.USEEXTERNALEDITION, "false"); //$NON-NLS-1$

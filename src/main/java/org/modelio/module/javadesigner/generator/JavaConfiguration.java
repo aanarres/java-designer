@@ -35,8 +35,6 @@ class JavaConfiguration {
 
     public String ENCODING;
 
-    public boolean LOCKGENERATEDFILES;
-
     public String COPYRIGHTFILE;
 
     public boolean JAVA8COMPATIBILITY;
@@ -60,7 +58,6 @@ class JavaConfiguration {
         this.GENERATEJAVADOC = getBooleanParameterValue (JavaDesignerParameters.GENERATEJAVADOC);
         // TAS added: do not generate JavaDoc markers in ModelDriven.
         this.GENERATEJAVADOC_MARKERS = getBooleanParameterValue (JavaDesignerParameters.GENERATEJAVADOC_MARKERS);
-        this.LOCKGENERATEDFILES = getBooleanParameterValue (JavaDesignerParameters.LOCKGENERATEDFILES);
         this.COPYRIGHTFILE = getStringParameterValue (JavaDesignerParameters.COPYRIGHTFILE);
         this.JAVA8COMPATIBILITY = getStringParameterValue (JavaDesignerParameters.JAVACOMPATIBILITY).equals (JavaDesignerParameters.CompatibilityLevel.Java8.toString ());
         

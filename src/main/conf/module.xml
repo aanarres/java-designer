@@ -630,12 +630,6 @@
         <Parameter id="PackageJarInRamc" group="%group.ModelComponents.label" uid="01ec25e8-0000-0780-0000-000000000000" type="Boolean" default-value="" label="%parameter.PackageJarInRamc.label">
             <Description>%parameter.PackageJarInRamc.description</Description>
         </Parameter>
-        <Parameter id="ReadOnlyElementNotGenerated" group="%group.Subversion.label" uid="01ec25e8-0000-0721-0000-000000000000" type="Boolean" default-value="" label="%parameter.ReadOnlyElementNotGenerated.label">
-            <Description>%parameter.ReadOnlyElementNotGenerated.description</Description>
-        </Parameter>
-        <Parameter id="LockGeneratedFiles" group="%group.Subversion.label" uid="2c5d9a32-8425-11df-a692-002564c97630" type="Boolean" default-value="" label="%parameter.LockGeneratedFiles.label">
-            <Description>%parameter.LockGeneratedFiles.description</Description>
-        </Parameter>
     </Parameters>
     <Gui>
         <Commands>

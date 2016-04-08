@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
 import org.eclipse.swt.widgets.Display;
 import org.modelio.api.modelio.model.IModelingSession;
 import org.modelio.api.module.IModule;
@@ -45,7 +46,6 @@ import org.modelio.module.javadesigner.api.JavaDesignerTagTypes;
 import org.modelio.module.javadesigner.dialog.modelselector.ModelExplorer;
 import org.modelio.module.javadesigner.impl.JavaDesignerModule;
 import org.modelio.vcore.smkernel.mapi.MObject;
-import org.modelio.vcore.smkernel.mapi.MStatus;
 
 public class JavaDesignerUtils {
     public static final String BOOLEAN = "boolean"; // $NON-NLS-1$
@@ -539,16 +539,6 @@ public class JavaDesignerUtils {
                     }
         
                     allElements.addAll (getAllComponentsToTreat (subElements, module));
-                }
-            }
-        }
-        
-        // Remove read only elements from the list
-        if ("TRUE".equalsIgnoreCase (module.getModuleContext().getConfiguration().getParameterValue (JavaDesignerParameters.READONLYELEMENTNOTGENERATED))) {
-            for (NameSpace element : new HashSet<> (allElements)) {
-                MStatus status = element.getStatus ();
-                if (status == null || !status.isModifiable ()) {
-                    allElements.remove (element);
                 }
             }
         }

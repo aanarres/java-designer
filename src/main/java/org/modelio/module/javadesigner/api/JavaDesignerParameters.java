@@ -58,8 +58,6 @@ public interface JavaDesignerParameters {
 
     public static final String JDKPATH = "JDKPath";
 
-    public static final String LOCKGENERATEDFILES = "LockGeneratedFiles";
-
     public static final String PACKAGEJARINRAMC = "PackageJarInRamc";
 
     public static final String PACKAGESRCINRAMC = "PackageSrcInRamc";
@@ -75,8 +73,6 @@ public interface JavaDesignerParameters {
     public static final String PUBLICACCESSORVISIBILITY = "PublicAccessorVisibility";
 
     public static final String PUBLICMODIFIERVISIBILITY = "PublicModifierVisibility";
-
-    public static final String READONLYELEMENTNOTGENERATED = "ReadOnlyElementNotGenerated";
 
     public static final String RETRIEVEDEFAULTBEHAVIOUR = "RetrieveDefaultBehaviour";
 

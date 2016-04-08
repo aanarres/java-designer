@@ -153,10 +153,6 @@ public class GenerateProgressBar extends ProgressBar implements IRunnableWithPro
 			}
 		} catch (IOException e) {
 			this.report.addError (e.getMessage (), element, "");
-		} finally {
-			if (javaConfig.LOCKGENERATEDFILES && !element.getStatus ().isModifiable ()) {
-				targetFile.setReadOnly ();
-			}
 		}
 	}
 
